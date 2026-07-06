@@ -88,3 +88,12 @@ export interface ReadingActivity {
   activity_date: string;
   created_at: string;
 }
+
+export interface StoryChapter {
+  id: string;
+  story_id: string;
+  chapter_number: number;
+  title: string | null;
+  body: string;
+  created_at: string;
+}
