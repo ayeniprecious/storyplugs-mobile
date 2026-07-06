@@ -1,10 +1,12 @@
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { StoryCard } from '@/components/story-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import type { Story } from '@/lib/database.types';
+
+const CARD_WIDTH = 112;
 
 export function CategoryRow({ label, stories }: { label: string; stories: Story[] }) {
   if (stories.length === 0) return null;
@@ -14,9 +16,11 @@ export function CategoryRow({ label, stories }: { label: string; stories: Story[
       <ThemedText type="smallBold" style={styles.heading}>
         {label}
       </ThemedText>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
         {stories.map((story) => (
-          <StoryCard key={story.id} story={story} />
+          <View key={story.id} style={styles.cardWrap}>
+            <StoryCard story={story} />
+          </View>
         ))}
       </ScrollView>
     </ThemedView>
@@ -26,4 +30,6 @@ export function CategoryRow({ label, stories }: { label: string; stories: Story[
 const styles = StyleSheet.create({
   section: { gap: Spacing.two, marginBottom: Spacing.two },
   heading: { opacity: 0.85 },
+  row: { gap: Spacing.two },
+  cardWrap: { width: CARD_WIDTH },
 });
