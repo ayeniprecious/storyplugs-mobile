@@ -57,8 +57,8 @@ export function useStoryProgress(storyId: string) {
       if (!user?.id || !storyId) return;
       setProgress((prev) => (prev && !prev.completed ? { ...prev, progressPercent: percent } : prev));
       if (percentTimer.current) clearTimeout(percentTimer.current);
-      percentTimer.current = setTimeout(() => {
-        supabase
+      percentTimer.current = setTimeout(async () => {
+        await supabase
           .from("story_views")
           .update({ progress_percent: percent })
           .eq("user_id", user.id)

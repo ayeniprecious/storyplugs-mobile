@@ -4,14 +4,14 @@ import { useAuth } from "@/context/auth-context";
 import type { Story } from "@/lib/database.types";
 import { supabase } from "@/lib/supabase";
 
-interface ContinueReadingItem {
+interface CompletedStoryItem {
   story: Story;
-  progressPercent: number;
+  completedAt: string;
 }
 
-export function useContinueReading() {
+export function useCompletedStories() {
   const { user } = useAuth();
-  const [items, setItems] = useState<ContinueReadingItem[]>([]);
+  const [items, setItems] = useState<CompletedStoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -23,16 +23,15 @@ export function useContinueReading() {
     setLoading(true);
     const { data } = await supabase
       .from("story_views")
-      .select("progress_percent, stories(*)")
+      .select("updated_at, stories(*)")
       .eq("user_id", user.id)
-      .eq("completed", false)
-      .order("updated_at", { ascending: false })
-      .limit(12);
+      .eq("completed", true)
+      .order("updated_at", { ascending: false });
 
     setItems(
-      ((data as unknown as { progress_percent: number; stories: Story | null }[]) ?? [])
+      ((data as unknown as { updated_at: string; stories: Story | null }[]) ?? [])
         .filter((row) => row.stories)
-        .map((row) => ({ story: row.stories as Story, progressPercent: row.progress_percent }))
+        .map((row) => ({ story: row.stories as Story, completedAt: row.updated_at }))
     );
     setLoading(false);
   }, [user?.id]);
