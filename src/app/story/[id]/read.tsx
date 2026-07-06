@@ -103,10 +103,7 @@ export default function StoryRead() {
   const isFirstChapter = chapterIndex === 0;
 
   function goToChapter(nextChapterNumber: number) {
-    router.push({
-      pathname: '/story/[id]/read',
-      params: { id, chapter: String(nextChapterNumber) },
-    });
+    router.setParams({ chapter: String(nextChapterNumber) });
   }
 
   return (
