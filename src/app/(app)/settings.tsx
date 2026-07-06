@@ -171,18 +171,14 @@ export default function Settings() {
           {CONTENT_TYPE_OPTIONS.map((type) => {
             const selected = selectedTypes.includes(type.value);
             return (
-              <Pressable
-                key={type.value}
-                onPress={() => toggleType(type.value)}
-                style={[styles.optionCard, selected && styles.optionCardSelected]}
-              >
+              <Pressable key={type.value} onPress={() => toggleType(type.value)} style={styles.optionCard}>
                 <ThemedView
                   type="backgroundElement"
                   style={[styles.checkbox, selected && styles.checkboxSelected]}
                 >
                   {selected && <ThemedText style={styles.checkboxMark}>✓</ThemedText>}
                 </ThemedView>
-                <ThemedText type="smallBold">{type.label}</ThemedText>
+                <ThemedText type="small">{type.label}</ThemedText>
               </Pressable>
             );
           })}
@@ -199,7 +195,10 @@ export default function Settings() {
                   }}
                   style={[styles.timeChip, selected && styles.timeChipSelected]}
                 >
-                  <ThemedText type="small" style={selected ? styles.timeChipTextSelected : undefined}>
+                  <ThemedText
+                    type="small"
+                    style={[styles.timeChipText, selected && styles.timeChipTextSelected]}
+                  >
                     {slot.label}
                   </ThemedText>
                 </Pressable>
@@ -338,53 +337,54 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
-    padding: Spacing.two + 4,
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.two + 2,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#3a3a3c',
-    marginBottom: Spacing.two,
+    borderColor: '#2c2c2e',
+    marginBottom: Spacing.one + 4,
   },
-  optionCardSelected: { borderColor: '#e50914' },
-  checkbox: { width: 22, height: 22, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
+  checkbox: { width: 18, height: 18, borderRadius: 5, alignItems: 'center', justifyContent: 'center' },
   checkboxSelected: { backgroundColor: '#e50914' },
-  checkboxMark: { color: '#fff', fontWeight: '700', fontSize: 12 },
-  timeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginBottom: Spacing.two },
+  checkboxMark: { color: '#fff', fontWeight: '700', fontSize: 11 },
+  timeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one + 4, marginBottom: Spacing.two },
   timeChip: {
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    borderRadius: 20,
+    paddingHorizontal: Spacing.two + 4,
+    paddingVertical: Spacing.one + 3,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#3a3a3c',
+    borderColor: '#2c2c2e',
   },
-  timeChipSelected: { backgroundColor: '#e50914', borderColor: '#e50914' },
-  timeChipTextSelected: { color: '#fff', fontWeight: '700' },
+  timeChipSelected: { backgroundColor: 'rgba(229,9,20,0.14)', borderColor: '#e50914' },
+  timeChipText: { opacity: 0.85 },
+  timeChipTextSelected: { color: '#e50914', fontWeight: '700', opacity: 1 },
   saveButton: {
     backgroundColor: '#e50914',
     borderRadius: 10,
-    paddingVertical: Spacing.three,
+    paddingVertical: Spacing.two + 2,
     alignItems: 'center',
   },
-  saveButtonText: { color: '#fff', fontWeight: '700' },
-  segmentRow: { flexDirection: 'row', gap: Spacing.two },
+  saveButtonText: { color: '#fff', fontWeight: '600' },
+  segmentRow: { flexDirection: 'row', gap: Spacing.one + 4 },
   segment: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: Spacing.two + 4,
+    paddingVertical: Spacing.two,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#3a3a3c',
+    borderColor: '#2c2c2e',
   },
-  segmentSelected: { backgroundColor: '#e50914', borderColor: '#e50914' },
-  segmentTextSelected: { color: '#fff', fontWeight: '700' },
+  segmentSelected: { backgroundColor: 'rgba(229,9,20,0.14)', borderColor: '#e50914' },
+  segmentTextSelected: { color: '#e50914', fontWeight: '700' },
   signOutButton: {
-    marginTop: Spacing.four,
+    marginTop: Spacing.three,
     borderWidth: 1,
-    borderColor: '#e50914',
+    borderColor: '#2c2c2e',
     borderRadius: 10,
-    paddingVertical: Spacing.three,
+    paddingVertical: Spacing.two + 2,
     alignItems: 'center',
   },
-  signOutText: { color: '#e50914', fontWeight: '700' },
-  deleteButton: { marginTop: Spacing.two, alignItems: 'center', paddingVertical: Spacing.two },
-  deleteButtonText: { color: '#ff453a', fontWeight: '600' },
+  signOutText: { fontWeight: '600', opacity: 0.85 },
+  deleteButton: { marginTop: Spacing.one, alignItems: 'center', paddingVertical: Spacing.two },
+  deleteButtonText: { color: '#ff453a', fontWeight: '500', opacity: 0.85 },
 });
