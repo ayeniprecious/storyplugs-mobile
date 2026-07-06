@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { Image } from 'expo-image';
 import { Link, useLocalSearchParams } from 'expo-router';
@@ -126,8 +127,11 @@ export default function StoryDetail() {
       <ThemedView style={styles.container}>
         <SafeAreaView style={styles.centerFill}>
           <ThemedText type="smallBold">Story not found</ThemedText>
-          <Link href="/(app)" style={styles.backLink}>
-            <ThemedText type="link">Back to Home</ThemedText>
+          <Link href="/(app)" asChild>
+            <Pressable style={styles.backLinkCombined}>
+              <Ionicons name="chevron-back" size={16} color="#e50914" />
+              <ThemedText type="link">Back to Home</ThemedText>
+            </Pressable>
           </Link>
         </SafeAreaView>
       </ThemedView>
@@ -145,8 +149,11 @@ export default function StoryDetail() {
           onScroll={handleScroll}
           scrollEventThrottle={200}
         >
-          <Link href="/(app)" style={styles.backLink}>
-            <ThemedText type="link">← Back</ThemedText>
+          <Link href="/(app)" asChild>
+            <Pressable style={styles.backLinkCombined}>
+              <Ionicons name="chevron-back" size={16} color="#e50914" />
+              <ThemedText type="link">Back</ThemedText>
+            </Pressable>
           </Link>
 
           {story.image_url && (
@@ -175,26 +182,28 @@ export default function StoryDetail() {
           )}
 
           <ThemedView style={styles.actionsRow}>
-            <Pressable style={styles.actionButton} onPress={toggleFavorite}>
-              <ThemedText style={styles.actionButtonText}>
-                {isFavorited ? '✓ Saved' : '+ Save'}
-              </ThemedText>
+            <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={toggleFavorite}>
+              <Ionicons name={isFavorited ? 'checkmark' : 'bookmark-outline'} size={16} color="#e50914" />
+              <ThemedText style={styles.actionButtonText}>{isFavorited ? 'Saved' : 'Save'}</ThemedText>
             </Pressable>
-            <Pressable style={styles.actionButton} onPress={handleShare}>
+            <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={handleShare}>
+              <Ionicons name="share-outline" size={16} color="#e50914" />
               <ThemedText style={styles.actionButtonText}>Share</ThemedText>
             </Pressable>
             {story.audio_url && (
-              <Pressable style={styles.actionButton} onPress={handleListenToggle}>
+              <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={handleListenToggle}>
+                <Ionicons name={playerStatus.playing ? 'pause' : 'play'} size={16} color="#e50914" />
                 <ThemedText style={styles.actionButtonText}>
-                  {playerStatus.playing ? '⏸ Pause' : '▶ Listen'}
+                  {playerStatus.playing ? 'Pause' : 'Listen'}
                 </ThemedText>
               </Pressable>
             )}
           </ThemedView>
 
           {progress?.completed ? (
-            <ThemedView style={styles.completedBadge}>
-              <ThemedText style={styles.completedBadgeText}>✓ Marked as Complete</ThemedText>
+            <ThemedView style={[styles.completedBadge, styles.actionButtonRow]}>
+              <Ionicons name="checkmark-circle" size={18} color="#32b45a" />
+              <ThemedText style={styles.completedBadgeText}>Marked as Complete</ThemedText>
             </ThemedView>
           ) : (
             <Pressable style={styles.completeButton} onPress={markComplete}>
@@ -219,7 +228,13 @@ const styles = StyleSheet.create({
   scrollContent: { padding: Spacing.four, gap: Spacing.two, paddingBottom: Spacing.six },
   progressTrack: { height: 3, backgroundColor: 'rgba(128,128,128,0.25)' },
   progressFill: { height: 3, backgroundColor: '#e50914' },
-  backLink: { marginBottom: Spacing.two },
+  backLinkCombined: {
+    marginBottom: Spacing.two,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
   heroImage: { width: '100%', height: 220, borderRadius: 16, marginBottom: Spacing.two },
   categoryTag: { color: '#e50914', fontWeight: '700', textTransform: 'uppercase' },
   title: { fontSize: 28, lineHeight: 34 },
@@ -235,6 +250,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionButtonText: { color: '#e50914', fontWeight: '700' },
+  actionButtonRow: { flexDirection: 'row', justifyContent: 'center', gap: 6 },
   completeButton: {
     marginTop: Spacing.two,
     backgroundColor: '#e50914',

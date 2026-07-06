@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -32,8 +33,11 @@ export default function Notifications() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ThemedView style={styles.header}>
-          <Link href="/(app)" style={styles.backLink}>
-            <ThemedText type="link">← Back</ThemedText>
+          <Link href="/(app)" asChild>
+            <Pressable style={styles.backLinkCombined}>
+              <Ionicons name="chevron-back" size={16} color="#e50914" />
+              <ThemedText type="link">Back</ThemedText>
+            </Pressable>
           </Link>
           <ThemedText type="title" style={styles.title}>
             Notifications
@@ -89,7 +93,7 @@ export default function Notifications() {
                     hitSlop={8}
                     accessibilityLabel="Delete notification"
                   >
-                    <ThemedText style={styles.removeButton}>✕</ThemedText>
+                    <Ionicons name="close" size={16} color="#8a8a8e" style={styles.removeButton} />
                   </Pressable>
                 </ThemedView>
               </Pressable>
@@ -105,7 +109,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.four, paddingTop: Spacing.three },
   header: { gap: Spacing.two, marginBottom: Spacing.two },
-  backLink: {},
+  backLinkCombined: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   title: { fontSize: 26, lineHeight: 32 },
   actionsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: Spacing.three },
   action: { color: '#e50914' },
@@ -126,5 +130,5 @@ const styles = StyleSheet.create({
   unreadDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#e50914' },
   rowText: { opacity: 0.75 },
   rowTime: { opacity: 0.5 },
-  removeButton: { opacity: 0.5, fontSize: 14, paddingHorizontal: 4 },
+  removeButton: { paddingHorizontal: 4 },
 });

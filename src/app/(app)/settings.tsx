@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -114,7 +115,7 @@ export default function Settings() {
                 {uploading ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
-                  <ThemedText style={styles.avatarEditIcon}>📷</ThemedText>
+                  <Ionicons name="camera" size={14} color="#fff" />
                 )}
               </ThemedView>
             </Pressable>
@@ -176,7 +177,7 @@ export default function Settings() {
                   type="backgroundElement"
                   style={[styles.checkbox, selected && styles.checkboxSelected]}
                 >
-                  {selected && <ThemedText style={styles.checkboxMark}>✓</ThemedText>}
+                  {selected && <Ionicons name="checkmark" size={13} color="#fff" />}
                 </ThemedView>
                 <ThemedText type="small">{type.label}</ThemedText>
               </Pressable>
@@ -213,8 +214,13 @@ export default function Settings() {
           >
             {saving ? (
               <ActivityIndicator color="#fff" />
+            ) : saved ? (
+              <ThemedView style={styles.saveButtonContent}>
+                <Ionicons name="checkmark" size={16} color="#fff" />
+                <ThemedText style={styles.saveButtonText}>Saved</ThemedText>
+              </ThemedView>
             ) : (
-              <ThemedText style={styles.saveButtonText}>{saved ? 'Saved ✓' : 'Save Preferences'}</ThemedText>
+              <ThemedText style={styles.saveButtonText}>Save Preferences</ThemedText>
             )}
           </Pressable>
 
@@ -303,7 +309,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#000',
   },
-  avatarEditIcon: { fontSize: 13 },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -346,7 +351,6 @@ const styles = StyleSheet.create({
   },
   checkbox: { width: 18, height: 18, borderRadius: 5, alignItems: 'center', justifyContent: 'center' },
   checkboxSelected: { backgroundColor: '#e50914' },
-  checkboxMark: { color: '#fff', fontWeight: '700', fontSize: 11 },
   timeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one + 4, marginBottom: Spacing.two },
   timeChip: {
     paddingHorizontal: Spacing.two + 4,
@@ -365,6 +369,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveButtonText: { color: '#fff', fontWeight: '600' },
+  saveButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'transparent',
+  },
   segmentRow: { flexDirection: 'row', gap: Spacing.one + 4 },
   segment: {
     flex: 1,

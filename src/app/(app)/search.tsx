@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -53,9 +54,7 @@ export default function Search() {
                   <ThemedText type="small">{term}</ThemedText>
                 </Pressable>
                 <Pressable onPress={() => removeSearch(term)} hitSlop={8}>
-                  <ThemedText type="small" style={styles.chipRemove}>
-                    ✕
-                  </ThemedText>
+                  <Ionicons name="close" size={14} color="#8a8a8e" />
                 </Pressable>
               </ThemedView>
             ))}
@@ -167,7 +166,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#3a3a3c',
   },
-  chipRemove: { opacity: 0.5 },
   popularChip: {
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,

@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -62,7 +63,7 @@ export default function NotificationPreferences() {
                   type="backgroundElement"
                   style={[styles.checkbox, selected && styles.checkboxSelected]}
                 >
-                  {selected && <ThemedText style={styles.checkboxMark}>✓</ThemedText>}
+                  {selected && <Ionicons name="checkmark" size={16} color="#fff" />}
                 </ThemedView>
                 <ThemedView style={styles.optionTextGroup}>
                   <ThemedText type="smallBold">{type.label}</ThemedText>
@@ -142,7 +143,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkboxSelected: { backgroundColor: '#e50914' },
-  checkboxMark: { color: '#fff', fontWeight: '700' },
   optionTextGroup: { flex: 1, gap: 2 },
   optionBlurb: { opacity: 0.6 },
   timeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },

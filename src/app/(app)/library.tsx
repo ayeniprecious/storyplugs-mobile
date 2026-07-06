@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useState } from 'react';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
@@ -64,7 +65,7 @@ function LibraryRow({
         </Pressable>
       </Link>
       <Pressable style={styles.removeButton} onPress={onRemove} accessibilityLabel={removeLabel}>
-        <ThemedText style={styles.removeButtonText}>✕</ThemedText>
+        <Ionicons name="close" size={18} color="#8a8a8e" />
       </Pressable>
     </ThemedView>
   );
@@ -202,9 +203,16 @@ export default function Library() {
                   Completed
                 </ThemedText>
                 {completedItems.length > COMPLETED_COLLAPSED_LIMIT && (
-                  <ThemedText type="small" style={styles.collapsibleToggle}>
-                    {completedExpanded ? 'Show less ▲' : `Show all (${completedItems.length}) ▼`}
-                  </ThemedText>
+                  <ThemedView style={styles.collapsibleToggleRow}>
+                    <ThemedText type="small" style={styles.collapsibleToggle}>
+                      {completedExpanded ? 'Show less' : `Show all (${completedItems.length})`}
+                    </ThemedText>
+                    <Ionicons
+                      name={completedExpanded ? 'chevron-up' : 'chevron-down'}
+                      size={14}
+                      color="#e50914"
+                    />
+                  </ThemedView>
                 )}
               </Pressable>
               {completedItems.length === 0 ? (
@@ -247,6 +255,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.two,
   },
   sectionHeadingText: { opacity: 0.85 },
+  collapsibleToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'transparent',
+  },
   collapsibleToggle: { color: '#e50914', fontWeight: '600' },
   emptyHint: { opacity: 0.6, marginBottom: Spacing.two },
   statsRow: {
@@ -279,5 +293,4 @@ const styles = StyleSheet.create({
   progressFill: { height: 4, backgroundColor: '#e50914' },
   progressLabel: { opacity: 0.6 },
   removeButton: { paddingHorizontal: Spacing.three, alignSelf: 'stretch', justifyContent: 'center' },
-  removeButtonText: { opacity: 0.6, fontSize: 16 },
 });

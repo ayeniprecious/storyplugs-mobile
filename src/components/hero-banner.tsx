@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
@@ -49,14 +50,14 @@ export function HeroBanner({ story }: { story: Story }) {
         </ThemedText>
         <ThemedView style={styles.buttonRow}>
           <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
-            <Pressable style={styles.cta}>
-              <ThemedText style={styles.ctaText}>▶ Read Full Story</ThemedText>
+            <Pressable style={styles.ctaCombined}>
+              <Ionicons name="play" size={16} color="#000" />
+              <ThemedText style={styles.ctaText}>Read Full Story</ThemedText>
             </Pressable>
           </Link>
-          <Pressable style={styles.secondaryCta} onPress={toggleFavorite}>
-            <ThemedText style={styles.secondaryCtaText}>
-              {isFavorited ? '✓ Saved' : '+ My List'}
-            </ThemedText>
+          <Pressable style={[styles.secondaryCta, styles.ctaRow]} onPress={toggleFavorite}>
+            <Ionicons name={isFavorited ? 'checkmark' : 'add'} size={16} color="#fff" />
+            <ThemedText style={styles.secondaryCtaText}>{isFavorited ? 'Saved' : 'My List'}</ThemedText>
           </Pressable>
         </ThemedView>
       </ThemedView>
@@ -89,13 +90,18 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
     backgroundColor: 'transparent',
   },
-  cta: {
+  ctaCombined: {
     backgroundColor: '#fff',
     borderRadius: 10,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
   ctaText: { color: '#000', fontWeight: '700' },
+  ctaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
   secondaryCta: {
     backgroundColor: 'rgba(120,120,120,0.4)',
     borderRadius: 10,

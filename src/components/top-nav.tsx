@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +9,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useProfile } from '@/context/profile-context';
+import { useTheme } from '@/hooks/use-theme';
 import { useNotifications } from '@/hooks/use-notifications';
 
 export function TopNav({ overlay = false }: { overlay?: boolean }) {
@@ -15,7 +17,9 @@ export function TopNav({ overlay = false }: { overlay?: boolean }) {
   const { profile } = useProfile();
   const { unreadCount } = useNotifications();
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
   const initial = (profile?.display_name?.[0] ?? user?.email?.[0] ?? 'U').toUpperCase();
+  const iconColor = overlay ? '#fff' : theme.text;
 
   return (
     <ThemedView
@@ -30,12 +34,12 @@ export function TopNav({ overlay = false }: { overlay?: boolean }) {
       <ThemedView style={[styles.actions, overlay && styles.transparentBg]}>
         <Link href="/search" asChild>
           <Pressable style={styles.iconButton} accessibilityLabel="Search">
-            <ThemedText style={[styles.icon, overlay && styles.iconOverlay]}>🔍</ThemedText>
+            <Ionicons name="search-outline" size={20} color={iconColor} />
           </Pressable>
         </Link>
         <Link href="/notifications" asChild>
           <Pressable style={styles.iconButton} accessibilityLabel="Notifications">
-            <ThemedText style={[styles.icon, overlay && styles.iconOverlay]}>🔔</ThemedText>
+            <Ionicons name="notifications-outline" size={20} color={iconColor} />
             {unreadCount > 0 && (
               <ThemedView style={styles.badge}>
                 <ThemedText style={styles.badgeText}>
@@ -69,8 +73,6 @@ const styles = StyleSheet.create({
   transparentBg: { backgroundColor: 'transparent' },
   actions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   iconButton: { padding: 4 },
-  icon: { fontSize: 18 },
-  iconOverlay: { color: '#fff' },
   badge: {
     position: 'absolute',
     top: -2,
