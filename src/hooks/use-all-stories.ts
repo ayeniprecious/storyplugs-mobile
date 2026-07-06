@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { Story, StoryCategory } from "@/lib/database.types";
 import { supabase } from "@/lib/supabase";
@@ -30,36 +30,31 @@ export function useAllStories() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      const { data, error: fetchError } = await supabase
-        .from("stories")
-        .select("*")
-        .eq("status", "published")
-        .order("published_at", { ascending: false });
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    const { data, error: fetchError } = await supabase
+      .from("stories")
+      .select("*")
+      .eq("status", "published")
+      .order("published_at", { ascending: false });
 
-      if (cancelled) return;
-
-      if (fetchError) {
-        setError(fetchError.message);
-        setLoading(false);
-        return;
-      }
-
-      const grouped: Record<string, Story[]> = {};
-      for (const story of (data as Story[]) ?? []) {
-        (grouped[story.category] ??= []).push(story);
-      }
-      setByCategory(grouped);
+    if (fetchError) {
+      setError(fetchError.message);
       setLoading(false);
+      return;
     }
-    load();
-    return () => {
-      cancelled = true;
-    };
+
+    const grouped: Record<string, Story[]> = {};
+    for (const story of (data as Story[]) ?? []) {
+      (grouped[story.category] ??= []).push(story);
+    }
+    setByCategory(grouped);
+    setLoading(false);
   }, []);
 
-  return { byCategory, loading, error };
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  return { byCategory, loading, error, refresh };
 }

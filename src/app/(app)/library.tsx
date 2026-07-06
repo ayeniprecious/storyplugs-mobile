@@ -2,9 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useState } from 'react';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -71,6 +72,20 @@ function LibraryRow({
   );
 }
 
+function LibraryRowSkeleton() {
+  return (
+    <ThemedView type="backgroundElement" style={styles.row}>
+      <ThemedView style={styles.rowPressable}>
+        <Skeleton style={styles.thumb} />
+        <ThemedView style={styles.rowBody}>
+          <Skeleton style={styles.skeletonLineTitle} />
+          <Skeleton style={styles.skeletonLineSubtitle} />
+        </ThemedView>
+      </ThemedView>
+    </ThemedView>
+  );
+}
+
 const COMPLETED_COLLAPSED_LIMIT = 5;
 
 export default function Library() {
@@ -127,7 +142,18 @@ export default function Library() {
           </ThemedText>
 
           {loading ? (
-            <ActivityIndicator style={styles.loader} />
+            <>
+              <ThemedView style={styles.statsRow}>
+                <Skeleton style={styles.statCardSkeleton} />
+                <Skeleton style={styles.statCardSkeleton} />
+                <Skeleton style={styles.statCardSkeleton} />
+              </ThemedView>
+              <Skeleton style={styles.sectionHeadingSkeleton} />
+              <LibraryRowSkeleton />
+              <LibraryRowSkeleton />
+              <Skeleton style={styles.sectionHeadingSkeleton} />
+              <LibraryRowSkeleton />
+            </>
           ) : (
             <>
               <ThemedView style={styles.statsRow}>
@@ -245,7 +271,10 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   scrollContent: { padding: Spacing.four, gap: Spacing.two, paddingBottom: Spacing.six },
   title: { fontSize: 26, lineHeight: 32, marginBottom: Spacing.two },
-  loader: { marginTop: Spacing.five },
+  statCardSkeleton: { flex: 1, height: 66, borderRadius: 12 },
+  sectionHeadingSkeleton: { width: 140, height: 16, borderRadius: 4, marginTop: Spacing.three, marginBottom: Spacing.two },
+  skeletonLineTitle: { width: '70%', height: 14, borderRadius: 4 },
+  skeletonLineSubtitle: { width: '40%', height: 12, borderRadius: 4 },
   sectionHeading: { marginTop: Spacing.three, marginBottom: Spacing.two, opacity: 0.85 },
   collapsibleHeading: {
     flexDirection: 'row',

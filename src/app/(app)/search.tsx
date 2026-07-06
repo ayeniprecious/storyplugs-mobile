@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput } from 'react-native';
+import { FlatList, Pressable, StyleSheet, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Skeleton } from '@/components/skeleton';
 import { StoryCard } from '@/components/story-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -103,7 +104,13 @@ export default function Search() {
         />
 
         {loading ? (
-          <ActivityIndicator style={styles.loader} />
+          <ThemedView style={styles.skeletonGrid}>
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <ThemedView key={i} style={styles.skeletonGridCard}>
+                <Skeleton style={styles.skeletonPoster} />
+              </ThemedView>
+            ))}
+          </ThemedView>
         ) : results.length === 0 ? (
           <>
             {!isSearching && suggestions}
@@ -146,10 +153,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.three,
   },
   hint: { opacity: 0.6 },
-  loader: { marginTop: Spacing.four },
   list: { paddingBottom: Spacing.six },
   row: { gap: Spacing.two },
   gridCard: { flex: 1, marginBottom: Spacing.two },
+  skeletonGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, backgroundColor: 'transparent' },
+  skeletonGridCard: { width: '48%', marginBottom: Spacing.two },
+  skeletonPoster: { width: '100%', aspectRatio: 2 / 3, borderRadius: 8 },
   suggestions: { gap: Spacing.three, marginBottom: Spacing.three },
   suggestionSection: { gap: Spacing.two },
   suggestionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

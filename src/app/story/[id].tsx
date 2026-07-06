@@ -4,7 +4,6 @@ import { Image } from 'expo-image';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
@@ -16,12 +15,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CategoryRow } from '@/components/category-row';
+import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { CATEGORY_LABELS } from '@/hooks/use-all-stories';
 import { useFavorite } from '@/hooks/use-favorite';
+import { useRecordActivity } from '@/hooks/use-record-activity';
 import { useStoryProgress } from '@/hooks/use-story-progress';
 import type { Story } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
@@ -38,6 +39,7 @@ export default function StoryDetail() {
   const { progress, markComplete, markListened, updateProgressPercent } = useStoryProgress(id ?? '');
   const player = useAudioPlayer(story?.audio_url ? { uri: story.audio_url } : null);
   const playerStatus = useAudioPlayerStatus(player);
+  useRecordActivity();
 
   useEffect(() => {
     let cancelled = false;
@@ -115,8 +117,16 @@ export default function StoryDetail() {
   if (loading) {
     return (
       <ThemedView style={styles.container}>
-        <SafeAreaView style={styles.centerFill}>
-          <ActivityIndicator />
+        <SafeAreaView style={styles.safeArea}>
+          <ThemedView style={styles.scrollContent}>
+            <Skeleton style={styles.skeletonBackLink} />
+            <Skeleton style={styles.heroImage} />
+            <Skeleton style={styles.skeletonTag} />
+            <Skeleton style={styles.skeletonTitle} />
+            <Skeleton style={styles.skeletonLine} />
+            <Skeleton style={styles.skeletonLine} />
+            <Skeleton style={styles.skeletonLineShort} />
+          </ThemedView>
         </SafeAreaView>
       </ThemedView>
     );
@@ -226,6 +236,11 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   centerFill: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two },
   scrollContent: { padding: Spacing.four, gap: Spacing.two, paddingBottom: Spacing.six },
+  skeletonBackLink: { width: 60, height: 16, borderRadius: 4, marginBottom: Spacing.two },
+  skeletonTag: { width: 100, height: 12, borderRadius: 4, marginTop: Spacing.two },
+  skeletonTitle: { width: '70%', height: 30, borderRadius: 6 },
+  skeletonLine: { width: '100%', height: 16, borderRadius: 4 },
+  skeletonLineShort: { width: '60%', height: 16, borderRadius: 4 },
   progressTrack: { height: 3, backgroundColor: 'rgba(128,128,128,0.25)' },
   progressFill: { height: 3, backgroundColor: '#e50914' },
   backLinkCombined: {

@@ -1,27 +1,82 @@
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useCallback, useState } from 'react';
+import { Pressable, RefreshControl, ScrollView, StyleSheet } from 'react-native';
 
 import { CategoryRow } from '@/components/category-row';
+import { ContinueReadingRow } from '@/components/continue-reading-row';
 import { HeroBanner } from '@/components/hero-banner';
+import { Skeleton } from '@/components/skeleton';
 import { TopNav } from '@/components/top-nav';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
+import { useProfile } from '@/context/profile-context';
 import { useDailyContent } from '@/hooks/use-daily-content';
 import { CATEGORY_LABELS, CATEGORY_ORDER, useAllStories } from '@/hooks/use-all-stories';
+import { useContinueReading } from '@/hooks/use-continue-reading';
+import { useReadingStreak } from '@/hooks/use-reading-streak';
+
+function getTimeOfDayGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 5) return 'Good night';
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function CategoryRowSkeleton() {
+  return (
+    <ThemedView style={styles.categorySkeletonSection}>
+      <Skeleton style={styles.categorySkeletonHeading} />
+      <ThemedView style={styles.categorySkeletonRow}>
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} style={styles.categorySkeletonCard} />
+        ))}
+      </ThemedView>
+    </ThemedView>
+  );
+}
 
 export default function Home() {
-  const { signOut } = useAuth();
-  const { story, quote, reflection, loading, error, refresh } = useDailyContent();
-  const { byCategory, loading: categoriesLoading } = useAllStories();
+  const { user } = useAuth();
+  const { profile } = useProfile();
+  const { story, quote, reflection, loading, error, refresh: refreshDaily } = useDailyContent();
+  const { byCategory, loading: categoriesLoading, refresh: refreshCategories } = useAllStories();
+  const { items: continueItems, loading: continueLoading, refresh: refreshContinue } =
+    useContinueReading();
+  const { currentStreak, longestStreak, loading: streakLoading, refresh: refreshStreak } =
+    useReadingStreak();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const displayName = profile?.display_name?.trim() || user?.email?.split('@')[0] || '';
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([refreshDaily(), refreshCategories(), refreshContinue(), refreshStreak()]);
+    setRefreshing(false);
+  }, [refreshDaily, refreshCategories, refreshContinue, refreshStreak]);
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#e50914" />
+        }
+      >
         {loading ? (
           <ThemedView style={styles.loadingHero}>
             <TopNav />
-            <ActivityIndicator style={styles.centerBlock} />
+            <ThemedView style={styles.heroSkeletonContent}>
+              <Skeleton style={styles.heroSkeletonTag} />
+              <Skeleton style={styles.heroSkeletonTitle} />
+              <Skeleton style={styles.heroSkeletonExcerpt} />
+              <ThemedView style={styles.heroSkeletonButtonRow}>
+                <Skeleton style={styles.heroSkeletonButton} />
+                <Skeleton style={styles.heroSkeletonButton} />
+              </ThemedView>
+            </ThemedView>
           </ThemedView>
         ) : story ? (
           <HeroBanner story={story} />
@@ -44,10 +99,36 @@ export default function Home() {
               <ThemedText type="small" style={styles.emptyBlurb}>
                 {error}
               </ThemedText>
-              <Pressable style={styles.retryButton} onPress={refresh}>
+              <Pressable style={styles.retryButton} onPress={refreshDaily}>
                 <ThemedText style={styles.retryButtonText}>Try Again</ThemedText>
               </Pressable>
             </ThemedView>
+          )}
+
+          <ThemedView style={styles.greetingRow}>
+            <ThemedText style={styles.greetingTitle}>
+              {getTimeOfDayGreeting()}
+              {displayName ? `, ${displayName}` : ''}
+            </ThemedText>
+            {streakLoading ? (
+              <Skeleton style={styles.streakSkeleton} />
+            ) : (
+              <ThemedView style={styles.streakBadge}>
+                <Ionicons
+                  name={currentStreak > 0 ? 'flame' : 'flame-outline'}
+                  size={15}
+                  color={currentStreak > 0 ? '#e50914' : '#8a8a8e'}
+                />
+                <ThemedText type="small" style={styles.streakText}>
+                  {currentStreak > 0 ? `${currentStreak}-day streak` : 'Start a streak today'}
+                </ThemedText>
+              </ThemedView>
+            )}
+          </ThemedView>
+          {!streakLoading && longestStreak > 0 && (
+            <ThemedText type="small" style={styles.longestStreakText}>
+              Longest streak: {longestStreak} day{longestStreak === 1 ? '' : 's'}
+            </ThemedText>
           )}
 
           {quote && (
@@ -73,12 +154,18 @@ export default function Home() {
             </ThemedView>
           )}
 
+          {continueLoading ? <CategoryRowSkeleton /> : <ContinueReadingRow items={continueItems} />}
+
           <ThemedText type="subtitle" style={styles.browseHeading}>
             Browse by Category
           </ThemedText>
 
           {categoriesLoading ? (
-            <ActivityIndicator style={styles.centerBlock} />
+            <>
+              <CategoryRowSkeleton />
+              <CategoryRowSkeleton />
+              <CategoryRowSkeleton />
+            </>
           ) : (
             CATEGORY_ORDER.map((category) => (
               <CategoryRow
@@ -88,10 +175,6 @@ export default function Home() {
               />
             ))
           )}
-
-          <Pressable style={styles.signOutButton} onPress={signOut}>
-            <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
-          </Pressable>
         </ThemedView>
       </ScrollView>
     </ThemedView>
@@ -103,6 +186,35 @@ const styles = StyleSheet.create({
   scrollContent: { paddingBottom: Spacing.six },
   bodyPadding: { paddingHorizontal: Spacing.four, paddingTop: Spacing.three, gap: Spacing.three },
   loadingHero: { height: 480 },
+  heroSkeletonContent: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingHorizontal: Spacing.three,
+    paddingBottom: Spacing.three,
+    gap: 8,
+    backgroundColor: 'transparent',
+  },
+  heroSkeletonTag: { width: 140, height: 12, borderRadius: 4 },
+  heroSkeletonTitle: { width: '80%', height: 28, borderRadius: 6 },
+  heroSkeletonExcerpt: { width: '95%', height: 16, borderRadius: 4 },
+  heroSkeletonButtonRow: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    marginTop: Spacing.two,
+    backgroundColor: 'transparent',
+  },
+  heroSkeletonButton: { width: 140, height: 40, borderRadius: 10 },
+  greetingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'transparent',
+  },
+  greetingTitle: { fontSize: 21, lineHeight: 27, fontWeight: '700', flexShrink: 1 },
+  streakBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent' },
+  streakText: { opacity: 0.85 },
+  streakSkeleton: { width: 110, height: 18, borderRadius: 6 },
+  longestStreakText: { opacity: 0.5, marginTop: -Spacing.two },
   centerBlock: { marginTop: Spacing.five },
   quoteCard: { borderRadius: 16, padding: Spacing.three, gap: Spacing.two },
   sectionLabel: { opacity: 0.6, textTransform: 'uppercase' },
@@ -119,13 +231,8 @@ const styles = StyleSheet.create({
   },
   retryButtonText: { color: '#fff', fontWeight: '700' },
   browseHeading: { fontSize: 20, lineHeight: 26 },
-  signOutButton: {
-    marginTop: Spacing.three,
-    borderWidth: 1,
-    borderColor: '#e50914',
-    borderRadius: 10,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
-  },
-  signOutText: { color: '#e50914', fontWeight: '700' },
+  categorySkeletonSection: { gap: Spacing.two, marginBottom: Spacing.two },
+  categorySkeletonHeading: { width: 120, height: 16, borderRadius: 4 },
+  categorySkeletonRow: { flexDirection: 'row', gap: Spacing.two, backgroundColor: 'transparent' },
+  categorySkeletonCard: { width: 112, aspectRatio: 2 / 3, borderRadius: 8 },
 });

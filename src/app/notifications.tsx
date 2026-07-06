@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet } from 'react-native';
+import { FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -58,7 +59,17 @@ export default function Notifications() {
         </ThemedView>
 
         {loading ? (
-          <ActivityIndicator style={styles.loader} />
+          <ThemedView style={styles.list}>
+            {[0, 1, 2, 3].map((i) => (
+              <ThemedView key={i} type="backgroundElement" style={styles.row}>
+                <ThemedView style={styles.rowBody}>
+                  <Skeleton style={styles.skeletonLineTitle} />
+                  <Skeleton style={styles.skeletonLineBody} />
+                  <Skeleton style={styles.skeletonLineTime} />
+                </ThemedView>
+              </ThemedView>
+            ))}
+          </ThemedView>
         ) : items.length === 0 ? (
           <ThemedText type="small" style={styles.emptyHint}>
             No notifications yet.
@@ -114,8 +125,10 @@ const styles = StyleSheet.create({
   actionsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: Spacing.three },
   action: { color: '#e50914' },
   actionDisabled: { opacity: 0.3 },
-  loader: { marginTop: Spacing.five },
   emptyHint: { opacity: 0.6, marginTop: Spacing.four },
+  skeletonLineTitle: { width: '50%', height: 14, borderRadius: 4 },
+  skeletonLineBody: { width: '90%', height: 12, borderRadius: 4 },
+  skeletonLineTime: { width: '25%', height: 10, borderRadius: 4 },
   list: { paddingBottom: Spacing.six, gap: Spacing.two },
   row: {
     flexDirection: 'row',

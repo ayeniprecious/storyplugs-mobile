@@ -10,7 +10,7 @@ interface DailyContentState {
   reflection: Reflection | null;
   loading: boolean;
   error: string | null;
-  refresh: () => void;
+  refresh: () => Promise<void>;
 }
 
 export function useDailyContent(): DailyContentState {
@@ -19,44 +19,34 @@ export function useDailyContent(): DailyContentState {
   const [reflection, setReflection] = useState<Reflection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
 
-  const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-  useEffect(() => {
-    let cancelled = false;
+    const [storiesRes, quotesRes, reflectionsRes] = await Promise.all([
+      supabase.from("stories").select("*").eq("status", "published").order("id"),
+      supabase.from("quotes").select("*").eq("status", "published").order("id"),
+      supabase.from("reflections").select("*").eq("status", "published").order("id"),
+    ]);
 
-    async function load() {
-      setLoading(true);
-      setError(null);
-
-      const [storiesRes, quotesRes, reflectionsRes] = await Promise.all([
-        supabase.from("stories").select("*").eq("status", "published").order("id"),
-        supabase.from("quotes").select("*").eq("status", "published").order("id"),
-        supabase.from("reflections").select("*").eq("status", "published").order("id"),
-      ]);
-
-      if (cancelled) return;
-
-      const firstError = storiesRes.error || quotesRes.error || reflectionsRes.error;
-      if (firstError) {
-        setError(firstError.message);
-        setLoading(false);
-        return;
-      }
-
-      const today = new Date();
-      setStory(pickOfTheDay((storiesRes.data as Story[]) ?? [], today));
-      setQuote(pickOfTheDay((quotesRes.data as Quote[]) ?? [], today));
-      setReflection(pickOfTheDay((reflectionsRes.data as Reflection[]) ?? [], today));
+    const firstError = storiesRes.error || quotesRes.error || reflectionsRes.error;
+    if (firstError) {
+      setError(firstError.message);
       setLoading(false);
+      return;
     }
 
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [refreshKey]);
+    const today = new Date();
+    setStory(pickOfTheDay((storiesRes.data as Story[]) ?? [], today));
+    setQuote(pickOfTheDay((quotesRes.data as Quote[]) ?? [], today));
+    setReflection(pickOfTheDay((reflectionsRes.data as Reflection[]) ?? [], today));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   return { story, quote, reflection, loading, error, refresh };
 }

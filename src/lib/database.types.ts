@@ -81,3 +81,10 @@ export interface NotificationRecipient {
   read_at: string | null;
   created_at: string;
 }
+
+export interface ReadingActivity {
+  id: string;
+  user_id: string;
+  activity_date: string;
+  created_at: string;
+}
