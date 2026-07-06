@@ -49,7 +49,7 @@ export default function Home() {
     useReadingStreak();
   const [refreshing, setRefreshing] = useState(false);
 
-  const displayName = profile?.display_name?.trim() || user?.email?.split('@')[0] || '';
+  const displayName = (profile?.display_name?.trim() || user?.email?.split('@')[0] || '').split(' ')[0];
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
