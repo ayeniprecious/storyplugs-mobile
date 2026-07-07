@@ -47,7 +47,7 @@ export default function NotificationPreferences() {
             </Pressable>
           </View>
         )}
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
           <Text style={styles.title}>Your daily vitamin</Text>
           <Text style={styles.subtitle}>
             We&apos;ll send you a gentle nudge once a day — pick what you want to hear about and when.
@@ -91,13 +91,14 @@ export default function NotificationPreferences() {
               );
             })}
           </View>
+        </ScrollView>
 
+        <View style={styles.footer}>
           {error && <Text style={styles.error}>{error}</Text>}
-
           <Pressable style={styles.primaryButton} onPress={handleContinue} disabled={submitting}>
             {submitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>Continue</Text>}
           </Pressable>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -114,7 +115,9 @@ const styles = StyleSheet.create({
   },
   backButton: { flexDirection: 'row', alignItems: 'center' },
   backLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 14 },
+  scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: Spacing.two + 4, paddingVertical: Spacing.three, gap: Spacing.two },
+  footer: { paddingHorizontal: Spacing.two + 4, paddingBottom: Spacing.three, gap: Spacing.two },
   title: { color: '#fff', fontSize: 24, lineHeight: 30, marginBottom: Spacing.two, fontWeight: '600' },
   subtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 15, marginBottom: Spacing.three },
   sectionLabel: {

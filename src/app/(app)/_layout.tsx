@@ -1,10 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
 
-import { Colors } from '@/constants/theme';
-import { useThemePrefs } from '@/context/theme-prefs-context';
-import { useNotificationResponseHandler } from '@/hooks/use-notification-response';
-import { usePushRegistration } from '@/hooks/use-push-registration';
+import { Colors } from "@/constants/theme";
+import { useThemePrefs } from "@/context/theme-prefs-context";
+import { useNotificationResponseHandler } from "@/hooks/use-notification-response";
+import { usePushRegistration } from "@/hooks/use-push-registration";
 
 export default function AppTabsLayout() {
   const { resolvedScheme } = useThemePrefs();
@@ -16,44 +16,61 @@ export default function AppTabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#C01918',
-        tabBarInactiveTintColor: resolvedScheme === 'light' ? '#000000' : colors.textSecondary,
+        tabBarActiveTintColor: "#C01918",
+        tabBarInactiveTintColor:
+          resolvedScheme === "light" ? "#000000" : colors.textSecondary,
         tabBarStyle: { backgroundColor: colors.background },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: "Home",
           tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} color={color} size={size} />
+            <Ionicons
+              name={focused ? "home" : "home-outline"}
+              color={color}
+              size={size}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
-          title: 'Search',
+          title: "Search",
           tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons name={focused ? 'search' : 'search-outline'} color={color} size={size} />
+            <Ionicons
+              name={focused ? "search" : "search-outline"}
+              color={color}
+              size={size}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="library"
         options={{
-          title: 'My Library',
+          title: "My Library",
           tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons name={focused ? 'library' : 'library-outline'} color={color} size={size} />
+            <Ionicons
+              name={focused ? "library" : "library-outline"}
+              color={color}
+              size={size}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: "Settings",
           tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons name={focused ? 'settings' : 'settings-outline'} color={color} size={size} />
+            <Ionicons
+              name={focused ? "settings" : "settings-outline"}
+              color={color}
+              size={size}
+            />
           ),
         }}
       />

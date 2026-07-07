@@ -1,4 +1,9 @@
 import type { Session } from "@supabase/supabase-js";
+import {
+  Montserrat_600SemiBold,
+  Montserrat_700Bold,
+  useFonts,
+} from "@expo-google-fonts/montserrat";
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
@@ -108,6 +113,11 @@ function ThemedRoot() {
 }
 
 export default function RootLayout() {
+  // Keep the native splash up until the brand font is ready — the Montserrat
+  // wordmark on sign-in would otherwise flash in with the system font first.
+  const [fontsLoaded] = useFonts({ Montserrat_600SemiBold, Montserrat_700Bold });
+  if (!fontsLoaded) return null;
+
   return (
     <CategoriesProvider>
       <ThemePrefsProvider>

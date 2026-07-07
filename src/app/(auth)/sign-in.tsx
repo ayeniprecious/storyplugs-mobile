@@ -95,7 +95,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 14 },
-  title: { color: '#fff', textAlign: 'center', fontSize: 28, lineHeight: 34, fontWeight: '600' },
+  title: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 28,
+    lineHeight: 34,
+    fontFamily: 'Montserrat_700Bold',
+  },
   subtitle: {
     color: 'rgba(255,255,255,0.65)',
     textAlign: 'center',
