@@ -7,6 +7,8 @@ export type NotificationContentType =
   | "daily_reflection"
   | "faith_encouragement";
 
+export type StoryLengthPref = "short" | "medium" | "long" | "any";
+
 export interface Profile {
   id: string;
   display_name: string | null;
@@ -14,21 +16,24 @@ export interface Profile {
   notification_time: string;
   notification_types: NotificationContentType[];
   push_token: string | null;
+  gender: string | null;
+  // Personalization (20260715000000_personalization.sql) — category slugs, goal ids, length pref.
+  interests: string[];
+  personal_goals: string[];
+  story_length_pref: StoryLengthPref | null;
   created_at: string;
   updated_at: string;
 }
 
-export type StoryCategory =
-  | "kindness"
-  | "family"
-  | "faith"
-  | "forgiveness"
-  | "hope"
-  | "community"
-  | "children"
-  | "everyday_heroes";
-
 export type ContentStatus = "draft" | "pending_review" | "approved" | "published" | "archived";
+
+export interface Category {
+  slug: string;
+  name: string;
+  icon: string | null;
+  sort_order: number;
+  created_at: string;
+}
 
 export interface Story {
   id: string;
@@ -36,11 +41,13 @@ export interface Story {
   body: string;
   image_url: string | null;
   audio_url: string | null;
-  category: StoryCategory;
+  category: string;
   reflection_question: string | null;
   daily_lesson: string | null;
   source: "manual" | "ai_generated";
   status: ContentStatus;
+  is_featured: boolean;
+  is_pinned: boolean;
   published_at: string | null;
   created_at: string;
   updated_at: string;

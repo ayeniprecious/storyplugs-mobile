@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet } from 'react-native';
 
 import { CategoryRow } from '@/components/category-row';
@@ -11,9 +11,10 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
+import { useCategories } from '@/context/categories-context';
 import { useProfile } from '@/context/profile-context';
 import { useDailyContent } from '@/hooks/use-daily-content';
-import { CATEGORY_LABELS, CATEGORY_ORDER, useAllStories } from '@/hooks/use-all-stories';
+import { useAllStories } from '@/hooks/use-all-stories';
 import { useContinueReading } from '@/hooks/use-continue-reading';
 import { useReadingStreak } from '@/hooks/use-reading-streak';
 
@@ -43,6 +44,7 @@ export default function Home() {
   const { profile } = useProfile();
   const { story, quote, reflection, loading, error, refresh: refreshDaily } = useDailyContent();
   const { byCategory, loading: categoriesLoading, refresh: refreshCategories } = useAllStories();
+  const { order: categoryOrder, labels: categoryLabels } = useCategories();
   const { items: continueItems, loading: continueLoading, refresh: refreshContinue } =
     useContinueReading();
   const { currentStreak, longestStreak, loading: streakLoading, refresh: refreshStreak } =
@@ -50,6 +52,16 @@ export default function Home() {
   const [refreshing, setRefreshing] = useState(false);
 
   const displayName = (profile?.display_name?.trim() || user?.email?.split('@')[0] || '').split(' ')[0];
+
+  // Surface the categories the user picked during onboarding first (stable sort,
+  // so admin-defined order is kept within each group).
+  const interests = profile?.interests;
+  const orderedCategories = useMemo(() => {
+    if (!interests || interests.length === 0) return categoryOrder;
+    return [...categoryOrder].sort(
+      (a, b) => Number(interests.includes(b)) - Number(interests.includes(a))
+    );
+  }, [categoryOrder, interests]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -167,10 +179,10 @@ export default function Home() {
               <CategoryRowSkeleton />
             </>
           ) : (
-            CATEGORY_ORDER.map((category) => (
+            orderedCategories.map((category) => (
               <CategoryRow
                 key={category}
-                label={CATEGORY_LABELS[category]}
+                label={categoryLabels[category] ?? category}
                 stories={byCategory[category] ?? []}
               />
             ))

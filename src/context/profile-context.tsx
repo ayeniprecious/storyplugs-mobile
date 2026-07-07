@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/context/auth-context";
-import type { NotificationContentType, Profile } from "@/lib/database.types";
+import type { NotificationContentType, Profile, StoryLengthPref } from "@/lib/database.types";
 import { supabase } from "@/lib/supabase";
 
 interface ProfileContextValue {
@@ -11,6 +11,11 @@ interface ProfileContextValue {
   saveNotificationPreferences: (
     types: NotificationContentType[],
     time: string
+  ) => Promise<{ error: string | null }>;
+  savePersonalization: (
+    interests: string[],
+    goals: string[],
+    storyLength: StoryLengthPref
   ) => Promise<{ error: string | null }>;
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
 }
@@ -59,6 +64,19 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     [user?.id, fetchProfile]
   );
 
+  const savePersonalization = useCallback(
+    async (interests: string[], goals: string[], storyLength: StoryLengthPref) => {
+      if (!user?.id) return { error: "Not signed in." };
+      const { error } = await supabase
+        .from("profiles")
+        .update({ interests, personal_goals: goals, story_length_pref: storyLength })
+        .eq("id", user.id);
+      if (!error) await fetchProfile(user.id);
+      return { error: error?.message ?? null };
+    },
+    [user?.id, fetchProfile]
+  );
+
   const updateDisplayName = useCallback(
     async (name: string) => {
       if (!user?.id) return { error: "Not signed in." };
@@ -75,8 +93,15 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ profile, loading, refreshProfile, saveNotificationPreferences, updateDisplayName }),
-    [profile, loading, refreshProfile, saveNotificationPreferences, updateDisplayName]
+    () => ({
+      profile,
+      loading,
+      refreshProfile,
+      saveNotificationPreferences,
+      savePersonalization,
+      updateDisplayName,
+    }),
+    [profile, loading, refreshProfile, saveNotificationPreferences, savePersonalization, updateDisplayName]
   );
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
