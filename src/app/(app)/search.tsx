@@ -142,8 +142,8 @@ export default function Search() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  safeArea: { flex: 1, paddingHorizontal: Spacing.four, paddingTop: Spacing.three },
-  title: { fontSize: 26, lineHeight: 32, marginBottom: Spacing.three },
+  safeArea: { flex: 1, paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
+  title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.three },
   input: {
     borderWidth: 1,
     borderColor: '#3a3a3c',

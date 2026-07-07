@@ -270,8 +270,8 @@ export default function Library() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
-  scrollContent: { padding: Spacing.four, gap: Spacing.two, paddingBottom: Spacing.six },
-  title: { fontSize: 26, lineHeight: 32, marginBottom: Spacing.two },
+  scrollContent: { padding: Spacing.three, gap: Spacing.two, paddingBottom: Spacing.six },
+  title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.two },
   statCardSkeleton: { flex: 1, height: 66, borderRadius: 12 },
   sectionHeadingSkeleton: { width: 140, height: 16, borderRadius: 4, marginTop: Spacing.three, marginBottom: Spacing.two },
   skeletonLineTitle: { width: '70%', height: 14, borderRadius: 4 },

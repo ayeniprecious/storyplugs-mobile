@@ -120,8 +120,8 @@ export default function NotificationPreferences() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
-  scrollContent: { padding: Spacing.four, gap: Spacing.two },
-  title: { fontSize: 28, lineHeight: 34, marginBottom: Spacing.two },
+  scrollContent: { padding: Spacing.three, gap: Spacing.two },
+  title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.two },
   subtitle: { opacity: 0.75, marginBottom: Spacing.three },
   sectionLabel: { marginTop: Spacing.three, marginBottom: Spacing.two },
   optionCard: {
@@ -154,14 +154,14 @@ const styles = StyleSheet.create({
     borderColor: '#3a3a3c',
   },
   timeChipSelected: { backgroundColor: '#e50914', borderColor: '#e50914' },
-  timeChipTextSelected: { color: '#fff', fontWeight: '700' },
+  timeChipTextSelected: { color: '#fff', fontWeight: '600' },
   error: { color: '#ff453a', marginTop: Spacing.two },
   primaryButton: {
     backgroundColor: '#e50914',
     borderRadius: 10,
-    paddingVertical: Spacing.three,
+    paddingVertical: Spacing.two + 4,
     alignItems: 'center',
     marginTop: Spacing.four,
   },
-  primaryButtonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  primaryButtonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
 });

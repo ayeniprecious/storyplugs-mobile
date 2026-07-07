@@ -72,8 +72,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     gap: 4,
   },
-  tag: { color: '#ff5a5f', fontWeight: '700', textTransform: 'uppercase' },
-  title: { color: '#fff', fontSize: 30, lineHeight: 36 },
+  tag: { color: '#ff5a5f', fontWeight: '600', textTransform: 'uppercase' },
+  title: { color: '#fff', fontSize: 26, lineHeight: 32 },
   excerpt: { color: '#e5e5e5', lineHeight: 20 },
   buttonRow: {
     flexDirection: 'row',
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
   },
-  ctaText: { color: '#000', fontWeight: '700' },
+  ctaText: { color: '#000', fontWeight: '600', fontSize: 14 },
   ctaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
   secondaryCta: {
     backgroundColor: 'rgba(120,120,120,0.4)',
@@ -99,5 +99,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
   },
-  secondaryCtaText: { color: '#fff', fontWeight: '700' },
+  secondaryCtaText: { color: '#fff', fontWeight: '600', fontSize: 14 },
 });

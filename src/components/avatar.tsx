@@ -32,5 +32,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fallbackText: { color: '#fff', fontWeight: '700' },
+  fallbackText: { color: '#fff', fontWeight: '600' },
 });

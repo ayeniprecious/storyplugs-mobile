@@ -17,6 +17,7 @@ import { useDailyContent } from '@/hooks/use-daily-content';
 import { useAllStories } from '@/hooks/use-all-stories';
 import { useContinueReading } from '@/hooks/use-continue-reading';
 import { useReadingStreak } from '@/hooks/use-reading-streak';
+import { buildRecommendations } from '@/lib/recommendations';
 
 function getTimeOfDayGreeting() {
   const hour = new Date().getHours();
@@ -62,6 +63,12 @@ export default function Home() {
       (a, b) => Number(interests.includes(b)) - Number(interests.includes(a))
     );
   }, [categoryOrder, interests]);
+
+  const lengthPref = profile?.story_length_pref;
+  const recommended = useMemo(
+    () => buildRecommendations(byCategory, interests, lengthPref, story?.id),
+    [byCategory, interests, lengthPref, story?.id]
+  );
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -168,6 +175,10 @@ export default function Home() {
 
           {continueLoading ? <CategoryRowSkeleton /> : <ContinueReadingRow items={continueItems} />}
 
+          {recommended.length > 0 && (
+            <CategoryRow label="Recommended for You" stories={recommended} />
+          )}
+
           <ThemedText type="subtitle" style={styles.browseHeading}>
             Browse by Category
           </ThemedText>
@@ -196,7 +207,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { paddingBottom: Spacing.six },
-  bodyPadding: { paddingHorizontal: Spacing.four, paddingTop: Spacing.three, gap: Spacing.three },
+  bodyPadding: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, gap: Spacing.three },
   loadingHero: { height: 480 },
   heroSkeletonContent: {
     flex: 1,
@@ -222,7 +233,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: 'transparent',
   },
-  greetingTitle: { fontSize: 21, lineHeight: 27, fontWeight: '700', flexShrink: 1 },
+  greetingTitle: { fontSize: 19, lineHeight: 25, fontWeight: '600', flexShrink: 1 },
   streakBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent' },
   streakText: { opacity: 0.85 },
   streakSkeleton: { width: 110, height: 18, borderRadius: 6 },
@@ -232,16 +243,16 @@ const styles = StyleSheet.create({
   sectionLabel: { opacity: 0.6, textTransform: 'uppercase' },
   quoteText: { fontSize: 18, lineHeight: 26, fontStyle: 'italic' },
   quoteAuthor: { opacity: 0.6, textAlign: 'right' },
-  emptyCard: { borderRadius: 16, padding: Spacing.four, gap: Spacing.two, alignItems: 'center' },
+  emptyCard: { borderRadius: 16, padding: Spacing.three, gap: Spacing.two, alignItems: 'center' },
   emptyBlurb: { opacity: 0.6, textAlign: 'center' },
   retryButton: {
     marginTop: Spacing.two,
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: 10,
     backgroundColor: '#e50914',
   },
-  retryButtonText: { color: '#fff', fontWeight: '700' },
+  retryButtonText: { color: '#fff', fontWeight: '600', fontSize: 14 },
   browseHeading: { fontSize: 20, lineHeight: 26 },
   categorySkeletonSection: { gap: Spacing.two, marginBottom: Spacing.two },
   categorySkeletonHeading: { width: 120, height: 16, borderRadius: 4 },

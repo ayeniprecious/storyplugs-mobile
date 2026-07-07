@@ -30,7 +30,7 @@ export default function Welcome() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.brandBlock}>
           <View style={styles.logoMark}>
-            <Ionicons name="book" size={34} color="#fff" />
+            <Ionicons name="book" size={30} color="#fff" />
           </View>
           <Text style={styles.brandName}>StoryPlugs</Text>
           <Text style={styles.tagline}>Your daily emotional vitamin</Text>
@@ -71,49 +71,49 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.four,
     justifyContent: 'space-between',
   },
   brandBlock: { alignItems: 'center', marginTop: Spacing.six },
   logoMark: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
+    width: 64,
+    height: 64,
+    borderRadius: 18,
     backgroundColor: '#e50914',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Spacing.three,
   },
-  brandName: { color: '#fff', fontSize: 34, fontWeight: '800', letterSpacing: 0.5 },
-  tagline: { color: 'rgba(255,255,255,0.65)', fontSize: 16, marginTop: Spacing.two },
+  brandName: { color: '#fff', fontSize: 30, fontWeight: '700', letterSpacing: 0.5 },
+  tagline: { color: 'rgba(255,255,255,0.65)', fontSize: 15, marginTop: Spacing.two },
   featureList: { gap: Spacing.three },
   featureRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   featureIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     backgroundColor: 'rgba(229,9,20,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   featureText: { flex: 1, gap: 2 },
-  featureTitle: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  featureBlurb: { color: 'rgba(255,255,255,0.55)', fontSize: 14, lineHeight: 19 },
+  featureTitle: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  featureBlurb: { color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 18 },
   buttonBlock: { gap: Spacing.two },
   primaryButton: {
     backgroundColor: '#e50914',
-    borderRadius: 12,
-    paddingVertical: Spacing.three,
+    borderRadius: 10,
+    paddingVertical: Spacing.two + 4,
     alignItems: 'center',
   },
-  primaryButtonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  primaryButtonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
   secondaryButton: {
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.25)',
-    borderRadius: 12,
-    paddingVertical: Spacing.three,
+    borderRadius: 10,
+    paddingVertical: Spacing.two + 4,
     alignItems: 'center',
   },
-  secondaryButtonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  secondaryButtonText: { color: '#fff', fontWeight: '500', fontSize: 14 },
 });

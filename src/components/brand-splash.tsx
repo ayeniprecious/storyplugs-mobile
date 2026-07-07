@@ -93,6 +93,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     elevation: 12,
   },
-  brandName: { color: '#fff', fontSize: 38, fontWeight: '800', letterSpacing: 0.5 },
-  tagline: { color: 'rgba(255,255,255,0.65)', fontSize: 16, marginTop: 8 },
+  brandName: { color: '#fff', fontSize: 32, fontWeight: '700', letterSpacing: 0.5 },
+  tagline: { color: 'rgba(255,255,255,0.65)', fontSize: 15, marginTop: 8 },
 });

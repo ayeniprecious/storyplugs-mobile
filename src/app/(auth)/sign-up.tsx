@@ -120,10 +120,10 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: Spacing.three,
     gap: Spacing.two,
   },
-  title: { textAlign: 'center', fontSize: 30, lineHeight: 36, marginBottom: Spacing.three },
+  title: { textAlign: 'center', fontSize: 26, lineHeight: 32, marginBottom: Spacing.three },
   subtitle: { textAlign: 'center', marginBottom: Spacing.four },
   input: {
     borderWidth: 1,
@@ -139,10 +139,10 @@ const styles = StyleSheet.create({
   primaryButton: {
     backgroundColor: '#e50914',
     borderRadius: 10,
-    paddingVertical: Spacing.three,
+    paddingVertical: Spacing.two + 4,
     alignItems: 'center',
     marginTop: Spacing.two,
   },
-  primaryButtonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  primaryButtonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
   link: { textAlign: 'center', marginTop: Spacing.four },
 });

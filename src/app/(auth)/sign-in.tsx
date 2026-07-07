@@ -94,11 +94,11 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: Spacing.three,
     gap: Spacing.two,
   },
-  title: { textAlign: 'center', fontSize: 34, lineHeight: 40 },
-  subtitle: { textAlign: 'center', fontSize: 16, lineHeight: 22, marginBottom: Spacing.four },
+  title: { textAlign: 'center', fontSize: 28, lineHeight: 34 },
+  subtitle: { textAlign: 'center', fontSize: 15, lineHeight: 21, marginBottom: Spacing.four },
   input: {
     borderWidth: 1,
     borderColor: '#3a3a3c',
@@ -113,11 +113,11 @@ const styles = StyleSheet.create({
   primaryButton: {
     backgroundColor: '#e50914',
     borderRadius: 10,
-    paddingVertical: Spacing.three,
+    paddingVertical: Spacing.two + 4,
     alignItems: 'center',
     marginTop: Spacing.two,
   },
-  primaryButtonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  primaryButtonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
   oauthGroup: {
     marginTop: Spacing.four,
     padding: Spacing.three,

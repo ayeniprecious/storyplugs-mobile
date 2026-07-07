@@ -118,10 +118,10 @@ export default function Notifications() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  safeArea: { flex: 1, paddingHorizontal: Spacing.four, paddingTop: Spacing.three },
+  safeArea: { flex: 1, paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
   header: { gap: Spacing.two, marginBottom: Spacing.two },
   backLinkCombined: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  title: { fontSize: 26, lineHeight: 32 },
+  title: { fontSize: 24, lineHeight: 30 },
   actionsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: Spacing.three },
   action: { color: '#e50914' },
   actionDisabled: { opacity: 0.3 },

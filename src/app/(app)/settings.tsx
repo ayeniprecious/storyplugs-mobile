@@ -286,11 +286,11 @@ export default function Settings() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
-  scrollContent: { padding: Spacing.four, gap: Spacing.two, paddingBottom: Spacing.six },
-  title: { fontSize: 26, lineHeight: 32, marginBottom: Spacing.two },
+  scrollContent: { padding: Spacing.three, gap: Spacing.two, paddingBottom: Spacing.six },
+  title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.two },
   profileCard: {
     borderRadius: 12,
-    padding: Spacing.four,
+    padding: Spacing.three,
     gap: Spacing.two,
     marginBottom: Spacing.two,
     alignItems: 'center',
@@ -318,8 +318,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   nameInput: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 17,
+    fontWeight: '600',
     color: '#fff',
     textAlign: 'center',
     minWidth: 120,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.two + 4,
     paddingVertical: 6,
   },
-  nameSaveButtonText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  nameSaveButtonText: { color: '#fff', fontWeight: '600', fontSize: 13 },
   errorText: { color: '#ff453a', textAlign: 'center' },
   profileEmail: { opacity: 0.6 },
   memberSince: { opacity: 0.45 },
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
   },
   timeChipSelected: { backgroundColor: 'rgba(229,9,20,0.14)', borderColor: '#e50914' },
   timeChipText: { opacity: 0.85 },
-  timeChipTextSelected: { color: '#e50914', fontWeight: '700', opacity: 1 },
+  timeChipTextSelected: { color: '#e50914', fontWeight: '600', opacity: 1 },
   saveButton: {
     backgroundColor: '#e50914',
     borderRadius: 10,
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     borderColor: '#2c2c2e',
   },
   segmentSelected: { backgroundColor: 'rgba(229,9,20,0.14)', borderColor: '#e50914' },
-  segmentTextSelected: { color: '#e50914', fontWeight: '700' },
+  segmentTextSelected: { color: '#e50914', fontWeight: '600' },
   signOutButton: {
     marginTop: Spacing.three,
     borderWidth: 1,
