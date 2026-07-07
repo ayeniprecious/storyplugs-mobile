@@ -12,7 +12,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
-import { CATEGORY_LABELS } from '@/hooks/use-all-stories';
+import { useCategories } from '@/context/categories-context';
 import { useFavorite } from '@/hooks/use-favorite';
 import { useStoryChapters } from '@/hooks/use-story-chapters';
 import type { Story } from '@/lib/database.types';
@@ -34,6 +34,7 @@ export default function StoryPreview() {
   const [progressLoading, setProgressLoading] = useState(true);
 
   const { isFavorited, toggle: toggleFavorite } = useFavorite(id ?? '');
+  const { labels: categoryLabels } = useCategories();
   const { chapters, loading: chaptersLoading } = useStoryChapters(id ?? '');
   const player = useAudioPlayer(story?.audio_url ? { uri: story.audio_url } : null);
   const playerStatus = useAudioPlayerStatus(player);
@@ -195,7 +196,7 @@ export default function StoryPreview() {
           )}
 
           <ThemedText type="small" style={styles.categoryTag}>
-            {CATEGORY_LABELS[story.category] ?? story.category}
+            {categoryLabels[story.category] ?? story.category}
           </ThemedText>
           <ThemedText type="title" style={styles.title}>
             {story.title}
@@ -271,7 +272,7 @@ export default function StoryPreview() {
           )}
 
           <CategoryRow
-            label={`More ${CATEGORY_LABELS[story.category] ?? story.category} stories`}
+            label={`More ${categoryLabels[story.category] ?? story.category} stories`}
             stories={similar}
           />
         </ScrollView>

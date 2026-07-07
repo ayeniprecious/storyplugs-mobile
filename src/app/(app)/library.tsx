@@ -10,7 +10,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
-import { CATEGORY_LABELS } from '@/hooks/use-all-stories';
+import { useCategories } from '@/context/categories-context';
 import { useCompletedStories } from '@/hooks/use-completed-stories';
 import { useContinueReading } from '@/hooks/use-continue-reading';
 import { useFavoritesList } from '@/hooks/use-favorites-list';
@@ -34,6 +34,7 @@ function LibraryRow({
   onRemove: () => void;
   removeLabel: string;
 }) {
+  const { labels: categoryLabels } = useCategories();
   return (
     <ThemedView type="backgroundElement" style={styles.row}>
       <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
@@ -46,7 +47,7 @@ function LibraryRow({
               {story.title}
             </ThemedText>
             <ThemedText type="small" style={styles.categoryLabel}>
-              {CATEGORY_LABELS[story.category]}
+              {categoryLabels[story.category] ?? story.category}
             </ThemedText>
             {progressPercent !== undefined ? (
               <>

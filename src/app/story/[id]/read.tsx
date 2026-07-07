@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { CATEGORY_LABELS } from '@/hooks/use-all-stories';
+import { useCategories } from '@/context/categories-context';
 import { useRecordActivity } from '@/hooks/use-record-activity';
 import { useStoryChapters } from '@/hooks/use-story-chapters';
 import { useStoryProgress } from '@/hooks/use-story-progress';
@@ -23,6 +23,7 @@ export default function StoryRead() {
 
   const { chapters, loading: chaptersLoading } = useStoryChapters(id ?? '');
   const { progress, markComplete, updateProgressPercent } = useStoryProgress(id ?? '');
+  const { labels: categoryLabels } = useCategories();
   useRecordActivity();
 
   useEffect(() => {
@@ -131,7 +132,7 @@ export default function StoryRead() {
             </ThemedText>
           ) : (
             <ThemedText type="small" style={styles.categoryTag}>
-              {CATEGORY_LABELS[story.category] ?? story.category}
+              {categoryLabels[story.category] ?? story.category}
             </ThemedText>
           )}
           <ThemedText type="title" style={styles.title}>

@@ -1,29 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
-import type { Story, StoryCategory } from "@/lib/database.types";
+import type { Story } from "@/lib/database.types";
 import { supabase } from "@/lib/supabase";
-
-export const CATEGORY_ORDER: StoryCategory[] = [
-  "kindness",
-  "family",
-  "faith",
-  "forgiveness",
-  "hope",
-  "community",
-  "children",
-  "everyday_heroes",
-];
-
-export const CATEGORY_LABELS: Record<StoryCategory, string> = {
-  kindness: "Kindness",
-  family: "Family",
-  faith: "Faith",
-  forgiveness: "Forgiveness",
-  hope: "Hope",
-  community: "Community",
-  children: "Children",
-  everyday_heroes: "Everyday Heroes",
-};
 
 export function useAllStories() {
   const [byCategory, setByCategory] = useState<Record<string, Story[]>>({});

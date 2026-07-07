@@ -8,22 +8,13 @@ import { TopNav } from '@/components/top-nav';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useCategories } from '@/context/categories-context';
 import { useFavorite } from '@/hooks/use-favorite';
 import type { Story } from '@/lib/database.types';
 
-const CATEGORY_LABELS: Record<string, string> = {
-  kindness: 'Kindness',
-  family: 'Family',
-  faith: 'Faith',
-  forgiveness: 'Forgiveness',
-  hope: 'Hope',
-  community: 'Community',
-  children: 'Children',
-  everyday_heroes: 'Everyday Heroes',
-};
-
 export function HeroBanner({ story }: { story: Story }) {
   const { isFavorited, toggle: toggleFavorite } = useFavorite(story.id);
+  const { labels: categoryLabels } = useCategories();
 
   return (
     <ThemedView style={styles.hero}>
@@ -40,7 +31,7 @@ export function HeroBanner({ story }: { story: Story }) {
 
       <ThemedView style={styles.content}>
         <ThemedText type="small" style={styles.tag}>
-          {CATEGORY_LABELS[story.category] ?? story.category} · Story of the Day
+          {categoryLabels[story.category] ?? story.category} · Story of the Day
         </ThemedText>
         <ThemedText type="title" style={styles.title} numberOfLines={2}>
           {story.title}

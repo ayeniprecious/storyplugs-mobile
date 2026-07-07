@@ -8,11 +8,13 @@ import { StoryCard } from '@/components/story-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { CATEGORY_LABELS, CATEGORY_ORDER, useAllStories } from '@/hooks/use-all-stories';
+import { useCategories } from '@/context/categories-context';
+import { useAllStories } from '@/hooks/use-all-stories';
 import { useRecentSearches } from '@/hooks/use-recent-searches';
 
 export default function Search() {
   const { byCategory, loading } = useAllStories();
+  const { order: categoryOrder, labels: categoryLabels } = useCategories();
   const { recent, addSearch, removeSearch, clearAll } = useRecentSearches();
   const [query, setQuery] = useState('');
 
@@ -25,7 +27,7 @@ export default function Search() {
     return allStories.filter(
       (story) =>
         story.title.toLowerCase().includes(q) ||
-        (CATEGORY_LABELS[story.category] ?? story.category).toLowerCase().includes(q)
+        (categoryLabels[story.category] ?? story.category).toLowerCase().includes(q)
     );
   }, [allStories, query]);
 
@@ -68,13 +70,13 @@ export default function Search() {
           Popular Searches
         </ThemedText>
         <ThemedView style={styles.chipRow}>
-          {CATEGORY_ORDER.map((category) => (
+          {categoryOrder.map((category) => (
             <Pressable
               key={category}
               style={styles.popularChip}
-              onPress={() => runSearch(CATEGORY_LABELS[category])}
+              onPress={() => runSearch(categoryLabels[category] ?? category)}
             >
-              <ThemedText type="small">{CATEGORY_LABELS[category]}</ThemedText>
+              <ThemedText type="small">{categoryLabels[category] ?? category}</ThemedText>
             </Pressable>
           ))}
         </ThemedView>
