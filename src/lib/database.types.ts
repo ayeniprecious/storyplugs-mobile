@@ -105,3 +105,26 @@ export interface StoryChapter {
   body: string;
   created_at: string;
 }
+
+export interface Comment {
+  id: string;
+  story_id: string;
+  user_id: string;
+  body: string;
+  created_at: string;
+}
+
+export type ReportTargetType = "story" | "comment" | "user";
+export type ReportStatus = "pending" | "reviewed" | "dismissed" | "actioned";
+
+export interface Report {
+  id: string;
+  reporter_user_id: string | null;
+  target_type: ReportTargetType;
+  target_id: string;
+  reason: string;
+  status: ReportStatus;
+  reviewed_by_admin_id: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+}

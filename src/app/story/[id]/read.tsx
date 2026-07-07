@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CommentsSection } from '@/components/comments-section';
+import { ReportModal } from '@/components/report-modal';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -24,6 +26,7 @@ export default function StoryRead() {
   const { chapters, loading: chaptersLoading } = useStoryChapters(id ?? '');
   const { progress, markComplete, updateProgressPercent } = useStoryProgress(id ?? '');
   const { labels: categoryLabels } = useCategories();
+  const [reportingStory, setReportingStory] = useState(false);
   useRecordActivity();
 
   useEffect(() => {
@@ -118,12 +121,17 @@ export default function StoryRead() {
           onScroll={handleScroll}
           scrollEventThrottle={200}
         >
-          <Link href={{ pathname: '/story/[id]', params: { id } }} asChild>
-            <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#C01918" />
-              <ThemedText type="link">Back</ThemedText>
+          <ThemedView style={styles.topRow}>
+            <Link href={{ pathname: '/story/[id]', params: { id } }} asChild>
+              <Pressable style={styles.backLinkCombined}>
+                <Ionicons name="chevron-back" size={16} color="#C01918" />
+                <ThemedText type="link">Back</ThemedText>
+              </Pressable>
+            </Link>
+            <Pressable onPress={() => setReportingStory(true)} hitSlop={8}>
+              <Ionicons name="flag-outline" size={18} color="#8a8a8e" />
             </Pressable>
-          </Link>
+          </ThemedView>
 
           {hasChapters ? (
             <ThemedText type="small" style={styles.categoryTag}>
@@ -188,10 +196,19 @@ export default function StoryRead() {
                   <ThemedText style={styles.completeButtonText}>Mark as Complete</ThemedText>
                 </Pressable>
               )}
+
+              <CommentsSection storyId={id ?? ''} />
             </>
           )}
         </ScrollView>
       </SafeAreaView>
+
+      <ReportModal
+        visible={reportingStory}
+        onClose={() => setReportingStory(false)}
+        targetType="story"
+        targetId={id ?? ''}
+      />
     </ThemedView>
   );
 }
@@ -213,8 +230,14 @@ const styles = StyleSheet.create({
   skeletonLineShort: { width: '60%', height: 16, borderRadius: 4 },
   progressTrack: { height: 3, backgroundColor: 'rgba(128,128,128,0.25)' },
   progressFill: { height: 3, backgroundColor: '#C01918' },
-  backLinkCombined: {
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: Spacing.two,
+    backgroundColor: 'transparent',
+  },
+  backLinkCombined: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
