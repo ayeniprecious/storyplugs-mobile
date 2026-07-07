@@ -17,6 +17,7 @@ export interface Profile {
   notification_types: NotificationContentType[];
   push_token: string | null;
   gender: string | null;
+  date_of_birth: string | null;
   // Personalization (20260715000000_personalization.sql) — category slugs, goal ids, length pref.
   interests: string[];
   personal_goals: string[];

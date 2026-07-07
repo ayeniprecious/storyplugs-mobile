@@ -10,7 +10,8 @@ interface AuthContextValue {
   signUpWithEmail: (
     email: string,
     password: string,
-    displayName: string
+    displayName: string,
+    extra: { dateOfBirth: string; gender: string }
   ) => Promise<{ error: string | null; needsEmailConfirmation: boolean }>;
   signInWithEmail: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
@@ -37,7 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUpWithEmail = useCallback(
-    async (email: string, password: string, displayName: string) => {
+    async (
+      email: string,
+      password: string,
+      displayName: string,
+      extra: { dateOfBirth: string; gender: string }
+    ) => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -46,7 +52,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // With email confirmation enabled, signUp succeeds but returns no session
       // until the user clicks the confirmation link. With it disabled, a session
       // comes back immediately and onAuthStateChange routes straight into the app.
-      return { error: error?.message ?? null, needsEmailConfirmation: !error && !data.session };
+      const needsEmailConfirmation = !error && !data.session;
+
+      // signUp() resolving doesn't guarantee the client has attached the new
+      // session to outgoing request headers yet — without this, the update below
+      // can silently match zero rows under RLS (PostgREST returns 204 either way).
+      // setSession forces it to take effect before the update fires.
+      if (!error && data.user && !needsEmailConfirmation && data.session) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+        await supabase
+          .from("profiles")
+          .update({ date_of_birth: extra.dateOfBirth, gender: extra.gender })
+          .eq("id", data.user.id);
+      }
+
+      return { error: error?.message ?? null, needsEmailConfirmation };
     },
     []
   );
