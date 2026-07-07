@@ -11,12 +11,14 @@ import { Spacing } from '@/constants/theme';
 import { useCategories } from '@/context/categories-context';
 import { useAllStories } from '@/hooks/use-all-stories';
 import { useRecentSearches } from '@/hooks/use-recent-searches';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function Search() {
   const { byCategory, loading } = useAllStories();
   const { order: categoryOrder, labels: categoryLabels } = useCategories();
   const { recent, addSearch, removeSearch, clearAll } = useRecentSearches();
   const [query, setQuery] = useState('');
+  const theme = useTheme();
 
   const allStories = useMemo(() => Object.values(byCategory).flat(), [byCategory]);
   const isSearching = query.trim() !== '';
@@ -52,7 +54,7 @@ export default function Search() {
           </ThemedView>
           <ThemedView style={styles.chipRow}>
             {recent.map((term) => (
-              <ThemedView key={term} style={styles.chip}>
+              <ThemedView key={term} style={[styles.chip, { borderColor: theme.border }]}>
                 <Pressable onPress={() => setQuery(term)}>
                   <ThemedText type="small">{term}</ThemedText>
                 </Pressable>
@@ -100,8 +102,8 @@ export default function Search() {
           onSubmitEditing={() => addSearch(query)}
           returnKeyType="search"
           placeholder="Search by title or category"
-          placeholderTextColor="#8a8a8a"
-          style={styles.input}
+          placeholderTextColor={theme.placeholder}
+          style={[styles.input, { color: theme.text, borderColor: theme.border }]}
           autoFocus
         />
 
@@ -146,12 +148,10 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.three },
   input: {
     borderWidth: 1,
-    borderColor: '#3a3a3c',
     borderRadius: 10,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two + 4,
     fontSize: 16,
-    color: '#fff',
     marginBottom: Spacing.three,
   },
   hint: { opacity: 0.6 },
@@ -175,7 +175,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#3a3a3c',
   },
   popularChip: {
     paddingHorizontal: Spacing.three,

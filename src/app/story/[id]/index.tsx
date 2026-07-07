@@ -15,6 +15,7 @@ import { useAuth } from '@/context/auth-context';
 import { useCategories } from '@/context/categories-context';
 import { useFavorite } from '@/hooks/use-favorite';
 import { useStoryChapters } from '@/hooks/use-story-chapters';
+import { useTheme } from '@/hooks/use-theme';
 import type { Story } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 
@@ -26,6 +27,7 @@ interface PreviewProgress {
 export default function StoryPreview() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const theme = useTheme();
   const [story, setStory] = useState<Story | null>(null);
   const [similar, setSimilar] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
@@ -254,7 +256,7 @@ export default function StoryPreview() {
               {chapters.map((chapter) => (
                 <Pressable
                   key={chapter.id}
-                  style={styles.chapterRow}
+                  style={[styles.chapterRow, { borderColor: theme.border }]}
                   onPress={() => goToChapter(chapter.chapter_number)}
                 >
                   <ThemedView style={styles.chapterNumberBadge}>
@@ -346,7 +348,6 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#2c2c2e',
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.two + 4,
   },

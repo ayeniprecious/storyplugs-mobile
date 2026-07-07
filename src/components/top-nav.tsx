@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.two,
     paddingBottom: Spacing.two,
   },
-  logo: { width: 32, height: 32 },
+  logo: { width: 44, height: 44 },
   transparentBg: { backgroundColor: 'transparent' },
   actions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   iconButton: { padding: 4 },

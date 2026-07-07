@@ -12,6 +12,7 @@ import { useAuth } from '@/context/auth-context';
 import { useProfile } from '@/context/profile-context';
 import { FontScaleKey, ThemeMode, useThemePrefs } from '@/context/theme-prefs-context';
 import { useAvatarUpload } from '@/hooks/use-avatar-upload';
+import { useTheme } from '@/hooks/use-theme';
 import type { NotificationContentType } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 
@@ -33,6 +34,7 @@ export default function Settings() {
   const { profile, saveNotificationPreferences, updateDisplayName } = useProfile();
   const { themeMode, setThemeMode, fontScaleKey, setFontScaleKey } = useThemePrefs();
   const { uploading, error: avatarError, pickAndUpload } = useAvatarUpload();
+  const theme = useTheme();
 
   const [nameInput, setNameInput] = useState('');
   const [savingName, setSavingName] = useState(false);
@@ -128,8 +130,8 @@ export default function Settings() {
                   setNameError(null);
                 }}
                 placeholder="Your name"
-                placeholderTextColor="#8a8a8a"
-                style={styles.nameInput}
+                placeholderTextColor={theme.placeholder}
+                style={[styles.nameInput, { color: theme.text }]}
               />
               {nameChanged && (
                 <Pressable onPress={handleSaveName} style={styles.nameSaveButton} disabled={savingName}>
@@ -172,7 +174,11 @@ export default function Settings() {
           {CONTENT_TYPE_OPTIONS.map((type) => {
             const selected = selectedTypes.includes(type.value);
             return (
-              <Pressable key={type.value} onPress={() => toggleType(type.value)} style={styles.optionCard}>
+              <Pressable
+                key={type.value}
+                onPress={() => toggleType(type.value)}
+                style={[styles.optionCard, { borderColor: theme.border }]}
+              >
                 <ThemedView
                   type="backgroundElement"
                   style={[styles.checkbox, selected && styles.checkboxSelected]}
@@ -194,7 +200,7 @@ export default function Settings() {
                     setSaved(false);
                     setSelectedTime(slot.value);
                   }}
-                  style={[styles.timeChip, selected && styles.timeChipSelected]}
+                  style={[styles.timeChip, { borderColor: theme.border }, selected && styles.timeChipSelected]}
                 >
                   <ThemedText
                     type="small"
@@ -232,7 +238,11 @@ export default function Settings() {
               <Pressable
                 key={opt.value}
                 onPress={() => setThemeMode(opt.value)}
-                style={[styles.segment, themeMode === opt.value && styles.segmentSelected]}
+                style={[
+                  styles.segment,
+                  { borderColor: theme.border },
+                  themeMode === opt.value && styles.segmentSelected,
+                ]}
               >
                 <ThemedText
                   type="small"
@@ -252,7 +262,11 @@ export default function Settings() {
               <Pressable
                 key={opt.value}
                 onPress={() => setFontScaleKey(opt.value)}
-                style={[styles.segment, fontScaleKey === opt.value && styles.segmentSelected]}
+                style={[
+                  styles.segment,
+                  { borderColor: theme.border },
+                  fontScaleKey === opt.value && styles.segmentSelected,
+                ]}
               >
                 <ThemedText
                   style={[
@@ -266,7 +280,7 @@ export default function Settings() {
             ))}
           </ThemedView>
 
-          <Pressable style={styles.signOutButton} onPress={signOut}>
+          <Pressable style={[styles.signOutButton, { borderColor: theme.border }]} onPress={signOut}>
             <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
           </Pressable>
 
@@ -325,7 +339,6 @@ const styles = StyleSheet.create({
   nameInput: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#fff',
     textAlign: 'center',
     minWidth: 120,
     paddingVertical: 4,
@@ -351,7 +364,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.two + 2,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#2c2c2e',
     marginBottom: Spacing.one + 4,
   },
   checkbox: { width: 18, height: 18, borderRadius: 5, alignItems: 'center', justifyContent: 'center' },
@@ -362,7 +374,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one + 3,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#2c2c2e',
   },
   timeChipSelected: { backgroundColor: 'rgba(192, 25, 24,0.14)', borderColor: '#C01918' },
   timeChipText: { opacity: 0.85 },
@@ -387,14 +398,12 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#2c2c2e',
   },
   segmentSelected: { backgroundColor: 'rgba(192, 25, 24,0.14)', borderColor: '#C01918' },
   segmentTextSelected: { color: '#C01918', fontWeight: '600' },
   signOutButton: {
     marginTop: Spacing.three,
     borderWidth: 1,
-    borderColor: '#2c2c2e',
     borderRadius: 10,
     paddingVertical: Spacing.two + 2,
     alignItems: 'center',

@@ -1,11 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useProfile } from '@/context/profile-context';
@@ -121,55 +120,46 @@ export default function SignUp() {
 
   if (confirmationSent) {
     return (
-      <ThemedView style={styles.container}>
+      <LinearGradient colors={['#2a070b', '#000000']} style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
-          <ThemedText type="title" style={styles.title}>
-            Check your email
-          </ThemedText>
-          <ThemedText style={styles.subtitle}>
+          <Text style={styles.title}>Check your email</Text>
+          <Text style={styles.subtitle}>
             We sent a confirmation link to {email}. Confirm it, then come back and sign in.
-          </ThemedText>
+          </Text>
           <Link href="/(auth)/sign-in" asChild>
             <Pressable style={styles.primaryButton}>
-              <ThemedText style={styles.primaryButtonText}>Back to Sign In</ThemedText>
+              <Text style={styles.primaryButtonText}>Back to Sign In</Text>
             </Pressable>
           </Link>
         </SafeAreaView>
-      </ThemedView>
+      </LinearGradient>
     );
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <LinearGradient colors={['#2a070b', '#000000']} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.header}>
+        <View style={styles.header}>
           {step > 0 ? (
             <Pressable onPress={() => setStep(step - 1)} hitSlop={12} style={styles.backButton}>
-              <Ionicons name="chevron-back" size={22} color="#8a8a8e" />
-              <ThemedText type="small" style={styles.backLabel}>
-                Back
-              </ThemedText>
+              <Ionicons name="chevron-back" size={22} color="rgba(255,255,255,0.6)" />
+              <Text style={styles.backLabel}>Back</Text>
             </Pressable>
           ) : (
-            <ThemedView style={styles.backButton} />
+            <View style={styles.backButton} />
           )}
-          <ThemedView style={styles.progressDots}>
+          <View style={styles.progressDots}>
             {Array.from({ length: STEP_COUNT }).map((_, i) => (
-              <ThemedView
-                key={i}
-                style={[styles.dot, i === step ? styles.dotActive : i < step && styles.dotDone]}
-              />
+              <View key={i} style={[styles.dot, i === step ? styles.dotActive : i < step && styles.dotDone]} />
             ))}
-          </ThemedView>
-        </ThemedView>
+          </View>
+        </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {step === 0 && (
             <>
-              <ThemedText type="title" style={styles.title}>
-                What&apos;s your name?
-              </ThemedText>
-              <ThemedText style={styles.subtitle}>So we know what to call you.</ThemedText>
+              <Text style={styles.title}>What&apos;s your name?</Text>
+              <Text style={styles.subtitle}>So we know what to call you.</Text>
               <TextInput
                 value={displayName}
                 onChangeText={setDisplayName}
@@ -183,10 +173,8 @@ export default function SignUp() {
 
           {step === 1 && (
             <>
-              <ThemedText type="title" style={styles.title}>
-                What&apos;s your email?
-              </ThemedText>
-              <ThemedText style={styles.subtitle}>We&apos;ll use this to sign you in.</ThemedText>
+              <Text style={styles.title}>What&apos;s your email?</Text>
+              <Text style={styles.subtitle}>We&apos;ll use this to sign you in.</Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
@@ -202,11 +190,9 @@ export default function SignUp() {
 
           {step === 2 && (
             <>
-              <ThemedText type="title" style={styles.title}>
-                When&apos;s your birthday?
-              </ThemedText>
-              <ThemedText style={styles.subtitle}>Helps us tailor content that fits.</ThemedText>
-              <ThemedView style={styles.dobRow}>
+              <Text style={styles.title}>When&apos;s your birthday?</Text>
+              <Text style={styles.subtitle}>Helps us tailor content that fits.</Text>
+              <View style={styles.dobRow}>
                 <TextInput
                   value={day}
                   onChangeText={setDay}
@@ -234,18 +220,14 @@ export default function SignUp() {
                   maxLength={4}
                   style={[styles.input, styles.dobInputYear]}
                 />
-              </ThemedView>
+              </View>
             </>
           )}
 
           {step === 3 && (
             <>
-              <ThemedText type="title" style={styles.title}>
-                What&apos;s your gender?
-              </ThemedText>
-              <ThemedText style={styles.subtitle}>
-                Helps us personalize your experience.
-              </ThemedText>
+              <Text style={styles.title}>What&apos;s your gender?</Text>
+              <Text style={styles.subtitle}>Helps us personalize your experience.</Text>
               {GENDER_OPTIONS.map((option) => {
                 const selected = gender === option.value;
                 return (
@@ -254,10 +236,10 @@ export default function SignUp() {
                     onPress={() => setGender(option.value)}
                     style={[styles.optionCard, selected && styles.optionCardSelected]}
                   >
-                    <ThemedText type="smallBold">{option.label}</ThemedText>
-                    <ThemedView style={[styles.radio, selected && styles.radioSelected]}>
-                      {selected && <ThemedView style={styles.radioInner} />}
-                    </ThemedView>
+                    <Text style={styles.optionLabel}>{option.label}</Text>
+                    <View style={[styles.radio, selected && styles.radioSelected]}>
+                      {selected && <View style={styles.radioInner} />}
+                    </View>
                   </Pressable>
                 );
               })}
@@ -266,10 +248,8 @@ export default function SignUp() {
 
           {step === 4 && (
             <>
-              <ThemedText type="title" style={styles.title}>
-                Create a password
-              </ThemedText>
-              <ThemedText style={styles.subtitle}>At least 6 characters.</ThemedText>
+              <Text style={styles.title}>Create a password</Text>
+              <Text style={styles.subtitle}>At least 6 characters.</Text>
               <TextInput
                 value={password}
                 onChangeText={setPassword}
@@ -282,34 +262,28 @@ export default function SignUp() {
             </>
           )}
 
-          {error && (
-            <ThemedText type="small" style={styles.error}>
-              {error}
-            </ThemedText>
-          )}
+          {error && <Text style={styles.error}>{error}</Text>}
 
           <Pressable style={styles.primaryButton} onPress={handleContinue} disabled={submitting}>
             {submitting ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <ThemedText style={styles.primaryButtonText}>
+              <Text style={styles.primaryButtonText}>
                 {step < STEP_COUNT - 1 ? 'Continue' : 'Create Account'}
-              </ThemedText>
+              </Text>
             )}
           </Pressable>
 
           {step === 0 && (
             <Link href="/(auth)/sign-in" asChild>
               <Pressable>
-                <ThemedText type="link" style={styles.link}>
-                  Already have an account? Sign in
-                </ThemedText>
+                <Text style={styles.link}>Already have an account? Sign in</Text>
               </Pressable>
             </Link>
           )}
         </ScrollView>
       </SafeAreaView>
-    </ThemedView>
+    </LinearGradient>
   );
 }
 
@@ -323,7 +297,7 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
   },
   backButton: { flexDirection: 'row', alignItems: 'center', width: 70 },
-  backLabel: { opacity: 0.6 },
+  backLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 14 },
   progressDots: {
     flex: 1,
     flexDirection: 'row',
@@ -341,8 +315,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
   },
-  title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.two },
-  subtitle: { opacity: 0.75, marginBottom: Spacing.three },
+  title: { color: '#fff', fontSize: 24, lineHeight: 30, marginBottom: Spacing.two, fontWeight: '600' },
+  subtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 15, marginBottom: Spacing.three },
   input: {
     borderWidth: 1,
     borderColor: '#3a3a3c',
@@ -353,7 +327,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: Spacing.two,
   },
-  dobRow: { flexDirection: 'row', gap: Spacing.two, backgroundColor: 'transparent' },
+  dobRow: { flexDirection: 'row', gap: Spacing.two },
   dobInput: { flex: 1, minWidth: 0, paddingHorizontal: Spacing.two, textAlign: 'center' },
   dobInputYear: { flex: 1.4, minWidth: 0, paddingHorizontal: Spacing.two, textAlign: 'center' },
   optionCard: {
@@ -367,6 +341,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.two,
   },
   optionCardSelected: { borderColor: '#C01918' },
+  optionLabel: { color: '#fff', fontSize: 14, fontWeight: '600' },
   radio: {
     width: 22,
     height: 22,
@@ -378,7 +353,7 @@ const styles = StyleSheet.create({
   },
   radioSelected: { borderColor: '#C01918' },
   radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#C01918' },
-  error: { color: '#ff453a', marginBottom: Spacing.two },
+  error: { color: '#ff453a', marginBottom: Spacing.two, fontSize: 14 },
   primaryButton: {
     backgroundColor: '#C01918',
     borderRadius: 10,
@@ -387,5 +362,5 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
   },
   primaryButtonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  link: { textAlign: 'center', marginTop: Spacing.four },
+  link: { color: '#3c87f7', textAlign: 'center', marginTop: Spacing.four, fontSize: 14 },
 });

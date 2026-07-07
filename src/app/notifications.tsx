@@ -81,10 +81,7 @@ export default function Notifications() {
             contentContainerStyle={styles.list}
             renderItem={({ item }) => (
               <Pressable onPress={() => handleOpen(item)}>
-                <ThemedView
-                  type="backgroundElement"
-                  style={[styles.row, !item.read && styles.rowUnread]}
-                >
+                <ThemedView type="backgroundElement" style={styles.row}>
                   <ThemedView style={styles.rowBody}>
                     <ThemedView style={styles.rowHeaderLine}>
                       {!item.read && <ThemedView style={styles.unreadDot} />}
@@ -137,7 +134,6 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     gap: Spacing.two,
   },
-  rowUnread: { borderWidth: 1, borderColor: 'rgba(192, 25, 24,0.4)' },
   rowBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
   rowHeaderLine: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'transparent' },
   unreadDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#C01918' },

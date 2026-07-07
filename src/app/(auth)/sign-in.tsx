@@ -1,10 +1,10 @@
-import { Link } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Link, router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, TextInput } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 
@@ -28,14 +28,16 @@ export default function SignIn() {
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <LinearGradient colors={['#2a070b', '#000000']} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ThemedText type="title" style={styles.title}>
-          StoryPlugs
-        </ThemedText>
-        <ThemedText type="subtitle" style={styles.subtitle}>
-          Your daily emotional vitamin
-        </ThemedText>
+        {router.canGoBack() && (
+          <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={22} color="rgba(255,255,255,0.6)" />
+            <Text style={styles.backLabel}>Back</Text>
+          </Pressable>
+        )}
+        <Text style={styles.title}>StoryPlugs</Text>
+        <Text style={styles.subtitle}>Your daily emotional vitamin</Text>
 
         <TextInput
           value={email}
@@ -55,37 +57,25 @@ export default function SignIn() {
           style={styles.input}
         />
 
-        {error && (
-          <ThemedText type="small" themeColor="text" style={styles.error}>
-            {error}
-          </ThemedText>
-        )}
+        {error && <Text style={styles.error}>{error}</Text>}
 
         <Pressable style={styles.primaryButton} onPress={handleSignIn} disabled={submitting}>
-          {submitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <ThemedText type="default" style={styles.primaryButtonText}>
-              Sign In
-            </ThemedText>
-          )}
+          {submitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>Sign In</Text>}
         </Pressable>
 
-        <ThemedView type="backgroundElement" style={styles.oauthGroup}>
-          <ThemedText type="small" style={styles.comingSoonLabel}>
+        <View style={styles.oauthGroup}>
+          <Text style={styles.comingSoonLabel}>
             Continue with Google / Apple — coming soon (requires provider setup)
-          </ThemedText>
-        </ThemedView>
+          </Text>
+        </View>
 
         <Link href="/(auth)/sign-up" asChild>
           <Pressable>
-            <ThemedText type="link" style={styles.link}>
-              Don&apos;t have an account? Sign up
-            </ThemedText>
+            <Text style={styles.link}>Don&apos;t have an account? Sign up</Text>
           </Pressable>
         </Link>
       </SafeAreaView>
-    </ThemedView>
+    </LinearGradient>
   );
 }
 
@@ -97,8 +87,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.two + 4,
     gap: Spacing.two,
   },
-  title: { textAlign: 'center', fontSize: 28, lineHeight: 34 },
-  subtitle: { textAlign: 'center', fontSize: 15, lineHeight: 21, marginBottom: Spacing.four },
+  backButton: {
+    position: 'absolute',
+    top: Spacing.three,
+    left: Spacing.two + 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 14 },
+  title: { color: '#fff', textAlign: 'center', fontSize: 28, lineHeight: 34, fontWeight: '600' },
+  subtitle: {
+    color: 'rgba(255,255,255,0.65)',
+    textAlign: 'center',
+    fontSize: 15,
+    lineHeight: 21,
+    marginBottom: Spacing.four,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#3a3a3c',
@@ -109,7 +113,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: Spacing.two,
   },
-  error: { color: '#ff453a', marginBottom: Spacing.two },
+  error: { color: '#ff453a', marginBottom: Spacing.two, fontSize: 14 },
   primaryButton: {
     backgroundColor: '#C01918',
     borderRadius: 10,
@@ -123,7 +127,8 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     borderRadius: 10,
     alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
-  comingSoonLabel: { textAlign: 'center', opacity: 0.7 },
-  link: { textAlign: 'center', marginTop: Spacing.four },
+  comingSoonLabel: { color: 'rgba(255,255,255,0.7)', textAlign: 'center', fontSize: 14 },
+  link: { color: '#3c87f7', textAlign: 'center', marginTop: Spacing.four, fontSize: 14 },
 });
