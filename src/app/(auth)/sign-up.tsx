@@ -28,13 +28,19 @@ export default function SignUp() {
     }
     setSubmitting(true);
     setError(null);
-    const { error: signUpError } = await signUpWithEmail(email.trim(), password, displayName.trim());
+    const { error: signUpError, needsEmailConfirmation } = await signUpWithEmail(
+      email.trim(),
+      password,
+      displayName.trim()
+    );
     setSubmitting(false);
     if (signUpError) {
       setError(signUpError);
-    } else {
+    } else if (needsEmailConfirmation) {
       setConfirmationSent(true);
     }
+    // Otherwise a session came back already — the root layout's auth guard
+    // picks it up and routes into onboarding automatically.
   }
 
   if (confirmationSent) {
