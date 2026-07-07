@@ -28,7 +28,7 @@ export function Avatar({ url, fallbackLetter, size = 30 }: AvatarProps) {
 const styles = StyleSheet.create({
   image: { backgroundColor: '#3a3a3c' },
   fallback: {
-    backgroundColor: '#e50914',
+    backgroundColor: '#C01918',
     alignItems: 'center',
     justifyContent: 'center',
   },

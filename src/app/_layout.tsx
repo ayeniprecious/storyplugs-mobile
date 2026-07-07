@@ -1,27 +1,39 @@
-import type { Session } from '@supabase/supabase-js';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import type { Session } from "@supabase/supabase-js";
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect, useState } from "react";
+import { View } from "react-native";
 
-import { BrandSplash } from '@/components/brand-splash';
-import { AuthProvider, useAuth } from '@/context/auth-context';
-import { CategoriesProvider } from '@/context/categories-context';
-import { ProfileProvider, useProfile } from '@/context/profile-context';
-import { ThemePrefsProvider, useThemePrefs } from '@/context/theme-prefs-context';
-import type { Profile } from '@/lib/database.types';
+import { BrandSplash } from "@/components/brand-splash";
+import { AuthProvider, useAuth } from "@/context/auth-context";
+import { CategoriesProvider } from "@/context/categories-context";
+import { ProfileProvider, useProfile } from "@/context/profile-context";
+import {
+  ThemePrefsProvider,
+  useThemePrefs,
+} from "@/context/theme-prefs-context";
+import type { Profile } from "@/lib/database.types";
 
 SplashScreen.preventAutoHideAsync();
 
 // How long the branded splash page stays up on cold start, minimum.
-const BRAND_SPLASH_MIN_MS = 3000;
+const BRAND_SPLASH_MIN_MS = 4000;
 
-function AppStack({ session, profile }: { session: Session | null; profile: Profile | null }) {
+function AppStack({
+  session,
+  profile,
+}: {
+  session: Session | null;
+  profile: Profile | null;
+}) {
   // Personalization ships after some users already onboarded, so gate the two steps
   // separately — onboarding/index redirects to whichever one is still missing.
-  const needsPersonalization = !profile || !profile.interests || profile.interests.length === 0;
-  const needsNotificationPrefs = !profile || profile.notification_types.length === 0;
-  const needsOnboarding = !!session && (needsPersonalization || needsNotificationPrefs);
+  const needsPersonalization =
+    !profile || !profile.interests || profile.interests.length === 0;
+  const needsNotificationPrefs =
+    !profile || profile.notification_types.length === 0;
+  const needsOnboarding =
+    !!session && (needsPersonalization || needsNotificationPrefs);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -33,8 +45,8 @@ function AppStack({ session, profile }: { session: Session | null; profile: Prof
       </Stack.Protected>
       <Stack.Protected guard={!!session && !needsOnboarding}>
         <Stack.Screen name="(app)" />
-        <Stack.Screen name="story/[id]" options={{ presentation: 'card' }} />
-        <Stack.Screen name="notifications" options={{ presentation: 'card' }} />
+        <Stack.Screen name="story/[id]" options={{ presentation: "card" }} />
+        <Stack.Screen name="notifications" options={{ presentation: "card" }} />
       </Stack.Protected>
     </Stack>
   );
@@ -54,7 +66,10 @@ function RootNavigator() {
     // Hand off from the native splash to the animated brand page right away,
     // and keep the brand page up for at least BRAND_SPLASH_MIN_MS.
     SplashScreen.hideAsync();
-    const timer = setTimeout(() => setBrandDelayDone(true), BRAND_SPLASH_MIN_MS);
+    const timer = setTimeout(
+      () => setBrandDelayDone(true),
+      BRAND_SPLASH_MIN_MS,
+    );
     return () => clearTimeout(timer);
   }, []);
 
@@ -82,7 +97,7 @@ function RootNavigator() {
 function ThemedRoot() {
   const { resolvedScheme } = useThemePrefs();
   return (
-    <ThemeProvider value={resolvedScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={resolvedScheme === "dark" ? DarkTheme : DefaultTheme}>
       <AuthProvider>
         <ProfileProvider>
           <RootNavigator />

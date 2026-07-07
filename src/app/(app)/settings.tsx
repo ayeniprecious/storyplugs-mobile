@@ -286,7 +286,12 @@ export default function Settings() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
-  scrollContent: { padding: Spacing.three, gap: Spacing.two, paddingBottom: Spacing.six },
+  scrollContent: {
+    paddingHorizontal: Spacing.two + 4,
+    paddingTop: Spacing.three,
+    gap: Spacing.two,
+    paddingBottom: Spacing.six,
+  },
   title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.two },
   profileCard: {
     borderRadius: 12,
@@ -303,7 +308,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#e50914',
+    backgroundColor: '#C01918',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -328,7 +333,7 @@ const styles = StyleSheet.create({
     borderWidth: 0,
   },
   nameSaveButton: {
-    backgroundColor: '#e50914',
+    backgroundColor: '#C01918',
     borderRadius: 8,
     paddingHorizontal: Spacing.two + 4,
     paddingVertical: 6,
@@ -350,7 +355,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.one + 4,
   },
   checkbox: { width: 18, height: 18, borderRadius: 5, alignItems: 'center', justifyContent: 'center' },
-  checkboxSelected: { backgroundColor: '#e50914' },
+  checkboxSelected: { backgroundColor: '#C01918' },
   timeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one + 4, marginBottom: Spacing.two },
   timeChip: {
     paddingHorizontal: Spacing.two + 4,
@@ -359,11 +364,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#2c2c2e',
   },
-  timeChipSelected: { backgroundColor: 'rgba(229,9,20,0.14)', borderColor: '#e50914' },
+  timeChipSelected: { backgroundColor: 'rgba(192, 25, 24,0.14)', borderColor: '#C01918' },
   timeChipText: { opacity: 0.85 },
-  timeChipTextSelected: { color: '#e50914', fontWeight: '600', opacity: 1 },
+  timeChipTextSelected: { color: '#C01918', fontWeight: '600', opacity: 1 },
   saveButton: {
-    backgroundColor: '#e50914',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two + 2,
     alignItems: 'center',
@@ -384,8 +389,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#2c2c2e',
   },
-  segmentSelected: { backgroundColor: 'rgba(229,9,20,0.14)', borderColor: '#e50914' },
-  segmentTextSelected: { color: '#e50914', fontWeight: '600' },
+  segmentSelected: { backgroundColor: 'rgba(192, 25, 24,0.14)', borderColor: '#C01918' },
+  segmentTextSelected: { color: '#C01918', fontWeight: '600' },
   signOutButton: {
     marginTop: Spacing.three,
     borderWidth: 1,

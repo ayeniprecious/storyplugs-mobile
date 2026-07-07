@@ -36,7 +36,7 @@ export default function Notifications() {
         <ThemedView style={styles.header}>
           <Link href="/(app)" asChild>
             <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#e50914" />
+              <Ionicons name="chevron-back" size={16} color="#C01918" />
               <ThemedText type="link">Back</ThemedText>
             </Pressable>
           </Link>
@@ -118,12 +118,12 @@ export default function Notifications() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  safeArea: { flex: 1, paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
+  safeArea: { flex: 1, paddingHorizontal: Spacing.two + 4, paddingTop: Spacing.three },
   header: { gap: Spacing.two, marginBottom: Spacing.two },
   backLinkCombined: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   title: { fontSize: 24, lineHeight: 30 },
   actionsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: Spacing.three },
-  action: { color: '#e50914' },
+  action: { color: '#C01918' },
   actionDisabled: { opacity: 0.3 },
   emptyHint: { opacity: 0.6, marginTop: Spacing.four },
   skeletonLineTitle: { width: '50%', height: 14, borderRadius: 4 },
@@ -137,10 +137,10 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     gap: Spacing.two,
   },
-  rowUnread: { borderWidth: 1, borderColor: 'rgba(229,9,20,0.4)' },
+  rowUnread: { borderWidth: 1, borderColor: 'rgba(192, 25, 24,0.4)' },
   rowBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
   rowHeaderLine: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'transparent' },
-  unreadDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#e50914' },
+  unreadDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#C01918' },
   rowText: { opacity: 0.75 },
   rowTime: { opacity: 0.5 },
   removeButton: { paddingHorizontal: 4 },

@@ -81,7 +81,7 @@ export default function Home() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#e50914" />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#C01918" />
         }
       >
         {loading ? (
@@ -136,7 +136,7 @@ export default function Home() {
                 <Ionicons
                   name={currentStreak > 0 ? 'flame' : 'flame-outline'}
                   size={15}
-                  color={currentStreak > 0 ? '#e50914' : '#8a8a8e'}
+                  color={currentStreak > 0 ? '#C01918' : '#8a8a8e'}
                 />
                 <ThemedText type="small" style={styles.streakText}>
                   {currentStreak > 0 ? `${currentStreak}-day streak` : 'Start a streak today'}
@@ -207,12 +207,12 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { paddingBottom: Spacing.six },
-  bodyPadding: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, gap: Spacing.three },
+  bodyPadding: { paddingHorizontal: Spacing.two + 4, paddingTop: Spacing.three, gap: Spacing.three },
   loadingHero: { height: 480 },
   heroSkeletonContent: {
     flex: 1,
     justifyContent: 'flex-end',
-    paddingHorizontal: Spacing.three,
+    paddingHorizontal: Spacing.two + 4,
     paddingBottom: Spacing.three,
     gap: 8,
     backgroundColor: 'transparent',
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: 10,
-    backgroundColor: '#e50914',
+    backgroundColor: '#C01918',
   },
   retryButtonText: { color: '#fff', fontWeight: '600', fontSize: 14 },
   browseHeading: { fontSize: 20, lineHeight: 26 },

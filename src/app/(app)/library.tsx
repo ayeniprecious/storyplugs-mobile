@@ -135,7 +135,7 @@ export default function Library() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handlePullToRefresh} tintColor="#e50914" />
+            <RefreshControl refreshing={refreshing} onRefresh={handlePullToRefresh} tintColor="#C01918" />
           }
         >
           <ThemedText type="title" style={styles.title}>
@@ -237,7 +237,7 @@ export default function Library() {
                     <Ionicons
                       name={completedExpanded ? 'chevron-up' : 'chevron-down'}
                       size={14}
-                      color="#e50914"
+                      color="#C01918"
                     />
                   </ThemedView>
                 )}
@@ -270,7 +270,12 @@ export default function Library() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
-  scrollContent: { padding: Spacing.three, gap: Spacing.two, paddingBottom: Spacing.six },
+  scrollContent: {
+    paddingHorizontal: Spacing.two + 4,
+    paddingTop: Spacing.three,
+    gap: Spacing.two,
+    paddingBottom: Spacing.six,
+  },
   title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.two },
   statCardSkeleton: { flex: 1, height: 66, borderRadius: 12 },
   sectionHeadingSkeleton: { width: 140, height: 16, borderRadius: 4, marginTop: Spacing.three, marginBottom: Spacing.two },
@@ -291,7 +296,7 @@ const styles = StyleSheet.create({
     gap: 4,
     backgroundColor: 'transparent',
   },
-  collapsibleToggle: { color: '#e50914', fontWeight: '600' },
+  collapsibleToggle: { color: '#C01918', fontWeight: '600' },
   emptyHint: { opacity: 0.6, marginBottom: Spacing.two },
   statsRow: {
     flexDirection: 'row',
@@ -320,7 +325,7 @@ const styles = StyleSheet.create({
   rowBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
   categoryLabel: { opacity: 0.5 },
   progressTrack: { height: 4, backgroundColor: 'rgba(128,128,128,0.3)', borderRadius: 2, overflow: 'hidden' },
-  progressFill: { height: 4, backgroundColor: '#e50914' },
+  progressFill: { height: 4, backgroundColor: '#C01918' },
   progressLabel: { opacity: 0.6 },
   removeButton: { paddingHorizontal: Spacing.three, alignSelf: 'stretch', justifyContent: 'center' },
 });

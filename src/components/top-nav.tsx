@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
-import { Pressable, StyleSheet } from 'react-native';
+import { Image, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
@@ -28,9 +28,12 @@ export function TopNav({ overlay = false }: { overlay?: boolean }) {
         overlay && { paddingTop: insets.top + Spacing.two, backgroundColor: 'transparent' },
       ]}
     >
-      <ThemedText type="smallBold" style={[styles.logo, overlay && styles.logoOverlay]}>
-        StoryPlugs
-      </ThemedText>
+      <Image
+        source={require('@/assets/images/logo-mark.png')}
+        style={styles.logo}
+        resizeMode="contain"
+        accessibilityLabel="StoryPlugs"
+      />
       <ThemedView style={[styles.actions, overlay && styles.transparentBg]}>
         <Link href="/search" asChild>
           <Pressable style={styles.iconButton} accessibilityLabel="Search">
@@ -64,12 +67,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.three,
+    paddingHorizontal: Spacing.two + 4,
     paddingTop: Spacing.two,
     paddingBottom: Spacing.two,
   },
-  logo: { color: '#e50914', fontSize: 20, letterSpacing: 0.5 },
-  logoOverlay: { color: '#fff' },
+  logo: { width: 32, height: 32 },
   transparentBg: { backgroundColor: 'transparent' },
   actions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   iconButton: { padding: 4 },
@@ -80,7 +82,7 @@ const styles = StyleSheet.create({
     minWidth: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#e50914',
+    backgroundColor: '#C01918',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 3,

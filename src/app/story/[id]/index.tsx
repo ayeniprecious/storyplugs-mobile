@@ -163,7 +163,7 @@ export default function StoryPreview() {
           <ThemedText type="smallBold">Story not found</ThemedText>
           <Link href="/(app)" asChild>
             <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#e50914" />
+              <Ionicons name="chevron-back" size={16} color="#C01918" />
               <ThemedText type="link">Back to Home</ThemedText>
             </Pressable>
           </Link>
@@ -186,7 +186,7 @@ export default function StoryPreview() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <Link href="/(app)" asChild>
             <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#e50914" />
+              <Ionicons name="chevron-back" size={16} color="#C01918" />
               <ThemedText type="link">Back</ThemedText>
             </Pressable>
           </Link>
@@ -229,16 +229,16 @@ export default function StoryPreview() {
 
           <ThemedView style={styles.actionsRow}>
             <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={toggleFavorite}>
-              <Ionicons name={isFavorited ? 'checkmark' : 'bookmark-outline'} size={16} color="#e50914" />
+              <Ionicons name={isFavorited ? 'checkmark' : 'bookmark-outline'} size={16} color="#C01918" />
               <ThemedText style={styles.actionButtonText}>{isFavorited ? 'Saved' : 'Save'}</ThemedText>
             </Pressable>
             <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={handleShare}>
-              <Ionicons name="share-outline" size={16} color="#e50914" />
+              <Ionicons name="share-outline" size={16} color="#C01918" />
               <ThemedText style={styles.actionButtonText}>Share</ThemedText>
             </Pressable>
             {story.audio_url && (
               <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={handleListenToggle}>
-                <Ionicons name={playerStatus.playing ? 'pause' : 'headset-outline'} size={16} color="#e50914" />
+                <Ionicons name={playerStatus.playing ? 'pause' : 'headset-outline'} size={16} color="#C01918" />
                 <ThemedText style={styles.actionButtonText}>
                   {playerStatus.playing ? 'Pause' : 'Listen'}
                 </ThemedText>
@@ -285,7 +285,12 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   centerFill: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two },
-  scrollContent: { padding: Spacing.three, gap: Spacing.two, paddingBottom: Spacing.six },
+  scrollContent: {
+    paddingHorizontal: Spacing.two + 4,
+    paddingTop: Spacing.three,
+    gap: Spacing.two,
+    paddingBottom: Spacing.six,
+  },
   skeletonBackLink: { width: 60, height: 16, borderRadius: 4, marginBottom: Spacing.two },
   skeletonTag: { width: 100, height: 12, borderRadius: 4, marginTop: Spacing.two },
   skeletonTitle: { width: '70%', height: 30, borderRadius: 6 },
@@ -299,7 +304,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   heroImage: { width: '100%', height: 220, borderRadius: 16, marginBottom: Spacing.two },
-  categoryTag: { color: '#e50914', fontWeight: '600', textTransform: 'uppercase' },
+  categoryTag: { color: '#C01918', fontWeight: '600', textTransform: 'uppercase' },
   title: { fontSize: 25, lineHeight: 31 },
   excerpt: { fontSize: 16, lineHeight: 24, opacity: 0.8 },
   completedBadge: {
@@ -312,10 +317,10 @@ const styles = StyleSheet.create({
   completedBadgeText: { color: '#32b45a', fontWeight: '600' },
   progressSection: { gap: 4 },
   progressTrack: { height: 5, backgroundColor: 'rgba(128,128,128,0.3)', borderRadius: 3, overflow: 'hidden' },
-  progressFill: { height: 5, backgroundColor: '#e50914' },
+  progressFill: { height: 5, backgroundColor: '#C01918' },
   progressLabel: { opacity: 0.6 },
   primaryButton: {
-    backgroundColor: '#e50914',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two + 4,
     alignItems: 'center',
@@ -326,12 +331,12 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#e50914',
+    borderColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two + 2,
     alignItems: 'center',
   },
-  actionButtonText: { color: '#e50914', fontWeight: '600' },
+  actionButtonText: { color: '#C01918', fontWeight: '600' },
   actionButtonRow: { flexDirection: 'row', justifyContent: 'center', gap: 6 },
   chaptersSection: { gap: Spacing.two, marginTop: Spacing.two },
   chaptersHeading: { opacity: 0.85 },
@@ -349,10 +354,10 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: 'rgba(229,9,20,0.14)',
+    backgroundColor: 'rgba(192, 25, 24,0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  chapterNumberText: { color: '#e50914' },
+  chapterNumberText: { color: '#C01918' },
   chapterTitle: { flex: 1 },
 });

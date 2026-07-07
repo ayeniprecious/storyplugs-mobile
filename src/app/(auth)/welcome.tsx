@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Spacing } from '@/constants/theme';
@@ -29,10 +29,11 @@ export default function Welcome() {
     <LinearGradient colors={['#2a070b', '#000000']} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.brandBlock}>
-          <View style={styles.logoMark}>
-            <Ionicons name="book" size={30} color="#fff" />
-          </View>
-          <Text style={styles.brandName}>StoryPlugs</Text>
+          <Image
+            source={require('@/assets/images/logo-mark.png')}
+            style={styles.logoMark}
+            resizeMode="contain"
+          />
           <Text style={styles.tagline}>Your daily emotional vitamin</Text>
         </View>
 
@@ -40,7 +41,7 @@ export default function Welcome() {
           {FEATURES.map((feature) => (
             <View key={feature.title} style={styles.featureRow}>
               <View style={styles.featureIcon}>
-                <Ionicons name={feature.icon} size={22} color="#e50914" />
+                <Ionicons name={feature.icon} size={22} color="#C01918" />
               </View>
               <View style={styles.featureText}>
                 <Text style={styles.featureTitle}>{feature.title}</Text>
@@ -71,21 +72,12 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: {
     flex: 1,
-    paddingHorizontal: Spacing.three,
+    paddingHorizontal: Spacing.two + 4,
     paddingVertical: Spacing.four,
     justifyContent: 'space-between',
   },
   brandBlock: { alignItems: 'center', marginTop: Spacing.six },
-  logoMark: {
-    width: 64,
-    height: 64,
-    borderRadius: 18,
-    backgroundColor: '#e50914',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.three,
-  },
-  brandName: { color: '#fff', fontSize: 30, fontWeight: '700', letterSpacing: 0.5 },
+  logoMark: { width: 140, height: 140, marginBottom: Spacing.two },
   tagline: { color: 'rgba(255,255,255,0.65)', fontSize: 15, marginTop: Spacing.two },
   featureList: { gap: Spacing.three },
   featureRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
@@ -93,7 +85,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: 'rgba(229,9,20,0.12)',
+    backgroundColor: 'rgba(192, 25, 24,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -102,7 +94,7 @@ const styles = StyleSheet.create({
   featureBlurb: { color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 18 },
   buttonBlock: { gap: Spacing.two },
   primaryButton: {
-    backgroundColor: '#e50914',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two + 4,
     alignItems: 'center',

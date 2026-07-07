@@ -128,7 +128,7 @@ export default function Personalize() {
                       type="backgroundElement"
                       style={[styles.optionIcon, selected && styles.optionIconSelected]}
                     >
-                      <Ionicons name={goal.icon} size={20} color={selected ? '#fff' : '#e50914'} />
+                      <Ionicons name={goal.icon} size={20} color={selected ? '#fff' : '#C01918'} />
                     </ThemedView>
                     <ThemedView style={styles.optionTextGroup}>
                       <ThemedText type="smallBold">{goal.label}</ThemedText>
@@ -136,7 +136,7 @@ export default function Personalize() {
                         {goal.blurb}
                       </ThemedText>
                     </ThemedView>
-                    {selected && <Ionicons name="checkmark-circle" size={22} color="#e50914" />}
+                    {selected && <Ionicons name="checkmark-circle" size={22} color="#C01918" />}
                   </Pressable>
                 );
               })}
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.three,
+    paddingHorizontal: Spacing.two + 4,
     paddingTop: Spacing.three,
   },
   backButton: { flexDirection: 'row', alignItems: 'center', width: 70 },
@@ -215,9 +215,9 @@ const styles = StyleSheet.create({
     marginRight: 70,
   },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#3a3a3c' },
-  dotActive: { backgroundColor: '#e50914', width: 22 },
-  dotDone: { backgroundColor: '#e50914', opacity: 0.5 },
-  scrollContent: { padding: Spacing.three, gap: Spacing.two },
+  dotActive: { backgroundColor: '#C01918', width: 22 },
+  dotDone: { backgroundColor: '#C01918', opacity: 0.5 },
+  scrollContent: { paddingHorizontal: Spacing.two + 4, paddingVertical: Spacing.three, gap: Spacing.two },
   title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.two },
   subtitle: { opacity: 0.75, marginBottom: Spacing.three },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#3a3a3c',
   },
-  chipSelected: { backgroundColor: '#e50914', borderColor: '#e50914' },
+  chipSelected: { backgroundColor: '#C01918', borderColor: '#C01918' },
   chipTextSelected: { color: '#fff', fontWeight: '600' },
   optionCard: {
     flexDirection: 'row',
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     borderColor: '#3a3a3c',
     marginBottom: Spacing.two,
   },
-  optionCardSelected: { borderColor: '#e50914' },
+  optionCardSelected: { borderColor: '#C01918' },
   optionIcon: {
     width: 40,
     height: 40,
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  optionIconSelected: { backgroundColor: '#e50914' },
+  optionIconSelected: { backgroundColor: '#C01918' },
   optionTextGroup: { flex: 1, gap: 2 },
   optionBlurb: { opacity: 0.6 },
   radio: {
@@ -263,11 +263,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioSelected: { borderColor: '#e50914' },
-  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#e50914' },
+  radioSelected: { borderColor: '#C01918' },
+  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#C01918' },
   error: { color: '#ff453a', marginTop: Spacing.two },
   primaryButton: {
-    backgroundColor: '#e50914',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two + 4,
     alignItems: 'center',

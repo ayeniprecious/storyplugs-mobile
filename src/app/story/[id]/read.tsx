@@ -84,7 +84,7 @@ export default function StoryRead() {
           <ThemedText type="smallBold">Story not found</ThemedText>
           <Link href="/(app)" asChild>
             <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#e50914" />
+              <Ionicons name="chevron-back" size={16} color="#C01918" />
               <ThemedText type="link">Back to Home</ThemedText>
             </Pressable>
           </Link>
@@ -120,7 +120,7 @@ export default function StoryRead() {
         >
           <Link href={{ pathname: '/story/[id]', params: { id } }} asChild>
             <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#e50914" />
+              <Ionicons name="chevron-back" size={16} color="#C01918" />
               <ThemedText type="link">Back</ThemedText>
             </Pressable>
           </Link>
@@ -147,7 +147,7 @@ export default function StoryRead() {
                 onPress={() => goToChapter(chapterIndex)}
                 disabled={isFirstChapter}
               >
-                <Ionicons name="chevron-back" size={16} color={isFirstChapter ? '#5a5a5c' : '#e50914'} />
+                <Ionicons name="chevron-back" size={16} color={isFirstChapter ? '#5a5a5c' : '#C01918'} />
                 <ThemedText
                   style={[styles.chapterNavText, isFirstChapter && styles.chapterNavTextDisabled]}
                 >
@@ -157,7 +157,7 @@ export default function StoryRead() {
               {!isLastChapter && (
                 <Pressable style={styles.chapterNavButton} onPress={() => goToChapter(chapterIndex + 2)}>
                   <ThemedText style={styles.chapterNavText}>Next Chapter</ThemedText>
-                  <Ionicons name="chevron-forward" size={16} color="#e50914" />
+                  <Ionicons name="chevron-forward" size={16} color="#C01918" />
                 </Pressable>
               )}
             </ThemedView>
@@ -200,14 +200,19 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   centerFill: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two },
-  scrollContent: { padding: Spacing.three, gap: Spacing.two, paddingBottom: Spacing.six },
+  scrollContent: {
+    paddingHorizontal: Spacing.two + 4,
+    paddingTop: Spacing.three,
+    gap: Spacing.two,
+    paddingBottom: Spacing.six,
+  },
   skeletonBackLink: { width: 60, height: 16, borderRadius: 4, marginBottom: Spacing.two },
   skeletonTag: { width: 100, height: 12, borderRadius: 4, marginTop: Spacing.two },
   skeletonTitle: { width: '70%', height: 30, borderRadius: 6 },
   skeletonLine: { width: '100%', height: 16, borderRadius: 4 },
   skeletonLineShort: { width: '60%', height: 16, borderRadius: 4 },
   progressTrack: { height: 3, backgroundColor: 'rgba(128,128,128,0.25)' },
-  progressFill: { height: 3, backgroundColor: '#e50914' },
+  progressFill: { height: 3, backgroundColor: '#C01918' },
   backLinkCombined: {
     marginBottom: Spacing.two,
     alignSelf: 'flex-start',
@@ -215,18 +220,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
   },
-  categoryTag: { color: '#e50914', fontWeight: '600', textTransform: 'uppercase' },
+  categoryTag: { color: '#C01918', fontWeight: '600', textTransform: 'uppercase' },
   title: { fontSize: 25, lineHeight: 31 },
   body: { fontSize: 16, lineHeight: 24, opacity: 0.9 },
   chapterNavRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: Spacing.two },
   chapterNavButton: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   chapterNavButtonDisabled: { opacity: 0.4 },
-  chapterNavText: { color: '#e50914', fontWeight: '600' },
+  chapterNavText: { color: '#C01918', fontWeight: '600' },
   chapterNavTextDisabled: { color: '#5a5a5c' },
   calloutBox: { padding: Spacing.three, borderRadius: 12, gap: 4 },
   completeButton: {
     marginTop: Spacing.two,
-    backgroundColor: '#e50914',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two + 4,
     alignItems: 'center',

@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: Spacing.three,
+    paddingHorizontal: Spacing.two + 4,
     gap: Spacing.two,
   },
   title: { textAlign: 'center', fontSize: 28, lineHeight: 34 },
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   },
   error: { color: '#ff453a', marginBottom: Spacing.two },
   primaryButton: {
-    backgroundColor: '#e50914',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two + 4,
     alignItems: 'center',

@@ -142,7 +142,7 @@ export default function Search() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  safeArea: { flex: 1, paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
+  safeArea: { flex: 1, paddingHorizontal: Spacing.two + 4, paddingTop: Spacing.three },
   title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.three },
   input: {
     borderWidth: 1,
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   suggestionSection: { gap: Spacing.two },
   suggestionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   suggestionHeading: { opacity: 0.85 },
-  clearAll: { color: '#e50914' },
+  clearAll: { color: '#C01918' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   chip: {
     flexDirection: 'row',
@@ -181,6 +181,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: 20,
-    backgroundColor: 'rgba(229,9,20,0.15)',
+    backgroundColor: 'rgba(192, 25, 24,0.15)',
   },
 });

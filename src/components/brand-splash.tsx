@@ -1,7 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet } from 'react-native';
+import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useRef } from "react";
+import { Animated, Easing, StyleSheet } from "react-native";
 
 interface BrandSplashProps {
   /** Flip to true when the app is ready — the splash fades out, then calls onHidden. */
@@ -23,12 +22,25 @@ export function BrandSplash({ done, onHidden }: BrandSplashProps) {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(logoOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
-      Animated.spring(logoScale, { toValue: 1, friction: 6, tension: 50, useNativeDriver: true }),
+      Animated.timing(logoOpacity, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.spring(logoScale, {
+        toValue: 1,
+        friction: 6,
+        tension: 50,
+        useNativeDriver: true,
+      }),
       Animated.sequence([
         Animated.delay(500),
         Animated.parallel([
-          Animated.timing(textOpacity, { toValue: 1, duration: 600, useNativeDriver: true }),
+          Animated.timing(textOpacity, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
           Animated.timing(textShift, {
             toValue: 0,
             duration: 600,
@@ -53,24 +65,25 @@ export function BrandSplash({ done, onHidden }: BrandSplashProps) {
 
   return (
     <Animated.View
-      pointerEvents={done ? 'none' : 'auto'}
+      pointerEvents={done ? "none" : "auto"}
       style={[StyleSheet.absoluteFill, { opacity: containerOpacity }]}
     >
-      <LinearGradient colors={['#2a070b', '#000000']} style={styles.gradient}>
-        <Animated.View
-          style={[styles.logoMark, { opacity: logoOpacity, transform: [{ scale: logoScale }] }]}
-        >
-          <Ionicons name="book" size={44} color="#fff" />
-        </Animated.View>
+      <LinearGradient colors={["#2a070b", "#000000"]} style={styles.gradient}>
+        <Animated.Image
+          source={require("@/assets/images/logo-mark.png")}
+          style={[
+            styles.logoMark,
+            { opacity: logoOpacity, transform: [{ scale: logoScale }] },
+          ]}
+          resizeMode="contain"
+        />
         <Animated.Text
-          style={[styles.brandName, { opacity: textOpacity, transform: [{ translateY: textShift }] }]}
+          style={[
+            styles.tagline,
+            { opacity: textOpacity, transform: [{ translateY: textShift }] },
+          ]}
         >
-          StoryPlugs
-        </Animated.Text>
-        <Animated.Text
-          style={[styles.tagline, { opacity: textOpacity, transform: [{ translateY: textShift }] }]}
-        >
-          Your daily emotional vitamin
+          Plugging Stories Into The World
         </Animated.Text>
       </LinearGradient>
     </Animated.View>
@@ -78,21 +91,7 @@ export function BrandSplash({ done, onHidden }: BrandSplashProps) {
 }
 
 const styles = StyleSheet.create({
-  gradient: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  logoMark: {
-    width: 96,
-    height: 96,
-    borderRadius: 26,
-    backgroundColor: '#e50914',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-    shadowColor: '#e50914',
-    shadowOpacity: 0.5,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 12,
-  },
-  brandName: { color: '#fff', fontSize: 32, fontWeight: '700', letterSpacing: 0.5 },
-  tagline: { color: 'rgba(255,255,255,0.65)', fontSize: 15, marginTop: 8 },
+  gradient: { flex: 1, alignItems: "center", justifyContent: "center" },
+  logoMark: { width: 180, height: 180, marginBottom: 8 },
+  tagline: { color: "rgba(255,255,255,0.65)", fontSize: 15, marginTop: 8 },
 });

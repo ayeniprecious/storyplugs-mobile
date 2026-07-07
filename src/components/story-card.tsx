@@ -50,5 +50,5 @@ const styles = StyleSheet.create({
     height: 3,
     backgroundColor: 'rgba(255,255,255,0.25)',
   },
-  progressFill: { height: 3, backgroundColor: '#e50914' },
+  progressFill: { height: 3, backgroundColor: '#C01918' },
 });
