@@ -33,8 +33,11 @@ export function useComments(storyId: string) {
     const userIds = [...new Set(list.map((c) => c.user_id))];
     const profileByid = new Map<string, { display_name: string | null; avatar_url: string | null }>();
     if (userIds.length > 0) {
+      // public_commenter_profiles is a view scoped to users who've posted a
+      // public comment (see 20260717000000_public_commenter_profiles.sql) —
+      // profiles itself only allows reading your own row.
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("public_commenter_profiles")
         .select("id, display_name, avatar_url")
         .in("id", userIds);
       for (const p of profiles ?? []) {

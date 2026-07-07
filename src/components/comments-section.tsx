@@ -1,12 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, TextInput } from 'react-native';
 
 import { Avatar } from '@/components/avatar';
 import { ReportModal } from '@/components/report-modal';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useComments } from '@/hooks/use-comments';
+import { useTheme } from '@/hooks/use-theme';
 
 function timeAgo(iso: string) {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -21,6 +24,7 @@ function timeAgo(iso: string) {
 
 export function CommentsSection({ storyId }: { storyId: string }) {
   const { user } = useAuth();
+  const theme = useTheme();
   const { comments, loading, posting, error, addComment, removeComment } = useComments(storyId);
   const [draft, setDraft] = useState('');
   const [reportCommentId, setReportCommentId] = useState<string | null>(null);
@@ -31,39 +35,45 @@ export function CommentsSection({ storyId }: { storyId: string }) {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Comments{comments.length > 0 ? ` (${comments.length})` : ''}</Text>
+    <ThemedView style={styles.container}>
+      <ThemedText type="smallBold" style={styles.heading}>
+        Comments{comments.length > 0 ? ` (${comments.length})` : ''}
+      </ThemedText>
 
-      <View style={styles.inputRow}>
+      <ThemedView style={styles.inputRow}>
         <TextInput
           value={draft}
           onChangeText={setDraft}
           placeholder="Share your thoughts…"
-          placeholderTextColor="#8a8a8a"
-          style={styles.input}
+          placeholderTextColor={theme.placeholder}
+          style={[styles.input, { borderColor: theme.border, color: theme.text }]}
           multiline
         />
         <Pressable style={styles.postButton} onPress={handlePost} disabled={posting || !draft.trim()}>
           {posting ? <ActivityIndicator color="#fff" size="small" /> : <Ionicons name="send" size={16} color="#fff" />}
         </Pressable>
-      </View>
-      {error && <Text style={styles.error}>{error}</Text>}
+      </ThemedView>
+      {error && <ThemedText style={styles.error}>{error}</ThemedText>}
 
       {loading ? (
         <ActivityIndicator color="#C01918" style={{ marginTop: Spacing.two }} />
       ) : comments.length === 0 ? (
-        <Text style={styles.emptyHint}>Be the first to comment.</Text>
+        <ThemedText type="small" style={styles.emptyHint}>
+          Be the first to comment.
+        </ThemedText>
       ) : (
         comments.map((comment) => (
-          <View key={comment.id} style={styles.commentRow}>
+          <ThemedView key={comment.id} style={styles.commentRow}>
             <Avatar url={comment.authorAvatarUrl} fallbackLetter={comment.authorName[0] ?? 'U'} size={30} />
-            <View style={styles.commentBody}>
-              <View style={styles.commentHeaderRow}>
-                <Text style={styles.commentAuthor}>{comment.authorName}</Text>
-                <Text style={styles.commentTime}>{timeAgo(comment.created_at)}</Text>
-              </View>
-              <Text style={styles.commentText}>{comment.body}</Text>
-            </View>
+            <ThemedView style={styles.commentBody}>
+              <ThemedView style={styles.commentHeaderRow}>
+                <ThemedText type="smallBold">{comment.authorName}</ThemedText>
+                <ThemedText type="small" style={styles.commentTime}>
+                  {timeAgo(comment.created_at)}
+                </ThemedText>
+              </ThemedView>
+              <ThemedText style={styles.commentText}>{comment.body}</ThemedText>
+            </ThemedView>
             {comment.user_id === user?.id ? (
               <Pressable onPress={() => removeComment(comment.id)} hitSlop={8}>
                 <Ionicons name="trash-outline" size={16} color="#8a8a8e" />
@@ -73,7 +83,7 @@ export function CommentsSection({ storyId }: { storyId: string }) {
                 <Ionicons name="flag-outline" size={16} color="#8a8a8e" />
               </Pressable>
             )}
-          </View>
+          </ThemedView>
         ))
       )}
 
@@ -83,22 +93,20 @@ export function CommentsSection({ storyId }: { storyId: string }) {
         targetType="comment"
         targetId={reportCommentId ?? ''}
       />
-    </View>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { gap: Spacing.two, marginTop: Spacing.three },
-  heading: { color: '#fff', fontSize: 17, fontWeight: '700' },
-  inputRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-end' },
+  heading: { fontSize: 17 },
+  inputRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-end', backgroundColor: 'transparent' },
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#3a3a3c',
     borderRadius: 12,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
-    color: '#fff',
     fontSize: 14,
     maxHeight: 90,
   },
@@ -111,11 +119,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   error: { color: '#ff453a', fontSize: 13 },
-  emptyHint: { color: 'rgba(255,255,255,0.5)', fontSize: 14, marginTop: Spacing.two },
-  commentRow: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.three, alignItems: 'flex-start' },
-  commentBody: { flex: 1, gap: 2 },
-  commentHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  commentAuthor: { color: '#fff', fontSize: 13, fontWeight: '700' },
-  commentTime: { color: 'rgba(255,255,255,0.4)', fontSize: 12 },
-  commentText: { color: 'rgba(255,255,255,0.85)', fontSize: 14, lineHeight: 20 },
+  emptyHint: { opacity: 0.6, marginTop: Spacing.two },
+  commentRow: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    marginTop: Spacing.three,
+    alignItems: 'flex-start',
+    backgroundColor: 'transparent',
+  },
+  commentBody: { flex: 1, gap: 2, backgroundColor: 'transparent' },
+  commentHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'transparent',
+  },
+  commentTime: { opacity: 0.5 },
+  commentText: { fontSize: 14, lineHeight: 20, opacity: 0.9 },
 });
