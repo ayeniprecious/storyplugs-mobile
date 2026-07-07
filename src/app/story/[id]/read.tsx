@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Link, router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -22,6 +22,7 @@ export default function StoryRead() {
   const [story, setStory] = useState<Story | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
 
   const { chapters, loading: chaptersLoading } = useStoryChapters(id ?? '');
   const { progress, markComplete, updateProgressPercent } = useStoryProgress(id ?? '');
@@ -54,6 +55,15 @@ export default function StoryRead() {
       cancelled = true;
     };
   }, [id]);
+
+  // Chapter navigation only changes the `chapter` param on this same mounted
+  // screen (router.setParams), so neither `loading` nor `chaptersLoading`
+  // resets and the ScrollView keeps whatever offset the previous chapter was
+  // left at — without this, chapter 2 would open already scrolled down to
+  // wherever "Next Chapter" was tapped in chapter 1.
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [id, chapter]);
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
@@ -117,6 +127,7 @@ export default function StoryRead() {
       </ThemedView>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={styles.scrollContent}
           onScroll={handleScroll}
           scrollEventThrottle={200}

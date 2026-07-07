@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { Image } from 'expo-image';
 import { Link, router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, Share, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -34,6 +34,7 @@ export default function StoryPreview() {
   const [notFound, setNotFound] = useState(false);
   const [previewProgress, setPreviewProgress] = useState<PreviewProgress | null>(null);
   const [progressLoading, setProgressLoading] = useState(true);
+  const scrollRef = useRef<ScrollView>(null);
 
   const { isFavorited, toggle: toggleFavorite } = useFavorite(id ?? '');
   const { labels: categoryLabels } = useCategories();
@@ -78,6 +79,13 @@ export default function StoryPreview() {
     return () => {
       cancelled = true;
     };
+  }, [id]);
+
+  // Belt-and-suspenders: the loading skeleton (rendered in a separate branch
+  // below, with no ScrollView) already forces a fresh ScrollView mount on
+  // every id change in practice, but this guarantees it regardless of timing.
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
   }, [id]);
 
   useEffect(() => {
@@ -185,7 +193,7 @@ export default function StoryPreview() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent}>
           <Link href="/(app)" asChild>
             <Pressable style={styles.backLinkCombined}>
               <Ionicons name="chevron-back" size={16} color="#C01918" />
