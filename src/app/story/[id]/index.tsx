@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -118,6 +119,7 @@ export default function StoryPreview() {
 
   async function handleShare() {
     if (!story) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       const result = await Share.share({
         message: `"${story.title}" — a story from StoryPlugs.\n\n${story.body.slice(0, 140)}...`,
@@ -134,6 +136,7 @@ export default function StoryPreview() {
 
   function handleListenToggle() {
     if (!story?.audio_url) return;
+    Haptics.selectionAsync();
     if (playerStatus.playing) {
       player.pause();
     } else {
@@ -141,8 +144,14 @@ export default function StoryPreview() {
     }
   }
 
+  function handleFavoriteToggle() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    toggleFavorite();
+  }
+
   function goToChapter(chapterNumber?: number) {
     if (!id) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({
       pathname: '/story/[id]/read',
       params: chapterNumber ? { id, chapter: String(chapterNumber) } : { id },
@@ -190,6 +199,9 @@ export default function StoryPreview() {
   if (completed) ctaLabel = 'Read Again';
   else if (started) ctaLabel = 'Continue Reading';
 
+  const wordCount = story.body.trim().split(/\s+/).filter(Boolean).length;
+  const readMinutes = Math.max(1, Math.round(wordCount / 200));
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -205,15 +217,44 @@ export default function StoryPreview() {
             <Image source={{ uri: story.image_url }} style={styles.heroImage} contentFit="cover" />
           )}
 
-          <ThemedText type="small" style={styles.categoryTag}>
-            {categoryLabels[story.category] ?? story.category}
-          </ThemedText>
+          <ThemedView style={styles.metaRow}>
+            <ThemedText type="small" style={styles.categoryTag}>
+              {categoryLabels[story.category] ?? story.category}
+            </ThemedText>
+            <ThemedText type="small" style={styles.readTime}>
+              · {readMinutes} min read
+            </ThemedText>
+          </ThemedView>
           <ThemedText type="title" style={styles.title}>
             {story.title}
           </ThemedText>
           <ThemedText style={styles.excerpt} numberOfLines={4}>
             {story.body}
           </ThemedText>
+
+          {story.daily_lesson && (
+            <ThemedView style={styles.lessonCard}>
+              <ThemedView style={styles.lessonHeaderRow}>
+                <Ionicons name="bulb-outline" size={16} color="#C01918" />
+                <ThemedText type="smallBold" style={styles.lessonHeading}>
+                  Today&apos;s Lesson
+                </ThemedText>
+              </ThemedView>
+              <ThemedText style={styles.lessonText}>{story.daily_lesson}</ThemedText>
+            </ThemedView>
+          )}
+
+          {story.reflection_question && (
+            <ThemedView style={[styles.reflectionCard, { borderColor: theme.border }]}>
+              <ThemedView style={styles.lessonHeaderRow}>
+                <Ionicons name="help-circle-outline" size={16} color="#C01918" />
+                <ThemedText type="smallBold" style={styles.lessonHeading}>
+                  Reflect
+                </ThemedText>
+              </ThemedView>
+              <ThemedText style={styles.reflectionText}>{story.reflection_question}</ThemedText>
+            </ThemedView>
+          )}
 
           {!progressLoading && completed && (
             <ThemedView style={[styles.completedBadge, styles.completedBadgeRow]}>
@@ -238,7 +279,7 @@ export default function StoryPreview() {
           </Pressable>
 
           <ThemedView style={styles.actionsRow}>
-            <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={toggleFavorite}>
+            <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={handleFavoriteToggle}>
               <Ionicons name={isFavorited ? 'checkmark' : 'bookmark-outline'} size={16} color="#C01918" />
               <ThemedText style={styles.actionButtonText}>{isFavorited ? 'Saved' : 'Save'}</ThemedText>
             </Pressable>
@@ -314,9 +355,27 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   heroImage: { width: '100%', height: 220, borderRadius: 16, marginBottom: Spacing.two },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   categoryTag: { color: '#C01918', fontWeight: '600', textTransform: 'uppercase' },
+  readTime: { opacity: 0.6 },
   title: { fontSize: 25, lineHeight: 31 },
   excerpt: { fontSize: 16, lineHeight: 24, opacity: 0.8 },
+  lessonCard: {
+    borderRadius: 12,
+    padding: Spacing.three,
+    backgroundColor: 'rgba(192,25,24,0.08)',
+    gap: Spacing.one,
+  },
+  lessonHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  lessonHeading: { color: '#C01918' },
+  lessonText: { fontSize: 15, lineHeight: 22, opacity: 0.9 },
+  reflectionCard: {
+    borderRadius: 12,
+    padding: Spacing.three,
+    borderWidth: 1,
+    gap: Spacing.one,
+  },
+  reflectionText: { fontSize: 15, lineHeight: 22, fontStyle: 'italic', opacity: 0.9 },
   completedBadge: {
     borderRadius: 10,
     paddingVertical: Spacing.two,
