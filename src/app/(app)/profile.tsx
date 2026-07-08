@@ -1,164 +1,27 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { Link } from 'expo-router';
-import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-} from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
+import { SettingsGroup } from '@/components/settings-group';
+import { SettingsRow } from '@/components/settings-row';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { CONTENT_TYPE_OPTIONS, TIME_SLOT_OPTIONS } from '@/constants/notification-options';
-import { GOAL_OPTIONS, STORY_LENGTH_OPTIONS } from '@/constants/personalization-options';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
-import { useCategories } from '@/context/categories-context';
 import { useProfile } from '@/context/profile-context';
-import { FontScaleKey, ThemeMode, useThemePrefs } from '@/context/theme-prefs-context';
-import { useAvatarUpload } from '@/hooks/use-avatar-upload';
 import { useTheme } from '@/hooks/use-theme';
-import type { NotificationContentType, StoryLengthPref } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
-
-const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
-  { value: 'system', label: 'System' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-];
-
-const FONT_OPTIONS: { value: FontScaleKey; label: string }[] = [
-  { value: 'small', label: 'A' },
-  { value: 'medium', label: 'A' },
-  { value: 'large', label: 'A' },
-  { value: 'xlarge', label: 'A' },
-];
 
 export default function Profile() {
   const { user, signOut } = useAuth();
-  const { profile, saveNotificationPreferences, savePersonalization, updateDisplayName } = useProfile();
-  const { order: categoryOrder, labels: categoryLabels } = useCategories();
-  const { themeMode, setThemeMode, fontScaleKey, setFontScaleKey } = useThemePrefs();
-  const { uploading, error: avatarError, pickAndUpload } = useAvatarUpload();
+  const { profile } = useProfile();
   const theme = useTheme();
-
-  const [nameInput, setNameInput] = useState('');
-  const [savingName, setSavingName] = useState(false);
-  const [nameError, setNameError] = useState<string | null>(null);
-  const [avatarViewerOpen, setAvatarViewerOpen] = useState(false);
-
-  const [selectedTypes, setSelectedTypes] = useState<NotificationContentType[]>([]);
-  const [selectedTime, setSelectedTime] = useState('08:00');
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const [interests, setInterests] = useState<string[]>([]);
-  const [goals, setGoals] = useState<string[]>([]);
-  const [storyLength, setStoryLength] = useState<StoryLengthPref>('any');
-  const [savingPrefs, setSavingPrefs] = useState(false);
-  const [prefsSaved, setPrefsSaved] = useState(false);
-
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [changingPassword, setChangingPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [passwordChanged, setPasswordChanged] = useState(false);
-
-  useEffect(() => {
-    if (profile) {
-      setSelectedTypes(profile.notification_types);
-      setSelectedTime(profile.notification_time.slice(0, 5));
-      setNameInput(profile.display_name ?? '');
-      setInterests(profile.interests);
-      setGoals(profile.personal_goals);
-      setStoryLength(profile.story_length_pref ?? 'any');
-    }
-  }, [profile]);
-
   const initial = (profile?.display_name?.[0] ?? user?.email?.[0] ?? 'U').toUpperCase();
-  const nameChanged = nameInput.trim() !== (profile?.display_name ?? '') && nameInput.trim() !== '';
-
-  async function handleSaveName() {
-    setSavingName(true);
-    setNameError(null);
-    const { error } = await updateDisplayName(nameInput);
-    setSavingName(false);
-    if (error) setNameError(error);
-  }
-
-  function toggleType(value: NotificationContentType) {
-    setSaved(false);
-    setSelectedTypes((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-    );
-  }
-
-  async function handleSavePreferences() {
-    if (selectedTypes.length === 0) return;
-    setSaving(true);
-    await saveNotificationPreferences(selectedTypes, selectedTime);
-    setSaving(false);
-    setSaved(true);
-  }
-
-  function toggleInterest(value: string) {
-    setPrefsSaved(false);
-    setInterests((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
-  }
-
-  function toggleGoal(value: string) {
-    setPrefsSaved(false);
-    setGoals((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
-  }
-
-  async function handleSavePrefs() {
-    setSavingPrefs(true);
-    await savePersonalization(interests, goals, storyLength);
-    setSavingPrefs(false);
-    setPrefsSaved(true);
-  }
-
-  async function handleChangePassword() {
-    setPasswordError(null);
-    setPasswordChanged(false);
-    if (!currentPassword) {
-      setPasswordError('Enter your current password.');
-      return;
-    }
-    if (newPassword.length < 6) {
-      setPasswordError('New password must be at least 6 characters.');
-      return;
-    }
-    setChangingPassword(true);
-    const { error: reauthError } = await supabase.auth.signInWithPassword({
-      email: user?.email ?? '',
-      password: currentPassword,
-    });
-    if (reauthError) {
-      setChangingPassword(false);
-      setPasswordError('Current password is incorrect.');
-      return;
-    }
-    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
-    setChangingPassword(false);
-    if (updateError) {
-      setPasswordError(updateError.message);
-      return;
-    }
-    setCurrentPassword('');
-    setNewPassword('');
-    setPasswordChanged(true);
-  }
 
   function confirmDeleteAccount() {
     Alert.alert(
@@ -190,391 +53,43 @@ export default function Profile() {
             Profile
           </ThemedText>
 
-          <ThemedView type="backgroundElement" style={styles.profileCard}>
-            <ThemedView style={styles.avatarWrap}>
-              <Pressable
-                onPress={() => (profile?.avatar_url ? setAvatarViewerOpen(true) : pickAndUpload())}
-                disabled={uploading}
-              >
-                <Avatar url={profile?.avatar_url} fallbackLetter={initial} size={84} />
-              </Pressable>
-              <Pressable
-                onPress={pickAndUpload}
-                disabled={uploading}
-                style={[
-                  styles.avatarEditBadge,
-                  { backgroundColor: theme.backgroundSelected, borderColor: theme.backgroundElement },
-                ]}
-              >
-                {uploading ? (
-                  <ActivityIndicator size="small" color={theme.text} />
-                ) : (
-                  <Ionicons name="camera" size={14} color={theme.text} />
-                )}
-              </Pressable>
-            </ThemedView>
-
-            <ThemedView style={styles.nameRow}>
-              <TextInput
-                value={nameInput}
-                onChangeText={(text) => {
-                  setNameInput(text);
-                  setNameError(null);
-                }}
-                placeholder="Your name"
-                placeholderTextColor={theme.placeholder}
-                style={[styles.nameInput, { color: theme.text }]}
-              />
-              {nameChanged && (
-                <Pressable onPress={handleSaveName} disabled={savingName} hitSlop={8}>
-                  {savingName ? (
-                    <ActivityIndicator size="small" color={theme.text} />
-                  ) : (
-                    <ThemedText type="small" style={styles.inlineSaveLink}>
-                      Save
-                    </ThemedText>
-                  )}
-                </Pressable>
-              )}
-            </ThemedView>
-            {nameError && (
-              <ThemedText type="small" style={styles.errorText}>
-                {nameError}
-              </ThemedText>
-            )}
-            {avatarError && (
-              <ThemedText type="small" style={styles.errorText}>
-                {avatarError}
-              </ThemedText>
-            )}
-
-            <ThemedText type="small" style={styles.profileEmail}>
-              {user?.email}
-            </ThemedText>
-            {profile?.created_at && (
-              <ThemedText type="small" style={styles.memberSince}>
-                Member since{' '}
-                {new Date(profile.created_at).toLocaleDateString(undefined, {
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </ThemedText>
-            )}
-          </ThemedView>
-
-          <ThemedText type="smallBold" style={styles.sectionHeading}>
-            Preferences
-          </ThemedText>
-          <ThemedText type="small" style={styles.sectionHint}>
-            Themes you love
-          </ThemedText>
-          <ThemedView style={styles.chipWrap}>
-            {categoryOrder.map((slug) => {
-              const selected = interests.includes(slug);
-              return (
-                <Pressable
-                  key={slug}
-                  onPress={() => toggleInterest(slug)}
-                  style={[
-                    styles.chip,
-                    { borderColor: theme.border },
-                    selected && { backgroundColor: theme.backgroundSelected },
-                  ]}
-                >
-                  <ThemedText type="small" style={selected ? styles.chipTextSelected : undefined}>
-                    {categoryLabels[slug] ?? slug}
+          <Link href="/edit-profile" asChild>
+            <Pressable>
+              <ThemedView type="backgroundElement" style={styles.banner}>
+                <Avatar url={profile?.avatar_url} fallbackLetter={initial} size={56} />
+                <ThemedView style={styles.bannerTextGroup}>
+                  <ThemedText type="smallBold">{profile?.display_name || 'Add your name'}</ThemedText>
+                  <ThemedText type="small" style={styles.bannerEmail}>
+                    {user?.email}
                   </ThemedText>
-                </Pressable>
-              );
-            })}
-          </ThemedView>
-
-          <ThemedText type="small" style={styles.sectionHint}>
-            What brings you here
-          </ThemedText>
-          <ThemedView style={styles.chipWrap}>
-            {GOAL_OPTIONS.map((goal) => {
-              const selected = goals.includes(goal.value);
-              return (
-                <Pressable
-                  key={goal.value}
-                  onPress={() => toggleGoal(goal.value)}
-                  style={[
-                    styles.chip,
-                    { borderColor: theme.border },
-                    selected && { backgroundColor: theme.backgroundSelected },
-                  ]}
-                >
-                  <ThemedText type="small" style={selected ? styles.chipTextSelected : undefined}>
-                    {goal.label}
-                  </ThemedText>
-                </Pressable>
-              );
-            })}
-          </ThemedView>
-
-          <ThemedText type="small" style={styles.sectionHint}>
-            Preferred story length
-          </ThemedText>
-          <ThemedView style={styles.chipWrap}>
-            {STORY_LENGTH_OPTIONS.map((option) => {
-              const selected = storyLength === option.value;
-              return (
-                <Pressable
-                  key={option.value}
-                  onPress={() => {
-                    setPrefsSaved(false);
-                    setStoryLength(option.value);
-                  }}
-                  style={[
-                    styles.chip,
-                    { borderColor: theme.border },
-                    selected && { backgroundColor: theme.backgroundSelected },
-                  ]}
-                >
-                  <ThemedText type="small" style={selected ? styles.chipTextSelected : undefined}>
-                    {option.label}
-                  </ThemedText>
-                </Pressable>
-              );
-            })}
-          </ThemedView>
-
-          <Pressable
-            style={[styles.saveButton, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}
-            onPress={handleSavePrefs}
-            disabled={savingPrefs}
-          >
-            {savingPrefs ? (
-              <ActivityIndicator color={theme.text} />
-            ) : prefsSaved ? (
-              <ThemedView style={styles.saveButtonContent}>
-                <Ionicons name="checkmark" size={16} color="#32b45a" />
-                <ThemedText style={styles.saveButtonText}>Saved</ThemedText>
-              </ThemedView>
-            ) : (
-              <ThemedText style={styles.saveButtonText}>Save Preferences</ThemedText>
-            )}
-          </Pressable>
-
-          <ThemedText type="smallBold" style={styles.sectionHeading}>
-            Notifications
-          </ThemedText>
-          {CONTENT_TYPE_OPTIONS.map((type) => {
-            const selected = selectedTypes.includes(type.value);
-            return (
-              <Pressable
-                key={type.value}
-                onPress={() => toggleType(type.value)}
-                style={[styles.optionCard, { borderColor: theme.border }]}
-              >
-                <ThemedView
-                  style={[
-                    styles.checkbox,
-                    { borderColor: theme.border },
-                    selected && { backgroundColor: theme.backgroundSelected },
-                  ]}
-                >
-                  {selected && <Ionicons name="checkmark" size={13} color={theme.text} />}
                 </ThemedView>
-                <ThemedText type="small">{type.label}</ThemedText>
-              </Pressable>
-            );
-          })}
-
-          <ThemedView style={styles.timeRow}>
-            {TIME_SLOT_OPTIONS.map((slot) => {
-              const selected = selectedTime === slot.value;
-              return (
-                <Pressable
-                  key={slot.value}
-                  onPress={() => {
-                    setSaved(false);
-                    setSelectedTime(slot.value);
-                  }}
-                  style={[
-                    styles.timeChip,
-                    { borderColor: theme.border },
-                    selected && { backgroundColor: theme.backgroundSelected },
-                  ]}
-                >
-                  <ThemedText type="small" style={styles.timeChipText}>
-                    {slot.label}
-                  </ThemedText>
-                </Pressable>
-              );
-            })}
-          </ThemedView>
-
-          <Pressable
-            style={[styles.saveButton, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}
-            onPress={handleSavePreferences}
-            disabled={saving || selectedTypes.length === 0}
-          >
-            {saving ? (
-              <ActivityIndicator color={theme.text} />
-            ) : saved ? (
-              <ThemedView style={styles.saveButtonContent}>
-                <Ionicons name="checkmark" size={16} color="#32b45a" />
-                <ThemedText style={styles.saveButtonText}>Saved</ThemedText>
+                <Ionicons name="chevron-forward" size={18} color={theme.placeholder} />
               </ThemedView>
-            ) : (
-              <ThemedText style={styles.saveButtonText}>Save Preferences</ThemedText>
-            )}
-          </Pressable>
-
-          <ThemedText type="smallBold" style={styles.sectionHeading}>
-            Appearance
-          </ThemedText>
-          <ThemedView style={styles.segmentRow}>
-            {THEME_OPTIONS.map((opt) => (
-              <Pressable
-                key={opt.value}
-                onPress={() => setThemeMode(opt.value)}
-                style={[
-                  styles.segment,
-                  { borderColor: theme.border },
-                  themeMode === opt.value && { backgroundColor: theme.backgroundSelected },
-                ]}
-              >
-                <ThemedText
-                  type="small"
-                  style={themeMode === opt.value ? styles.segmentTextSelected : undefined}
-                >
-                  {opt.label}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </ThemedView>
-
-          <ThemedText type="smallBold" style={styles.sectionHeading}>
-            Text Size
-          </ThemedText>
-          <ThemedView style={styles.segmentRow}>
-            {FONT_OPTIONS.map((opt, i) => (
-              <Pressable
-                key={opt.value}
-                onPress={() => setFontScaleKey(opt.value)}
-                style={[
-                  styles.segment,
-                  { borderColor: theme.border },
-                  fontScaleKey === opt.value && { backgroundColor: theme.backgroundSelected },
-                ]}
-              >
-                <ThemedText
-                  style={[
-                    { fontSize: 14 + i * 3 },
-                    fontScaleKey === opt.value ? styles.segmentTextSelected : undefined,
-                  ]}
-                >
-                  {opt.label}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </ThemedView>
-
-          <ThemedText type="smallBold" style={styles.sectionHeading}>
-            Change Password
-          </ThemedText>
-          <ThemedView style={styles.passwordFieldWrap}>
-            <TextInput
-              value={currentPassword}
-              onChangeText={(text) => {
-                setCurrentPassword(text);
-                setPasswordError(null);
-              }}
-              placeholder="Current password"
-              placeholderTextColor={theme.placeholder}
-              secureTextEntry={!showCurrentPassword}
-              style={[styles.passwordInput, { borderColor: theme.border, color: theme.text }]}
-            />
-            <Pressable
-              onPress={() => setShowCurrentPassword((v) => !v)}
-              style={styles.passwordEyeButton}
-              hitSlop={8}
-            >
-              <Ionicons
-                name={showCurrentPassword ? 'eye-off-outline' : 'eye-outline'}
-                size={18}
-                color={theme.placeholder}
-              />
-            </Pressable>
-          </ThemedView>
-          <ThemedView style={styles.passwordFieldWrap}>
-            <TextInput
-              value={newPassword}
-              onChangeText={(text) => {
-                setNewPassword(text);
-                setPasswordError(null);
-              }}
-              placeholder="New password (min. 6 characters)"
-              placeholderTextColor={theme.placeholder}
-              secureTextEntry={!showNewPassword}
-              style={[styles.passwordInput, { borderColor: theme.border, color: theme.text }]}
-            />
-            <Pressable onPress={() => setShowNewPassword((v) => !v)} style={styles.passwordEyeButton} hitSlop={8}>
-              <Ionicons
-                name={showNewPassword ? 'eye-off-outline' : 'eye-outline'}
-                size={18}
-                color={theme.placeholder}
-              />
-            </Pressable>
-          </ThemedView>
-          {passwordError && (
-            <ThemedText type="small" style={styles.errorText}>
-              {passwordError}
-            </ThemedText>
-          )}
-          <Pressable
-            style={[styles.saveButton, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}
-            onPress={handleChangePassword}
-            disabled={changingPassword}
-          >
-            {changingPassword ? (
-              <ActivityIndicator color={theme.text} />
-            ) : passwordChanged ? (
-              <ThemedView style={styles.saveButtonContent}>
-                <Ionicons name="checkmark" size={16} color="#32b45a" />
-                <ThemedText style={styles.saveButtonText}>Password Updated</ThemedText>
-              </ThemedView>
-            ) : (
-              <ThemedText style={styles.saveButtonText}>Update Password</ThemedText>
-            )}
-          </Pressable>
-
-          <ThemedText type="smallBold" style={styles.sectionHeading}>
-            Support
-          </ThemedText>
-          <Link href="/help" asChild>
-            <Pressable style={StyleSheet.flatten([styles.linkRow, { borderColor: theme.border }])}>
-              <ThemedText type="small">Help</ThemedText>
-              <Ionicons name="chevron-forward" size={16} color={theme.placeholder} />
-            </Pressable>
-          </Link>
-          <Link href="/feedback" asChild>
-            <Pressable style={StyleSheet.flatten([styles.linkRow, { borderColor: theme.border }])}>
-              <ThemedText type="small">Feedback</ThemedText>
-              <Ionicons name="chevron-forward" size={16} color={theme.placeholder} />
-            </Pressable>
-          </Link>
-          <Link href="/about" asChild>
-            <Pressable style={StyleSheet.flatten([styles.linkRow, { borderColor: theme.border }])}>
-              <ThemedText type="small">About</ThemedText>
-              <Ionicons name="chevron-forward" size={16} color={theme.placeholder} />
-            </Pressable>
-          </Link>
-          <Link href="/privacy" asChild>
-            <Pressable style={StyleSheet.flatten([styles.linkRow, { borderColor: theme.border }])}>
-              <ThemedText type="small">Privacy</ThemedText>
-              <Ionicons name="chevron-forward" size={16} color={theme.placeholder} />
             </Pressable>
           </Link>
 
-          <Pressable style={[styles.signOutButton, { borderColor: theme.border }]} onPress={signOut}>
-            <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
-          </Pressable>
+          <SettingsGroup>
+            <SettingsRow label="Preferences" href="/preferences" showChevron />
+            <SettingsRow label="Notifications" href="/notification-settings" showChevron />
+            <SettingsRow label="Appearance" href="/appearance" showChevron isLast />
+          </SettingsGroup>
 
-          <Pressable style={styles.deleteButton} onPress={confirmDeleteAccount} disabled={deleting}>
+          <SettingsGroup>
+            <SettingsRow label="Change Password" href="/change-password" showChevron isLast />
+          </SettingsGroup>
+
+          <SettingsGroup>
+            <SettingsRow label="Help" href="/help" showChevron />
+            <SettingsRow label="Feedback" href="/feedback" showChevron />
+            <SettingsRow label="About" href="/about" showChevron />
+            <SettingsRow label="Privacy" href="/privacy" showChevron isLast />
+          </SettingsGroup>
+
+          <SettingsGroup>
+            <SettingsRow label="Sign Out" onPress={signOut} isLast />
+          </SettingsGroup>
+
+          <Pressable onPress={confirmDeleteAccount} disabled={deleting} style={styles.deleteButton}>
             {deleting ? (
               <ActivityIndicator color="#ff453a" />
             ) : (
@@ -583,19 +98,6 @@ export default function Profile() {
           </Pressable>
         </ScrollView>
       </SafeAreaView>
-
-      <Modal
-        visible={avatarViewerOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setAvatarViewerOpen(false)}
-      >
-        <Pressable style={styles.viewerBackdrop} onPress={() => setAvatarViewerOpen(false)}>
-          {profile?.avatar_url && (
-            <Image source={{ uri: profile.avatar_url }} style={styles.viewerImage} contentFit="contain" />
-          )}
-        </Pressable>
-      </Modal>
     </ThemedView>
   );
 }
@@ -606,142 +108,19 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: Spacing.two + 4,
     paddingTop: Spacing.three,
-    gap: Spacing.two,
     paddingBottom: Spacing.six,
   },
   title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.two },
-  profileCard: {
+  banner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
     borderRadius: 12,
     padding: Spacing.three,
-    gap: Spacing.two,
-    marginBottom: Spacing.two,
-    alignItems: 'center',
+    marginBottom: Spacing.three,
   },
-  avatarWrap: { position: 'relative', marginBottom: Spacing.two, backgroundColor: 'transparent' },
-  avatarEditBadge: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    alignSelf: 'stretch',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-  },
-  nameInput: {
-    fontSize: 17,
-    fontWeight: '600',
-    textAlign: 'center',
-    minWidth: 120,
-    paddingVertical: 4,
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-  },
-  inlineSaveLink: { color: '#700a0a', fontWeight: '600' },
-  errorText: { color: '#ff453a', textAlign: 'center' },
-  profileEmail: { opacity: 0.6 },
-  memberSince: { opacity: 0.45 },
-  sectionHeading: { marginTop: Spacing.three, marginBottom: Spacing.two, opacity: 0.85 },
-  sectionHint: { opacity: 0.6, marginBottom: 2 },
-  chipWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.one + 4,
-    marginBottom: Spacing.two,
-    backgroundColor: 'transparent',
-  },
-  chip: {
-    paddingHorizontal: Spacing.two + 4,
-    paddingVertical: Spacing.one + 3,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  chipTextSelected: { fontWeight: '600' },
-  optionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.two + 2,
-    borderRadius: 10,
-    borderWidth: 1,
-    marginBottom: Spacing.one + 4,
-  },
-  checkbox: { width: 18, height: 18, borderRadius: 5, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  linkRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.two + 2,
-    borderRadius: 10,
-    borderWidth: 1,
-    marginBottom: Spacing.one + 4,
-  },
-  timeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one + 4, marginBottom: Spacing.two },
-  timeChip: {
-    paddingHorizontal: Spacing.two + 4,
-    paddingVertical: Spacing.one + 3,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  timeChipText: { opacity: 0.85 },
-  saveButton: {
-    borderRadius: 10,
-    borderWidth: 1,
-    paddingVertical: Spacing.two + 2,
-    alignItems: 'center',
-  },
-  saveButtonText: { fontWeight: '600' },
-  saveButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'transparent',
-  },
-  segmentRow: { flexDirection: 'row', gap: Spacing.one + 4 },
-  segment: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: Spacing.two,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  segmentTextSelected: { fontWeight: '600' },
-  passwordFieldWrap: { justifyContent: 'center', marginBottom: Spacing.two, backgroundColor: 'transparent' },
-  passwordInput: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two + 2,
-    paddingRight: Spacing.three + 28,
-    fontSize: 16,
-  },
-  passwordEyeButton: { position: 'absolute', right: Spacing.three, padding: 4 },
-  signOutButton: {
-    marginTop: Spacing.three,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: Spacing.two + 2,
-    alignItems: 'center',
-  },
-  signOutText: { fontWeight: '600', opacity: 0.85 },
-  deleteButton: { marginTop: Spacing.one, alignItems: 'center', paddingVertical: Spacing.two },
+  bannerTextGroup: { flex: 1, gap: 2, backgroundColor: 'transparent' },
+  bannerEmail: { opacity: 0.6 },
+  deleteButton: { alignItems: 'center', paddingVertical: Spacing.two },
   deleteButtonText: { color: '#ff453a', fontWeight: '500', opacity: 0.85 },
-  viewerBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.92)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  viewerImage: { width: '100%', height: '80%' },
 });

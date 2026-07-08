@@ -1,7 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Link, router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
-import { NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  LayoutChangeEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CommentsSection } from '@/components/comments-section';
@@ -23,6 +30,7 @@ export default function StoryRead() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
+  const scrollDimsRef = useRef({ contentHeight: 0, viewportHeight: 0 });
 
   const { chapters, loading: chaptersLoading } = useStoryChapters(id ?? '');
   const { progress, markComplete, updateProgressPercent } = useStoryProgress(id ?? '');
@@ -63,14 +71,52 @@ export default function StoryRead() {
   // wherever "Next Chapter" was tapped in chapter 1.
   useEffect(() => {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
+    scrollDimsRef.current = { contentHeight: 0, viewportHeight: 0 };
   }, [id, chapter]);
+
+  const hasChapters = chapters.length > 0;
+  const requestedChapter = chapter ? parseInt(chapter, 10) : 1;
+  const chapterIndex = hasChapters
+    ? Math.max(0, Math.min(chapters.length - 1, requestedChapter - 1))
+    : 0;
+  const totalChapters = hasChapters ? chapters.length : 1;
+
+  // A story's overall progress is how far through ALL of its chapters the
+  // reader is, not just the current one -- otherwise scrolling to the bottom
+  // of chapter 1 of 5 would report 100%, and the Library progress bar would
+  // be meaningless for any multi-chapter story.
+  const reportProgress = useCallback(
+    (chapterScrollPercent: number) => {
+      const clamped = Math.min(100, Math.max(0, chapterScrollPercent));
+      const overall = Math.min(100, Math.round(((chapterIndex + clamped / 100) / totalChapters) * 100));
+      updateProgressPercent(overall);
+    },
+    [chapterIndex, totalChapters, updateProgressPercent]
+  );
+
+  function maybeReportFullyVisible() {
+    const { contentHeight, viewportHeight } = scrollDimsRef.current;
+    // A chapter short enough to need no scrolling would otherwise never fire
+    // a scroll event at all, leaving its share of progress stuck at 0.
+    if (contentHeight > 0 && viewportHeight > 0 && contentHeight <= viewportHeight) {
+      reportProgress(100);
+    }
+  }
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
     const scrollable = contentSize.height - layoutMeasurement.height;
-    if (scrollable <= 0) return;
-    const percent = Math.min(100, Math.round((contentOffset.y / scrollable) * 100));
-    updateProgressPercent(percent);
+    reportProgress(scrollable <= 0 ? 100 : (contentOffset.y / scrollable) * 100);
+  }
+
+  function handleContentSizeChange(_width: number, height: number) {
+    scrollDimsRef.current.contentHeight = height;
+    maybeReportFullyVisible();
+  }
+
+  function handleScrollViewLayout(event: LayoutChangeEvent) {
+    scrollDimsRef.current.viewportHeight = event.nativeEvent.layout.height;
+    maybeReportFullyVisible();
   }
 
   if (loading || chaptersLoading) {
@@ -106,11 +152,6 @@ export default function StoryRead() {
     );
   }
 
-  const hasChapters = chapters.length > 0;
-  const requestedChapter = chapter ? parseInt(chapter, 10) : 1;
-  const chapterIndex = hasChapters
-    ? Math.max(0, Math.min(chapters.length - 1, requestedChapter - 1))
-    : 0;
   const currentChapter = hasChapters ? chapters[chapterIndex] : null;
   const bodyText = currentChapter ? currentChapter.body : story.body;
   const isLastChapter = !hasChapters || chapterIndex === chapters.length - 1;
@@ -130,6 +171,8 @@ export default function StoryRead() {
           ref={scrollRef}
           contentContainerStyle={styles.scrollContent}
           onScroll={handleScroll}
+          onContentSizeChange={handleContentSizeChange}
+          onLayout={handleScrollViewLayout}
           scrollEventThrottle={200}
         >
           <ThemedView style={styles.topRow}>

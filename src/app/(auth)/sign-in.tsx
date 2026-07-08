@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link, router } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,12 +9,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 
+// Closes the in-progress auth browser tab/popup when it redirects back with
+// the OAuth result -- see the Expo + Supabase OAuth guide.
+WebBrowser.maybeCompleteAuthSession();
+
 export default function SignIn() {
-  const { signInWithEmail } = useAuth();
+  const { signInWithEmail, signInWithGoogle } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSignIn() {
@@ -26,6 +32,14 @@ export default function SignIn() {
     const { error: signInError } = await signInWithEmail(email.trim(), password);
     setSubmitting(false);
     if (signInError) setError(signInError);
+  }
+
+  async function handleGoogleSignIn() {
+    setGoogleSubmitting(true);
+    setError(null);
+    const { error: googleError } = await signInWithGoogle();
+    setGoogleSubmitting(false);
+    if (googleError) setError(googleError);
   }
 
   return (
@@ -73,11 +87,22 @@ export default function SignIn() {
           {submitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>Sign In</Text>}
         </Pressable>
 
-        <View style={styles.oauthGroup}>
-          <Text style={styles.comingSoonLabel}>
-            Continue with Google / Apple — coming soon (requires provider setup)
-          </Text>
+        <View style={styles.dividerRow}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or</Text>
+          <View style={styles.dividerLine} />
         </View>
+
+        <Pressable style={styles.googleButton} onPress={handleGoogleSignIn} disabled={googleSubmitting}>
+          {googleSubmitting ? (
+            <ActivityIndicator color="#1f1f1f" />
+          ) : (
+            <>
+              <Ionicons name="logo-google" size={18} color="#1f1f1f" />
+              <Text style={styles.googleButtonText}>Continue with Google</Text>
+            </>
+          )}
+        </Pressable>
 
         <Link href="/(auth)/sign-up" asChild>
           <Pressable>
@@ -141,13 +166,24 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
   },
   primaryButtonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  oauthGroup: {
-    marginTop: Spacing.four,
-    padding: Spacing.three,
-    borderRadius: 10,
+  dividerRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    gap: Spacing.two,
+    marginTop: Spacing.four,
   },
-  comingSoonLabel: { color: 'rgba(255,255,255,0.7)', textAlign: 'center', fontSize: 14 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.15)' },
+  dividerText: { color: 'rgba(255,255,255,0.45)', fontSize: 13 },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    paddingVertical: Spacing.two,
+    marginTop: Spacing.three,
+  },
+  googleButtonText: { color: '#1f1f1f', fontWeight: '600', fontSize: 15 },
   link: { color: '#3c87f7', textAlign: 'center', marginTop: Spacing.four, fontSize: 14 },
 });
