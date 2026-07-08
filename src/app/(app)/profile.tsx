@@ -189,11 +189,18 @@ export default function Profile() {
               >
                 <Avatar url={profile?.avatar_url} fallbackLetter={initial} size={84} />
               </Pressable>
-              <Pressable onPress={pickAndUpload} disabled={uploading} style={styles.avatarEditBadge}>
+              <Pressable
+                onPress={pickAndUpload}
+                disabled={uploading}
+                style={[
+                  styles.avatarEditBadge,
+                  { backgroundColor: theme.backgroundSelected, borderColor: theme.backgroundElement },
+                ]}
+              >
                 {uploading ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color={theme.text} />
                 ) : (
-                  <Ionicons name="camera" size={14} color="#fff" />
+                  <Ionicons name="camera" size={14} color={theme.text} />
                 )}
               </Pressable>
             </ThemedView>
@@ -210,11 +217,13 @@ export default function Profile() {
                 style={[styles.nameInput, { color: theme.text }]}
               />
               {nameChanged && (
-                <Pressable onPress={handleSaveName} style={styles.nameSaveButton} disabled={savingName}>
+                <Pressable onPress={handleSaveName} disabled={savingName} hitSlop={8}>
                   {savingName ? (
-                    <ActivityIndicator size="small" color="#fff" />
+                    <ActivityIndicator size="small" color={theme.text} />
                   ) : (
-                    <ThemedText style={styles.nameSaveButtonText}>Save</ThemedText>
+                    <ThemedText type="small" style={styles.inlineSaveLink}>
+                      Save
+                    </ThemedText>
                   )}
                 </Pressable>
               )}
@@ -257,7 +266,11 @@ export default function Profile() {
                 <Pressable
                   key={slug}
                   onPress={() => toggleInterest(slug)}
-                  style={[styles.chip, { borderColor: theme.border }, selected && styles.chipSelected]}
+                  style={[
+                    styles.chip,
+                    { borderColor: theme.border },
+                    selected && { backgroundColor: theme.backgroundSelected },
+                  ]}
                 >
                   <ThemedText type="small" style={selected ? styles.chipTextSelected : undefined}>
                     {categoryLabels[slug] ?? slug}
@@ -277,7 +290,11 @@ export default function Profile() {
                 <Pressable
                   key={goal.value}
                   onPress={() => toggleGoal(goal.value)}
-                  style={[styles.chip, { borderColor: theme.border }, selected && styles.chipSelected]}
+                  style={[
+                    styles.chip,
+                    { borderColor: theme.border },
+                    selected && { backgroundColor: theme.backgroundSelected },
+                  ]}
                 >
                   <ThemedText type="small" style={selected ? styles.chipTextSelected : undefined}>
                     {goal.label}
@@ -300,7 +317,11 @@ export default function Profile() {
                     setPrefsSaved(false);
                     setStoryLength(option.value);
                   }}
-                  style={[styles.chip, { borderColor: theme.border }, selected && styles.chipSelected]}
+                  style={[
+                    styles.chip,
+                    { borderColor: theme.border },
+                    selected && { backgroundColor: theme.backgroundSelected },
+                  ]}
                 >
                   <ThemedText type="small" style={selected ? styles.chipTextSelected : undefined}>
                     {option.label}
@@ -310,12 +331,16 @@ export default function Profile() {
             })}
           </ThemedView>
 
-          <Pressable style={styles.saveButton} onPress={handleSavePrefs} disabled={savingPrefs}>
+          <Pressable
+            style={[styles.saveButton, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}
+            onPress={handleSavePrefs}
+            disabled={savingPrefs}
+          >
             {savingPrefs ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={theme.text} />
             ) : prefsSaved ? (
               <ThemedView style={styles.saveButtonContent}>
-                <Ionicons name="checkmark" size={16} color="#fff" />
+                <Ionicons name="checkmark" size={16} color="#32b45a" />
                 <ThemedText style={styles.saveButtonText}>Saved</ThemedText>
               </ThemedView>
             ) : (
@@ -335,10 +360,13 @@ export default function Profile() {
                 style={[styles.optionCard, { borderColor: theme.border }]}
               >
                 <ThemedView
-                  type="backgroundElement"
-                  style={[styles.checkbox, selected && styles.checkboxSelected]}
+                  style={[
+                    styles.checkbox,
+                    { borderColor: theme.border },
+                    selected && { backgroundColor: theme.backgroundSelected },
+                  ]}
                 >
-                  {selected && <Ionicons name="checkmark" size={13} color="#fff" />}
+                  {selected && <Ionicons name="checkmark" size={13} color={theme.text} />}
                 </ThemedView>
                 <ThemedText type="small">{type.label}</ThemedText>
               </Pressable>
@@ -355,12 +383,13 @@ export default function Profile() {
                     setSaved(false);
                     setSelectedTime(slot.value);
                   }}
-                  style={[styles.timeChip, { borderColor: theme.border }, selected && styles.timeChipSelected]}
+                  style={[
+                    styles.timeChip,
+                    { borderColor: theme.border },
+                    selected && { backgroundColor: theme.backgroundSelected },
+                  ]}
                 >
-                  <ThemedText
-                    type="small"
-                    style={[styles.timeChipText, selected && styles.timeChipTextSelected]}
-                  >
+                  <ThemedText type="small" style={styles.timeChipText}>
                     {slot.label}
                   </ThemedText>
                 </Pressable>
@@ -369,15 +398,15 @@ export default function Profile() {
           </ThemedView>
 
           <Pressable
-            style={styles.saveButton}
+            style={[styles.saveButton, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}
             onPress={handleSavePreferences}
             disabled={saving || selectedTypes.length === 0}
           >
             {saving ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={theme.text} />
             ) : saved ? (
               <ThemedView style={styles.saveButtonContent}>
-                <Ionicons name="checkmark" size={16} color="#fff" />
+                <Ionicons name="checkmark" size={16} color="#32b45a" />
                 <ThemedText style={styles.saveButtonText}>Saved</ThemedText>
               </ThemedView>
             ) : (
@@ -396,7 +425,7 @@ export default function Profile() {
                 style={[
                   styles.segment,
                   { borderColor: theme.border },
-                  themeMode === opt.value && styles.segmentSelected,
+                  themeMode === opt.value && { backgroundColor: theme.backgroundSelected },
                 ]}
               >
                 <ThemedText
@@ -420,7 +449,7 @@ export default function Profile() {
                 style={[
                   styles.segment,
                   { borderColor: theme.border },
-                  fontScaleKey === opt.value && styles.segmentSelected,
+                  fontScaleKey === opt.value && { backgroundColor: theme.backgroundSelected },
                 ]}
               >
                 <ThemedText
@@ -487,12 +516,16 @@ export default function Profile() {
               {passwordError}
             </ThemedText>
           )}
-          <Pressable style={styles.saveButton} onPress={handleChangePassword} disabled={changingPassword}>
+          <Pressable
+            style={[styles.saveButton, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}
+            onPress={handleChangePassword}
+            disabled={changingPassword}
+          >
             {changingPassword ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={theme.text} />
             ) : passwordChanged ? (
               <ThemedView style={styles.saveButtonContent}>
-                <Ionicons name="checkmark" size={16} color="#fff" />
+                <Ionicons name="checkmark" size={16} color="#32b45a" />
                 <ThemedText style={styles.saveButtonText}>Password Updated</ThemedText>
               </ThemedView>
             ) : (
@@ -555,11 +588,9 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#700a0a',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#000',
   },
   nameRow: {
     flexDirection: 'row',
@@ -578,13 +609,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 0,
   },
-  nameSaveButton: {
-    backgroundColor: '#700a0a',
-    borderRadius: 8,
-    paddingHorizontal: Spacing.two + 4,
-    paddingVertical: 6,
-  },
-  nameSaveButtonText: { color: '#fff', fontWeight: '600', fontSize: 13 },
+  inlineSaveLink: { color: '#700a0a', fontWeight: '600' },
   errorText: { color: '#ff453a', textAlign: 'center' },
   profileEmail: { opacity: 0.6 },
   memberSince: { opacity: 0.45 },
@@ -603,8 +628,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
   },
-  chipSelected: { backgroundColor: '#700a0a', borderColor: '#700a0a' },
-  chipTextSelected: { color: '#fff', fontWeight: '600' },
+  chipTextSelected: { fontWeight: '600' },
   optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -615,8 +639,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: Spacing.one + 4,
   },
-  checkbox: { width: 18, height: 18, borderRadius: 5, alignItems: 'center', justifyContent: 'center' },
-  checkboxSelected: { backgroundColor: '#700a0a' },
+  checkbox: { width: 18, height: 18, borderRadius: 5, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   timeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one + 4, marginBottom: Spacing.two },
   timeChip: {
     paddingHorizontal: Spacing.two + 4,
@@ -624,16 +647,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
   },
-  timeChipSelected: { backgroundColor: 'rgba(112, 10, 10,0.14)', borderColor: '#700a0a' },
   timeChipText: { opacity: 0.85 },
-  timeChipTextSelected: { color: '#700a0a', fontWeight: '600', opacity: 1 },
   saveButton: {
-    backgroundColor: '#700a0a',
     borderRadius: 10,
+    borderWidth: 1,
     paddingVertical: Spacing.two + 2,
     alignItems: 'center',
   },
-  saveButtonText: { color: '#fff', fontWeight: '600' },
+  saveButtonText: { fontWeight: '600' },
   saveButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -648,8 +669,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
   },
-  segmentSelected: { backgroundColor: 'rgba(112, 10, 10,0.14)', borderColor: '#700a0a' },
-  segmentTextSelected: { color: '#700a0a', fontWeight: '600' },
+  segmentTextSelected: { fontWeight: '600' },
   passwordFieldWrap: { justifyContent: 'center', marginBottom: Spacing.two, backgroundColor: 'transparent' },
   passwordInput: {
     borderWidth: 1,
