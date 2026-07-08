@@ -165,7 +165,6 @@ export default function SignUp() {
                 onChangeText={setDisplayName}
                 placeholder="Your name"
                 placeholderTextColor="#8a8a8a"
-                autoFocus
                 style={styles.input}
               />
             </>
@@ -182,7 +181,6 @@ export default function SignUp() {
                 placeholderTextColor="#8a8a8a"
                 autoCapitalize="none"
                 keyboardType="email-address"
-                autoFocus
                 style={styles.input}
               />
             </>
@@ -256,7 +254,6 @@ export default function SignUp() {
                 placeholder="Password"
                 placeholderTextColor="#8a8a8a"
                 secureTextEntry
-                autoFocus
                 style={styles.input}
               />
             </>
@@ -307,8 +304,8 @@ const styles = StyleSheet.create({
     marginRight: 70,
   },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#3a3a3c' },
-  dotActive: { backgroundColor: '#C01918', width: 22 },
-  dotDone: { backgroundColor: '#C01918', opacity: 0.5 },
+  dotActive: { backgroundColor: '#700a0a', width: 22 },
+  dotDone: { backgroundColor: '#700a0a', opacity: 0.5 },
   scroll: { flex: 1 },
   scrollContent: {
     paddingHorizontal: Spacing.two + 4,
@@ -343,7 +340,7 @@ const styles = StyleSheet.create({
     borderColor: '#3a3a3c',
     marginBottom: Spacing.two,
   },
-  optionCardSelected: { borderColor: '#C01918' },
+  optionCardSelected: { borderColor: '#700a0a' },
   optionLabel: { color: '#fff', fontSize: 14, fontWeight: '600' },
   radio: {
     width: 22,
@@ -354,13 +351,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioSelected: { borderColor: '#C01918' },
-  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#C01918' },
+  radioSelected: { borderColor: '#700a0a' },
+  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#700a0a' },
   error: { color: '#ff453a', marginBottom: Spacing.two, fontSize: 14 },
   primaryButton: {
-    backgroundColor: '#C01918',
+    backgroundColor: '#700a0a',
     borderRadius: 10,
-    paddingVertical: Spacing.two + 4,
+    paddingVertical: Spacing.two,
     alignItems: 'center',
     marginTop: Spacing.two,
   },

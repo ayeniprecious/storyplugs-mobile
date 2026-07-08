@@ -104,7 +104,6 @@ export default function Search() {
           placeholder="Search by title or category"
           placeholderTextColor={theme.placeholder}
           style={[styles.input, { color: theme.text, borderColor: theme.border }]}
-          autoFocus
         />
 
         {loading ? (
@@ -165,7 +164,7 @@ const styles = StyleSheet.create({
   suggestionSection: { gap: Spacing.two },
   suggestionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   suggestionHeading: { opacity: 0.85 },
-  clearAll: { color: '#C01918' },
+  clearAll: { color: '#700a0a' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   chip: {
     flexDirection: 'row',
@@ -180,6 +179,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: 20,
-    backgroundColor: 'rgba(192, 25, 24,0.15)',
+    backgroundColor: 'rgba(112, 10, 10,0.15)',
   },
 });

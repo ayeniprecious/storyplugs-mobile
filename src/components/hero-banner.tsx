@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     gap: 4,
   },
-  tag: { color: '#C01918', fontWeight: '600', textTransform: 'uppercase' },
+  tag: { color: '#700a0a', fontWeight: '600', textTransform: 'uppercase' },
   title: { color: '#fff', fontSize: 23, lineHeight: 29, fontWeight: '700' },
   excerpt: { color: '#e5e5e5', lineHeight: 20 },
   buttonRow: {

@@ -121,9 +121,9 @@ const styles = StyleSheet.create({
   },
   error: { color: '#ff453a', marginBottom: Spacing.two, fontSize: 14 },
   primaryButton: {
-    backgroundColor: '#C01918',
+    backgroundColor: '#700a0a',
     borderRadius: 10,
-    paddingVertical: Spacing.two + 4,
+    paddingVertical: Spacing.two,
     alignItems: 'center',
     marginTop: Spacing.two,
   },

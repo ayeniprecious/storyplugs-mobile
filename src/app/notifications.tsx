@@ -36,7 +36,7 @@ export default function Notifications() {
         <ThemedView style={styles.header}>
           <Link href="/(app)" asChild>
             <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#C01918" />
+              <Ionicons name="chevron-back" size={16} color="#700a0a" />
               <ThemedText type="link">Back</ThemedText>
             </Pressable>
           </Link>
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   backLinkCombined: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   title: { fontSize: 24, lineHeight: 30 },
   actionsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: Spacing.three },
-  action: { color: '#C01918' },
+  action: { color: '#700a0a' },
   actionDisabled: { opacity: 0.3 },
   emptyHint: { opacity: 0.6, marginTop: Spacing.four },
   skeletonLineTitle: { width: '50%', height: 20, borderRadius: 4 },
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   },
   rowBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
   rowHeaderLine: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'transparent' },
-  unreadDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#C01918' },
+  unreadDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#700a0a' },
   rowText: { opacity: 0.75 },
   rowTime: { opacity: 0.5 },
   removeButton: { paddingHorizontal: 4 },

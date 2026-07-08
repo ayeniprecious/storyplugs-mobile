@@ -41,7 +41,7 @@ export default function Welcome() {
           {FEATURES.map((feature) => (
             <View key={feature.title} style={styles.featureRow}>
               <View style={styles.featureIcon}>
-                <Ionicons name={feature.icon} size={22} color="#C01918" />
+                <Ionicons name={feature.icon} size={22} color="#700a0a" />
               </View>
               <View style={styles.featureText}>
                 <Text style={styles.featureTitle}>{feature.title}</Text>
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: 'rgba(192, 25, 24,0.12)',
+    backgroundColor: 'rgba(112, 10, 10,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   featureBlurb: { color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 18 },
   buttonBlock: { gap: Spacing.two },
   primaryButton: {
-    backgroundColor: '#C01918',
+    backgroundColor: '#700a0a',
     borderRadius: 10,
     paddingVertical: Spacing.two + 4,
     alignItems: 'center',

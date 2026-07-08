@@ -127,7 +127,7 @@ export default function Home() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor="#C01918"
+            tintColor="#700a0a"
           />
         }
       >
@@ -190,7 +190,7 @@ export default function Home() {
                 <Ionicons
                   name={currentStreak > 0 ? "flame" : "flame-outline"}
                   size={15}
-                  color={currentStreak > 0 ? "#C01918" : "#8a8a8e"}
+                  color={currentStreak > 0 ? "#700a0a" : "#8a8a8e"}
                 />
                 <ThemedText type="small" style={styles.streakText}>
                   {currentStreak > 0

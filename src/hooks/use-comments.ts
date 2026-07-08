@@ -8,12 +8,17 @@ import { supabase } from "@/lib/supabase";
 export interface CommentWithAuthor extends Comment {
   authorName: string;
   authorAvatarUrl: string | null;
+  authorStreak: number;
+}
+
+export interface ThreadedComment extends CommentWithAuthor {
+  replies: CommentWithAuthor[];
 }
 
 export function useComments(storyId: string) {
   const { user } = useAuth();
   const { profile } = useProfile();
-  const [comments, setComments] = useState<CommentWithAuthor[]>([]);
+  const [comments, setComments] = useState<ThreadedComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,25 +38,53 @@ export function useComments(storyId: string) {
 
     const list = (rows as Comment[]) ?? [];
     const userIds = [...new Set(list.map((c) => c.user_id))];
-    const profileByid = new Map<string, { display_name: string | null; avatar_url: string | null }>();
+    const profileById = new Map<
+      string,
+      { display_name: string | null; avatar_url: string | null; current_streak: number }
+    >();
     if (userIds.length > 0) {
       // public_commenter_profiles is a view scoped to users who've posted a
       // public comment (see 20260717000000_public_commenter_profiles.sql) —
-      // profiles itself only allows reading your own row.
+      // profiles itself only allows reading your own row. current_streak
+      // comes from the 20260718000000 migration.
       const { data: profiles } = await supabase
         .from("public_commenter_profiles")
-        .select("id, display_name, avatar_url")
+        .select("id, display_name, avatar_url, current_streak")
         .in("id", userIds);
       for (const p of profiles ?? []) {
-        profileByid.set(p.id, { display_name: p.display_name, avatar_url: p.avatar_url });
+        profileById.set(p.id, {
+          display_name: p.display_name,
+          avatar_url: p.avatar_url,
+          current_streak: p.current_streak,
+        });
+      }
+    }
+
+    const withAuthor: CommentWithAuthor[] = list.map((c) => ({
+      ...c,
+      authorName: profileById.get(c.user_id)?.display_name || "Anonymous",
+      authorAvatarUrl: profileById.get(c.user_id)?.avatar_url ?? null,
+      authorStreak: profileById.get(c.user_id)?.current_streak ?? 0,
+    }));
+
+    const repliesByParent = new Map<string, CommentWithAuthor[]>();
+    const topLevel: CommentWithAuthor[] = [];
+    for (const c of withAuthor) {
+      if (c.parent_id) {
+        const arr = repliesByParent.get(c.parent_id) ?? [];
+        arr.push(c);
+        repliesByParent.set(c.parent_id, arr);
+      } else {
+        topLevel.push(c);
       }
     }
 
     setComments(
-      list.map((c) => ({
+      topLevel.map((c) => ({
         ...c,
-        authorName: profileByid.get(c.user_id)?.display_name || "Anonymous",
-        authorAvatarUrl: profileByid.get(c.user_id)?.avatar_url ?? null,
+        replies: (repliesByParent.get(c.id) ?? []).sort(
+          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        ),
       }))
     );
     setLoading(false);
@@ -62,7 +95,7 @@ export function useComments(storyId: string) {
   }, [refresh]);
 
   const addComment = useCallback(
-    async (body: string) => {
+    async (body: string, parentId?: string) => {
       if (!user?.id) return { error: "Sign in to comment." };
       const trimmed = body.trim();
       if (!trimmed) return { error: "Write something first." };
@@ -74,7 +107,7 @@ export function useComments(storyId: string) {
       // profile for the byline.
       const { data, error: insertError } = await supabase
         .from("comments")
-        .insert({ story_id: storyId, user_id: user.id, body: trimmed })
+        .insert({ story_id: storyId, user_id: user.id, body: trimmed, parent_id: parentId ?? null })
         .select()
         .single();
       setPosting(false);
@@ -83,26 +116,32 @@ export function useComments(storyId: string) {
         setError(message);
         return { error: message };
       }
-      setComments((prev) => [
-        {
-          ...(data as Comment),
-          authorName: profile?.display_name || "You",
-          authorAvatarUrl: profile?.avatar_url ?? null,
-        },
-        ...prev,
-      ]);
+      const newComment: CommentWithAuthor = {
+        ...(data as Comment),
+        authorName: profile?.display_name || "You",
+        authorAvatarUrl: profile?.avatar_url ?? null,
+        authorStreak: 0,
+      };
+      if (parentId) {
+        setComments((prev) =>
+          prev.map((c) => (c.id === parentId ? { ...c, replies: [...c.replies, newComment] } : c))
+        );
+      } else {
+        setComments((prev) => [{ ...newComment, replies: [] }, ...prev]);
+      }
       return { error: null };
     },
     [storyId, user?.id, profile?.display_name, profile?.avatar_url]
   );
 
-  const removeComment = useCallback(
-    async (commentId: string) => {
-      setComments((prev) => prev.filter((c) => c.id !== commentId));
-      await supabase.from("comments").delete().eq("id", commentId);
-    },
-    []
-  );
+  const removeComment = useCallback(async (commentId: string) => {
+    setComments((prev) =>
+      prev
+        .filter((c) => c.id !== commentId)
+        .map((c) => ({ ...c, replies: c.replies.filter((r) => r.id !== commentId) }))
+    );
+    await supabase.from("comments").delete().eq("id", commentId);
+  }, []);
 
   return { comments, loading, posting, error, addComment, removeComment };
 }
