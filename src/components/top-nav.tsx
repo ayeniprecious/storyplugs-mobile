@@ -52,7 +52,7 @@ export function TopNav({ overlay = false }: { overlay?: boolean }) {
             )}
           </Pressable>
         </Link>
-        <Link href="/settings" asChild>
+        <Link href="/profile" asChild>
           <Pressable accessibilityLabel="Profile">
             <Avatar url={profile?.avatar_url} fallbackLetter={initial} size={30} />
           </Pressable>

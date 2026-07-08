@@ -51,7 +51,7 @@ export default function NotificationPreferences() {
           <Text style={styles.title}>Your daily vitamin</Text>
           <Text style={styles.subtitle}>
             We&apos;ll send you a gentle nudge once a day — pick what you want to hear about and when.
-            You can change this anytime in Settings.
+            You can change this anytime in your Profile.
           </Text>
 
           <Text style={styles.sectionLabel}>What would you like to receive?</Text>

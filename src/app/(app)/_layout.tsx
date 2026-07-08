@@ -61,19 +61,7 @@ export default function AppTabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: "Settings",
-          tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "settings" : "settings-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
+      <Tabs.Screen name="profile" options={{ href: null }} />
     </Tabs>
   );
 }

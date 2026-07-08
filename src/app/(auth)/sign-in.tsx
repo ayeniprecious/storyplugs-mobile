@@ -12,6 +12,7 @@ export default function SignIn() {
   const { signInWithEmail } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,14 +49,23 @@ export default function SignIn() {
           keyboardType="email-address"
           style={styles.input}
         />
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Password"
-          placeholderTextColor="#8a8a8a"
-          secureTextEntry
-          style={styles.input}
-        />
+        <View style={styles.passwordWrap}>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Password"
+            placeholderTextColor="#8a8a8a"
+            secureTextEntry={!showPassword}
+            style={[styles.input, styles.passwordInput]}
+          />
+          <Pressable
+            onPress={() => setShowPassword((v) => !v)}
+            style={styles.eyeButton}
+            hitSlop={8}
+          >
+            <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color="#8a8a8a" />
+          </Pressable>
+        </View>
 
         {error && <Text style={styles.error}>{error}</Text>}
 
@@ -119,6 +129,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: Spacing.two,
   },
+  passwordWrap: { justifyContent: 'center', marginBottom: Spacing.two },
+  passwordInput: { marginBottom: 0, paddingRight: Spacing.three + 28 },
+  eyeButton: { position: 'absolute', right: Spacing.three, padding: 4 },
   error: { color: '#ff453a', marginBottom: Spacing.two, fontSize: 14 },
   primaryButton: {
     backgroundColor: '#700a0a',

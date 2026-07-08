@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { OFFICIAL_ACCOUNT_EMAIL } from "@/constants/official-account";
 import { useAuth } from "@/context/auth-context";
+import { useProfile } from "@/context/profile-context";
 import { supabase } from "@/lib/supabase";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -38,6 +40,7 @@ function computeStreaks(sortedDates: string[]) {
 
 export function useReadingStreak() {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const [currentStreak, setCurrentStreak] = useState(0);
   const [longestStreak, setLongestStreak] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -49,6 +52,21 @@ export function useReadingStreak() {
       setLoading(false);
       return;
     }
+
+    // The official account's streak climbs on its own -- it's the "king"
+    // account, it doesn't need to actually open stories to keep its streak.
+    // Mirrors the current_reading_streak() special-case in the DB (used for
+    // this account's avatar badge on comments) so both stay consistent.
+    if (user.email === OFFICIAL_ACCOUNT_EMAIL) {
+      setLoading(true);
+      const joined = profile?.created_at ? toDayCount(profile.created_at.slice(0, 10)) : Math.round(Date.now() / DAY_MS);
+      const days = Math.max(1, Math.round(Date.now() / DAY_MS) - joined + 1);
+      setCurrentStreak(days);
+      setLongestStreak(days);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     const { data } = await supabase
       .from("reading_activity")
@@ -61,7 +79,7 @@ export function useReadingStreak() {
     setCurrentStreak(current);
     setLongestStreak(longest);
     setLoading(false);
-  }, [user?.id]);
+  }, [user?.id, user?.email, profile?.created_at]);
 
   useEffect(() => {
     refresh();

@@ -55,7 +55,7 @@ export function CommentsSection({ storyId }: { storyId: string }) {
           <ThemedView style={styles.commentHeaderRow}>
             <ThemedText type="smallBold">{reply.authorName}</ThemedText>
             <ThemedView style={styles.officialBadge}>
-              <Ionicons name="checkmark-circle" size={11} color="#fff" />
+              <Ionicons name="checkmark-circle" size={9} color="#fff" />
               <ThemedText style={styles.officialBadgeText}>Official Reply</ThemedText>
             </ThemedView>
             <ThemedText type="small" style={styles.commentTime}>
@@ -89,7 +89,7 @@ export function CommentsSection({ storyId }: { storyId: string }) {
           multiline
         />
         <Pressable style={styles.postButton} onPress={handlePost} disabled={posting || !draft.trim()}>
-          {posting ? <ActivityIndicator color="#fff" size="small" /> : <Ionicons name="send" size={16} color="#fff" />}
+          {posting ? <ActivityIndicator color="#fff" size="small" /> : <Ionicons name="send" size={14} color="#fff" />}
         </Pressable>
       </ThemedView>
       {error && <ThemedText style={styles.error}>{error}</ThemedText>}
@@ -157,7 +157,7 @@ export function CommentsSection({ storyId }: { storyId: string }) {
                   {posting ? (
                     <ActivityIndicator color="#fff" size="small" />
                   ) : (
-                    <Ionicons name="send" size={16} color="#fff" />
+                    <Ionicons name="send" size={14} color="#fff" />
                   )}
                 </Pressable>
               </ThemedView>
@@ -183,17 +183,17 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
+    borderRadius: 10,
+    paddingHorizontal: Spacing.two + 2,
+    paddingVertical: Spacing.one + 2,
     fontSize: 16,
-    maxHeight: 90,
+    maxHeight: 70,
   },
   postButton: {
     backgroundColor: '#700a0a',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
+    borderRadius: 15,
+    width: 30,
+    height: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -229,11 +229,11 @@ const styles = StyleSheet.create({
   officialBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 2,
     backgroundColor: '#700a0a',
-    borderRadius: 8,
-    paddingHorizontal: 6,
-    paddingVertical: 1,
+    borderRadius: 6,
+    paddingHorizontal: 4,
+    paddingVertical: 0,
   },
-  officialBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+  officialBadgeText: { color: '#fff', fontSize: 9, fontWeight: '700' },
 });

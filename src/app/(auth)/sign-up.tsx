@@ -49,6 +49,7 @@ export default function SignUp() {
   const [year, setYear] = useState('');
   const [gender, setGender] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmationSent, setConfirmationSent] = useState(false);
@@ -248,14 +249,23 @@ export default function SignUp() {
             <>
               <Text style={styles.title}>Create a password</Text>
               <Text style={styles.subtitle}>At least 6 characters.</Text>
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Password"
-                placeholderTextColor="#8a8a8a"
-                secureTextEntry
-                style={styles.input}
-              />
+              <View style={styles.passwordWrap}>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Password"
+                  placeholderTextColor="#8a8a8a"
+                  secureTextEntry={!showPassword}
+                  style={[styles.input, styles.passwordInput]}
+                />
+                <Pressable
+                  onPress={() => setShowPassword((v) => !v)}
+                  style={styles.eyeButton}
+                  hitSlop={8}
+                >
+                  <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color="#8a8a8a" />
+                </Pressable>
+              </View>
             </>
           )}
         </ScrollView>
@@ -327,6 +337,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: Spacing.two,
   },
+  passwordWrap: { justifyContent: 'center' },
+  passwordInput: { marginBottom: 0, paddingRight: Spacing.three + 28 },
+  eyeButton: { position: 'absolute', right: Spacing.three, padding: 4 },
   dobRow: { flexDirection: 'row', gap: Spacing.two },
   dobInput: { flex: 1, minWidth: 0, paddingHorizontal: Spacing.two, textAlign: 'center' },
   dobInputYear: { flex: 1.4, minWidth: 0, paddingHorizontal: Spacing.two, textAlign: 'center' },
