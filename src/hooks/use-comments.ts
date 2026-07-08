@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "@/context/auth-context";
+import { useProfile } from "@/context/profile-context";
 import type { Comment } from "@/lib/database.types";
 import { supabase } from "@/lib/supabase";
 
@@ -11,6 +12,7 @@ export interface CommentWithAuthor extends Comment {
 
 export function useComments(storyId: string) {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const [comments, setComments] = useState<CommentWithAuthor[]>([]);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
@@ -66,18 +68,32 @@ export function useComments(storyId: string) {
       if (!trimmed) return { error: "Write something first." };
       setPosting(true);
       setError(null);
-      const { error: insertError } = await supabase
+      // Insert and get the real row back (id/created_at) instead of a full
+      // refetch of every comment + author profile — the new comment appears
+      // the instant the insert resolves, using the poster's own already-loaded
+      // profile for the byline.
+      const { data, error: insertError } = await supabase
         .from("comments")
-        .insert({ story_id: storyId, user_id: user.id, body: trimmed });
+        .insert({ story_id: storyId, user_id: user.id, body: trimmed })
+        .select()
+        .single();
       setPosting(false);
-      if (insertError) {
-        setError(insertError.message);
-        return { error: insertError.message };
+      if (insertError || !data) {
+        const message = insertError?.message ?? "Couldn't post comment.";
+        setError(message);
+        return { error: message };
       }
-      await refresh();
+      setComments((prev) => [
+        {
+          ...(data as Comment),
+          authorName: profile?.display_name || "You",
+          authorAvatarUrl: profile?.avatar_url ?? null,
+        },
+        ...prev,
+      ]);
       return { error: null };
     },
-    [storyId, user?.id, refresh]
+    [storyId, user?.id, profile?.display_name, profile?.avatar_url]
   );
 
   const removeComment = useCallback(

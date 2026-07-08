@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   tag: { color: '#C01918', fontWeight: '600', textTransform: 'uppercase' },
-  title: { color: '#fff', fontSize: 26, lineHeight: 32 },
+  title: { color: '#fff', fontSize: 23, lineHeight: 29, fontWeight: '700' },
   excerpt: { color: '#e5e5e5', lineHeight: 20 },
   buttonRow: {
     flexDirection: 'row',

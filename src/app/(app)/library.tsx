@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useState } from 'react';
 import { Image } from 'expo-image';
-import { Link } from 'expo-router';
+import { Link, useFocusEffect } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,13 +9,11 @@ import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { useAuth } from '@/context/auth-context';
 import { useCategories } from '@/context/categories-context';
 import { useCompletedStories } from '@/hooks/use-completed-stories';
 import { useContinueReading } from '@/hooks/use-continue-reading';
 import { useFavoritesList } from '@/hooks/use-favorites-list';
 import type { Story } from '@/lib/database.types';
-import { supabase } from '@/lib/supabase';
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -73,7 +71,7 @@ function LibraryRow({
   );
 }
 
-function LibraryRowSkeleton() {
+function LibraryRowSkeleton({ withThirdLine = true }: { withThirdLine?: boolean }) {
   return (
     <ThemedView type="backgroundElement" style={styles.row}>
       <ThemedView style={styles.rowPressable}>
@@ -81,6 +79,7 @@ function LibraryRowSkeleton() {
         <ThemedView style={styles.rowBody}>
           <Skeleton style={styles.skeletonLineTitle} />
           <Skeleton style={styles.skeletonLineSubtitle} />
+          {withThirdLine && <Skeleton style={styles.skeletonLineThird} />}
         </ThemedView>
       </ThemedView>
     </ThemedView>
@@ -90,41 +89,44 @@ function LibraryRowSkeleton() {
 const COMPLETED_COLLAPSED_LIMIT = 5;
 
 export default function Library() {
-  const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [completedExpanded, setCompletedExpanded] = useState(false);
-  const { items: continueItems, loading: continueLoading, refresh: refreshContinue } =
-    useContinueReading();
-  const { items: completedItems, loading: completedLoading, refresh: refreshCompleted } =
-    useCompletedStories();
-  const { stories: savedStories, loading: savedLoading, refresh: refreshSaved } = useFavoritesList();
+  const {
+    items: continueItems,
+    loading: continueLoading,
+    refresh: refreshContinue,
+    removeItem: removeFromContinueReading,
+  } = useContinueReading();
+  const {
+    items: completedItems,
+    loading: completedLoading,
+    refresh: refreshCompleted,
+    removeItem: removeFromCompleted,
+  } = useCompletedStories();
+  const {
+    stories: savedStories,
+    loading: savedLoading,
+    refresh: refreshSaved,
+    removeStory: removeFromSaved,
+  } = useFavoritesList();
 
   const refreshAll = useCallback(async () => {
     await Promise.all([refreshContinue(), refreshCompleted(), refreshSaved()]);
   }, [refreshContinue, refreshCompleted, refreshSaved]);
 
+  // Story progress can change on a pushed screen (mark complete, save/unsave)
+  // while this tab stays mounted behind it — refetch whenever we regain focus
+  // so returning here always shows current state, not what it was on mount.
+  useFocusEffect(
+    useCallback(() => {
+      refreshAll();
+    }, [refreshAll])
+  );
+
   async function handlePullToRefresh() {
     setRefreshing(true);
     await refreshAll();
     setRefreshing(false);
-  }
-
-  async function removeFromContinueReading(storyId: string) {
-    if (!user?.id) return;
-    await supabase.from('story_views').delete().eq('user_id', user.id).eq('story_id', storyId);
-    refreshContinue();
-  }
-
-  async function removeFromCompleted(storyId: string) {
-    if (!user?.id) return;
-    await supabase.from('story_views').delete().eq('user_id', user.id).eq('story_id', storyId);
-    refreshCompleted();
-  }
-
-  async function removeFromSaved(storyId: string) {
-    if (!user?.id) return;
-    await supabase.from('favorites').delete().eq('user_id', user.id).eq('story_id', storyId);
-    refreshSaved();
   }
 
   const loading = continueLoading || completedLoading || savedLoading;
@@ -152,6 +154,8 @@ export default function Library() {
               <Skeleton style={styles.sectionHeadingSkeleton} />
               <LibraryRowSkeleton />
               <LibraryRowSkeleton />
+              <Skeleton style={styles.sectionHeadingSkeleton} />
+              <LibraryRowSkeleton withThirdLine={false} />
               <Skeleton style={styles.sectionHeadingSkeleton} />
               <LibraryRowSkeleton />
             </>
@@ -277,10 +281,11 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.six,
   },
   title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.two },
-  statCardSkeleton: { flex: 1, height: 66, borderRadius: 12 },
-  sectionHeadingSkeleton: { width: 140, height: 16, borderRadius: 4, marginTop: Spacing.three, marginBottom: Spacing.two },
-  skeletonLineTitle: { width: '70%', height: 14, borderRadius: 4 },
-  skeletonLineSubtitle: { width: '40%', height: 12, borderRadius: 4 },
+  statCardSkeleton: { flex: 1, height: 74, borderRadius: 12 },
+  sectionHeadingSkeleton: { width: 140, height: 20, borderRadius: 4, marginTop: Spacing.three, marginBottom: Spacing.two },
+  skeletonLineTitle: { width: '70%', height: 20, borderRadius: 4 },
+  skeletonLineSubtitle: { width: '40%', height: 20, borderRadius: 4 },
+  skeletonLineThird: { width: '55%', height: 20, borderRadius: 4 },
   sectionHeading: { marginTop: Spacing.three, marginBottom: Spacing.two, opacity: 0.85 },
   collapsibleHeading: {
     flexDirection: 'row',

@@ -34,5 +34,14 @@ export function useFavoritesList() {
     refresh();
   }, [refresh]);
 
-  return { stories, loading, refresh };
+  const removeStory = useCallback(
+    async (storyId: string) => {
+      if (!user?.id) return;
+      setStories((prev) => prev.filter((story) => story.id !== storyId));
+      await supabase.from("favorites").delete().eq("user_id", user.id).eq("story_id", storyId);
+    },
+    [user?.id]
+  );
+
+  return { stories, loading, refresh, removeStory };
 }

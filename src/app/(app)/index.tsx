@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
   Pressable,
@@ -107,6 +108,16 @@ export default function Home() {
     ]);
     setRefreshing(false);
   }, [refreshDaily, refreshCategories, refreshContinue, refreshStreak]);
+
+  // Reading progress/streak can change on a pushed story screen while Home
+  // stays mounted behind it — refetch on focus so coming back always shows
+  // current state instead of whatever it was when Home first mounted.
+  useFocusEffect(
+    useCallback(() => {
+      refreshContinue();
+      refreshStreak();
+    }, [refreshContinue, refreshStreak])
+  );
 
   return (
     <ThemedView style={styles.container}>
@@ -275,7 +286,7 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: "transparent",
   },
-  heroSkeletonTag: { width: 140, height: 12, borderRadius: 4 },
+  heroSkeletonTag: { width: 140, height: 20, borderRadius: 4 },
   heroSkeletonTitle: { width: "80%", height: 28, borderRadius: 6 },
   heroSkeletonExcerpt: { width: "95%", height: 16, borderRadius: 4 },
   heroSkeletonButtonRow: {
@@ -304,7 +315,7 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   streakText: { opacity: 0.85 },
-  streakSkeleton: { width: 110, height: 18, borderRadius: 6 },
+  streakSkeleton: { width: 110, height: 20, borderRadius: 6 },
   longestStreakText: { opacity: 0.5, marginTop: -Spacing.two },
   centerBlock: { marginTop: Spacing.five },
   quoteCard: { borderRadius: 16, padding: Spacing.three, gap: Spacing.two },
@@ -328,7 +339,7 @@ const styles = StyleSheet.create({
   retryButtonText: { color: "#fff", fontWeight: "600", fontSize: 14 },
   browseHeading: { fontSize: 20, lineHeight: 26 },
   categorySkeletonSection: { gap: Spacing.two, marginBottom: Spacing.two },
-  categorySkeletonHeading: { width: 120, height: 16, borderRadius: 4 },
+  categorySkeletonHeading: { width: 120, height: 20, borderRadius: 4 },
   categorySkeletonRow: {
     flexDirection: "row",
     gap: Spacing.two,

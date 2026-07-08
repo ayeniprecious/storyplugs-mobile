@@ -155,7 +155,7 @@ export default function SignUp() {
           </View>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
           {step === 0 && (
             <>
               <Text style={styles.title}>What&apos;s your name?</Text>
@@ -261,9 +261,10 @@ export default function SignUp() {
               />
             </>
           )}
+        </ScrollView>
 
+        <View style={styles.footer}>
           {error && <Text style={styles.error}>{error}</Text>}
-
           <Pressable style={styles.primaryButton} onPress={handleContinue} disabled={submitting}>
             {submitting ? (
               <ActivityIndicator color="#fff" />
@@ -281,7 +282,7 @@ export default function SignUp() {
               </Pressable>
             </Link>
           )}
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -308,6 +309,7 @@ const styles = StyleSheet.create({
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#3a3a3c' },
   dotActive: { backgroundColor: '#C01918', width: 22 },
   dotDone: { backgroundColor: '#C01918', opacity: 0.5 },
+  scroll: { flex: 1 },
   scrollContent: {
     paddingHorizontal: Spacing.two + 4,
     paddingVertical: Spacing.three,
@@ -315,6 +317,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
   },
+  footer: { paddingHorizontal: Spacing.two + 4, paddingBottom: Spacing.three, gap: Spacing.two },
   title: { color: '#fff', fontSize: 24, lineHeight: 30, marginBottom: Spacing.two, fontWeight: '600' },
   subtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 15, marginBottom: Spacing.three },
   input: {

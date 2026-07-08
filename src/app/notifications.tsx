@@ -65,6 +65,7 @@ export default function Notifications() {
                 <ThemedView style={styles.rowBody}>
                   <Skeleton style={styles.skeletonLineTitle} />
                   <Skeleton style={styles.skeletonLineBody} />
+                  <Skeleton style={styles.skeletonLineBodyShort} />
                   <Skeleton style={styles.skeletonLineTime} />
                 </ThemedView>
               </ThemedView>
@@ -123,9 +124,10 @@ const styles = StyleSheet.create({
   action: { color: '#C01918' },
   actionDisabled: { opacity: 0.3 },
   emptyHint: { opacity: 0.6, marginTop: Spacing.four },
-  skeletonLineTitle: { width: '50%', height: 14, borderRadius: 4 },
-  skeletonLineBody: { width: '90%', height: 12, borderRadius: 4 },
-  skeletonLineTime: { width: '25%', height: 10, borderRadius: 4 },
+  skeletonLineTitle: { width: '50%', height: 20, borderRadius: 4 },
+  skeletonLineBody: { width: '90%', height: 20, borderRadius: 4 },
+  skeletonLineBodyShort: { width: '60%', height: 20, borderRadius: 4 },
+  skeletonLineTime: { width: '25%', height: 20, borderRadius: 4 },
   list: { paddingBottom: Spacing.six, gap: Spacing.two },
   row: {
     flexDirection: 'row',

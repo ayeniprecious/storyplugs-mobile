@@ -40,5 +40,14 @@ export function useCompletedStories() {
     refresh();
   }, [refresh]);
 
-  return { items, loading, refresh };
+  const removeItem = useCallback(
+    async (storyId: string) => {
+      if (!user?.id) return;
+      setItems((prev) => prev.filter((item) => item.story.id !== storyId));
+      await supabase.from("story_views").delete().eq("user_id", user.id).eq("story_id", storyId);
+    },
+    [user?.id]
+  );
+
+  return { items, loading, refresh, removeItem };
 }
