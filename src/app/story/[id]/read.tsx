@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Link, router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   LayoutChangeEvent,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BackButton } from '@/components/back-button';
 import { CommentsSection } from '@/components/comments-section';
 import { ReportModal } from '@/components/report-modal';
 import { Skeleton } from '@/components/skeleton';
@@ -141,12 +142,7 @@ export default function StoryRead() {
       <ThemedView style={styles.container}>
         <SafeAreaView style={styles.centerFill}>
           <ThemedText type="smallBold">Story not found</ThemedText>
-          <Link href="/(app)" asChild>
-            <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#700a0a" />
-              <ThemedText type="link">Back to Home</ThemedText>
-            </Pressable>
-          </Link>
+          <BackButton href="/(app)" label="Back to Home" />
         </SafeAreaView>
       </ThemedView>
     );
@@ -176,12 +172,7 @@ export default function StoryRead() {
           scrollEventThrottle={200}
         >
           <ThemedView style={styles.topRow}>
-            <Link href={{ pathname: '/story/[id]', params: { id } }} asChild>
-              <Pressable style={styles.backLinkCombined}>
-                <Ionicons name="chevron-back" size={16} color="#700a0a" />
-                <ThemedText type="link">Back</ThemedText>
-              </Pressable>
-            </Link>
+            <BackButton href={{ pathname: '/story/[id]', params: { id } }} />
             <Pressable onPress={() => setReportingStory(true)} hitSlop={8}>
               <Ionicons name="flag-outline" size={18} color="#8a8a8e" />
             </Pressable>
@@ -209,7 +200,7 @@ export default function StoryRead() {
                 onPress={() => goToChapter(chapterIndex)}
                 disabled={isFirstChapter}
               >
-                <Ionicons name="chevron-back" size={16} color={isFirstChapter ? '#5a5a5c' : '#700a0a'} />
+                <Ionicons name="chevron-back" size={16} color={isFirstChapter ? '#5a5a5c' : '#C01918'} />
                 <ThemedText
                   style={[styles.chapterNavText, isFirstChapter && styles.chapterNavTextDisabled]}
                 >
@@ -219,7 +210,7 @@ export default function StoryRead() {
               {!isLastChapter && (
                 <Pressable style={styles.chapterNavButton} onPress={() => goToChapter(chapterIndex + 2)}>
                   <ThemedText style={styles.chapterNavText}>Next Chapter</ThemedText>
-                  <Ionicons name="chevron-forward" size={16} color="#700a0a" />
+                  <Ionicons name="chevron-forward" size={16} color="#C01918" />
                 </Pressable>
               )}
             </ThemedView>
@@ -283,7 +274,7 @@ const styles = StyleSheet.create({
   skeletonLine: { width: '100%', height: 24, borderRadius: 4 },
   skeletonLineShort: { width: '60%', height: 24, borderRadius: 4 },
   progressTrack: { height: 3, backgroundColor: 'rgba(128,128,128,0.25)' },
-  progressFill: { height: 3, backgroundColor: '#700a0a' },
+  progressFill: { height: 3, backgroundColor: '#C01918' },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -291,19 +282,13 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.two,
     backgroundColor: 'transparent',
   },
-  backLinkCombined: {
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  categoryTag: { color: '#700a0a', fontWeight: '600', textTransform: 'uppercase' },
+  categoryTag: { color: '#C01918', fontWeight: '600', textTransform: 'uppercase' },
   title: { fontSize: 25, lineHeight: 31 },
   body: { fontSize: 16, lineHeight: 24, opacity: 0.9 },
   chapterNavRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: Spacing.two },
   chapterNavButton: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   chapterNavButtonDisabled: { opacity: 0.4 },
-  chapterNavText: { color: '#700a0a', fontWeight: '600' },
+  chapterNavText: { color: '#C01918', fontWeight: '600' },
   chapterNavTextDisabled: { color: '#5a5a5c' },
   calloutBox: { padding: Spacing.three, borderRadius: 12, gap: 4 },
   completeButton: {

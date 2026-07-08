@@ -13,7 +13,8 @@ export interface Profile {
   id: string;
   display_name: string | null;
   avatar_url: string | null;
-  notification_time: string;
+  // null means "Anytime" -- no specific delivery-time preference.
+  notification_time: string | null;
   notification_types: NotificationContentType[];
   push_token: string | null;
   gender: string | null;

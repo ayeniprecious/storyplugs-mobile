@@ -314,8 +314,8 @@ const styles = StyleSheet.create({
     marginRight: 70,
   },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#3a3a3c' },
-  dotActive: { backgroundColor: '#700a0a', width: 22 },
-  dotDone: { backgroundColor: '#700a0a', opacity: 0.5 },
+  dotActive: { backgroundColor: '#C01918', width: 22 },
+  dotDone: { backgroundColor: '#C01918', opacity: 0.5 },
   scroll: { flex: 1 },
   scrollContent: {
     paddingHorizontal: Spacing.two + 4,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     borderColor: '#3a3a3c',
     marginBottom: Spacing.two,
   },
-  optionCardSelected: { borderColor: '#700a0a' },
+  optionCardSelected: { borderColor: '#C01918' },
   optionLabel: { color: '#fff', fontSize: 14, fontWeight: '600' },
   radio: {
     width: 22,
@@ -364,8 +364,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioSelected: { borderColor: '#700a0a' },
-  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#700a0a' },
+  radioSelected: { borderColor: '#C01918' },
+  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#C01918' },
   error: { color: '#ff453a', marginBottom: Spacing.two, fontSize: 14 },
   primaryButton: {
     backgroundColor: '#700a0a',

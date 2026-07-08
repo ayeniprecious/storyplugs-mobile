@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BackButton } from '@/components/back-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { GOAL_OPTIONS, STORY_LENGTH_OPTIONS } from '@/constants/personalization-options';
@@ -51,12 +51,7 @@ export default function Preferences() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ThemedView style={styles.header}>
-          <Link href="/profile" asChild>
-            <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#700a0a" />
-              <ThemedText type="link">Back</ThemedText>
-            </Pressable>
-          </Link>
+          <BackButton href="/profile" />
           <ThemedText type="title" style={styles.title}>
             Preferences
           </ThemedText>
@@ -148,7 +143,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.two + 4, paddingTop: Spacing.three },
   header: { gap: Spacing.two, marginBottom: Spacing.two },
-  backLinkCombined: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   title: { fontSize: 24, lineHeight: 30 },
   scrollContent: { paddingBottom: Spacing.six },
   sectionHint: { opacity: 0.85, marginTop: Spacing.two, marginBottom: Spacing.two },
@@ -159,7 +153,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: 'rgba(128,128,128,0.14)',
   },
-  chipSelected: { backgroundColor: '#700a0a' },
+  // Deliberately not red -- this page already shows a lot of chips, and an all-red
+  // "active" state on top of the rest of the app's red accent reads as too much.
+  chipSelected: { backgroundColor: '#2f6f76' },
   chipTextSelected: { color: '#fff', fontWeight: '600' },
   saveButton: {
     backgroundColor: '#700a0a',

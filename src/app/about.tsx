@@ -1,10 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BackButton } from '@/components/back-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -20,12 +20,7 @@ export default function About() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ThemedView style={styles.header}>
-          <Link href="/profile" asChild>
-            <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#700a0a" />
-              <ThemedText type="link">Back</ThemedText>
-            </Pressable>
-          </Link>
+          <BackButton href="/profile" />
           <ThemedText type="title" style={styles.title}>
             About
           </ThemedText>
@@ -71,7 +66,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.two + 4, paddingTop: Spacing.three },
   header: { gap: Spacing.two, marginBottom: Spacing.two },
-  backLinkCombined: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   title: { fontSize: 24, lineHeight: 30 },
   centerBlock: { alignItems: 'center', gap: 4, marginTop: Spacing.four, marginBottom: Spacing.four },
   logo: { width: 80, height: 80, marginBottom: Spacing.two },
@@ -81,5 +75,5 @@ const styles = StyleSheet.create({
   card: { borderRadius: 12, padding: Spacing.three, marginBottom: Spacing.three },
   cardText: { opacity: 0.8, lineHeight: 20, textAlign: 'center' },
   linkRow: { alignItems: 'center', paddingVertical: Spacing.two },
-  link: { color: '#700a0a', fontWeight: '600' },
+  link: { color: '#C01918', fontWeight: '600' },
 });

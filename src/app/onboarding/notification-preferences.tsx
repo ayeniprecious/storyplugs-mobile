@@ -13,7 +13,7 @@ import type { NotificationContentType } from '@/lib/database.types';
 export default function NotificationPreferences() {
   const { saveNotificationPreferences } = useProfile();
   const [selectedTypes, setSelectedTypes] = useState<NotificationContentType[]>([]);
-  const [selectedTime, setSelectedTime] = useState('08:00');
+  const [selectedTime, setSelectedTime] = useState('anytime');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,7 +30,10 @@ export default function NotificationPreferences() {
     }
     setSubmitting(true);
     setError(null);
-    const { error: saveError } = await saveNotificationPreferences(selectedTypes, selectedTime);
+    const { error: saveError } = await saveNotificationPreferences(
+      selectedTypes,
+      selectedTime === 'anytime' ? null : selectedTime
+    );
     setSubmitting(false);
     if (saveError) setError(saveError);
     // On success, profile refreshes and the root layout's guard routes to (app) automatically.
@@ -137,7 +140,7 @@ const styles = StyleSheet.create({
     borderColor: '#3a3a3c',
     marginBottom: Spacing.two,
   },
-  optionCardSelected: { borderColor: '#700a0a' },
+  optionCardSelected: { borderColor: '#C01918' },
   checkbox: {
     width: 24,
     height: 24,
@@ -146,7 +149,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.08)',
   },
-  checkboxSelected: { backgroundColor: '#700a0a' },
+  checkboxSelected: { backgroundColor: '#C01918' },
   optionTextGroup: { flex: 1, gap: 2 },
   optionLabel: { color: '#fff', fontSize: 14, fontWeight: '700' },
   optionBlurb: { color: 'rgba(255,255,255,0.6)', fontSize: 13 },
@@ -159,7 +162,7 @@ const styles = StyleSheet.create({
     borderColor: '#3a3a3c',
   },
   timeChipText: { color: 'rgba(255,255,255,0.85)', fontSize: 14 },
-  timeChipSelected: { backgroundColor: '#700a0a', borderColor: '#700a0a' },
+  timeChipSelected: { backgroundColor: '#C01918', borderColor: '#C01918' },
   timeChipTextSelected: { color: '#fff', fontWeight: '600', fontSize: 14 },
   error: { color: '#ff453a', marginTop: Spacing.two, fontSize: 14 },
   primaryButton: {

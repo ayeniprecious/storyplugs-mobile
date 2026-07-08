@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
+import { BackButton } from '@/components/back-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -44,12 +44,7 @@ export default function EditProfile() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ThemedView style={styles.header}>
-          <Link href="/profile" asChild>
-            <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#700a0a" />
-              <ThemedText type="link">Back</ThemedText>
-            </Pressable>
-          </Link>
+          <BackButton href="/profile" />
           <ThemedText type="title" style={styles.title}>
             Edit Profile
           </ThemedText>
@@ -98,7 +93,7 @@ export default function EditProfile() {
             {nameChanged && (
               <Pressable onPress={handleSaveName} disabled={savingName} hitSlop={8}>
                 {savingName ? (
-                  <ActivityIndicator size="small" color="#700a0a" />
+                  <ActivityIndicator size="small" color="#C01918" />
                 ) : (
                   <ThemedText style={styles.saveLink}>Save</ThemedText>
                 )}
@@ -148,7 +143,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.two + 4, paddingTop: Spacing.three },
   header: { gap: Spacing.two, marginBottom: Spacing.two },
-  backLinkCombined: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   title: { fontSize: 24, lineHeight: 30 },
   scrollContent: { alignItems: 'center', paddingBottom: Spacing.six },
   avatarWrap: { position: 'relative', marginTop: Spacing.two, marginBottom: Spacing.three, backgroundColor: 'transparent' },
@@ -159,7 +153,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -181,7 +175,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
   },
-  saveLink: { color: '#700a0a', fontWeight: '600' },
+  saveLink: { color: '#C01918', fontWeight: '600' },
   errorText: { color: '#ff453a', alignSelf: 'flex-start' },
   readonlyValue: { alignSelf: 'flex-start', opacity: 0.8, fontSize: 16 },
   memberSince: { alignSelf: 'flex-start', opacity: 0.45, marginTop: Spacing.three },

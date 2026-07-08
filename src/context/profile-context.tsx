@@ -10,7 +10,7 @@ interface ProfileContextValue {
   refreshProfile: () => Promise<void>;
   saveNotificationPreferences: (
     types: NotificationContentType[],
-    time: string
+    time: string | null
   ) => Promise<{ error: string | null }>;
   savePersonalization: (
     interests: string[],
@@ -28,15 +28,21 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = useCallback(async (userId: string) => {
-    setLoading(true);
+  // `silent` skips the loading flag -- RootNavigator treats `loading` as "still
+  // resolving" and renders nothing while it's true, which unmounts the whole
+  // Stack navigator. That's correct for the *initial* profile fetch (before we
+  // know whether onboarding is needed), but every settings save also calls this
+  // to refresh local state, and doing that non-silently was bouncing users back
+  // to Home mid-navigation on every save.
+  const fetchProfile = useCallback(async (userId: string, options?: { silent?: boolean }) => {
+    if (!options?.silent) setLoading(true);
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
     if (!error) setProfile(data as Profile);
-    setLoading(false);
+    if (!options?.silent) setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -53,13 +59,13 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   }, [user?.id, fetchProfile]);
 
   const saveNotificationPreferences = useCallback(
-    async (types: NotificationContentType[], time: string) => {
+    async (types: NotificationContentType[], time: string | null) => {
       if (!user?.id) return { error: "Not signed in." };
       const { error } = await supabase
         .from("profiles")
         .update({ notification_types: types, notification_time: time })
         .eq("id", user.id);
-      if (!error) await fetchProfile(user.id);
+      if (!error) await fetchProfile(user.id, { silent: true });
       return { error: error?.message ?? null };
     },
     [user?.id, fetchProfile]
@@ -72,7 +78,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         .from("profiles")
         .update({ interests, personal_goals: goals, story_length_pref: storyLength })
         .eq("id", user.id);
-      if (!error) await fetchProfile(user.id);
+      if (!error) await fetchProfile(user.id, { silent: true });
       return { error: error?.message ?? null };
     },
     [user?.id, fetchProfile]
@@ -87,7 +93,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         .from("profiles")
         .update({ display_name: trimmed })
         .eq("id", user.id);
-      if (!error) await fetchProfile(user.id);
+      if (!error) await fetchProfile(user.id, { silent: true });
       return { error: error?.message ?? null };
     },
     [user?.id, fetchProfile]
@@ -100,7 +106,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         .from("profiles")
         .update({ hide_identity_in_comments: hide })
         .eq("id", user.id);
-      if (!error) await fetchProfile(user.id);
+      if (!error) await fetchProfile(user.id, { silent: true });
       return { error: error?.message ?? null };
     },
     [user?.id, fetchProfile]

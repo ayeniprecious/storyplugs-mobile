@@ -2,11 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
-import { Link, router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, Share, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BackButton } from '@/components/back-button';
 import { CategoryRow } from '@/components/category-row';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
@@ -180,12 +181,7 @@ export default function StoryPreview() {
       <ThemedView style={styles.container}>
         <SafeAreaView style={styles.centerFill}>
           <ThemedText type="smallBold">Story not found</ThemedText>
-          <Link href="/(app)" asChild>
-            <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#700a0a" />
-              <ThemedText type="link">Back to Home</ThemedText>
-            </Pressable>
-          </Link>
+          <BackButton href="/(app)" label="Back to Home" />
         </SafeAreaView>
       </ThemedView>
     );
@@ -206,12 +202,7 @@ export default function StoryPreview() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent}>
-          <Link href="/(app)" asChild>
-            <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#700a0a" />
-              <ThemedText type="link">Back</ThemedText>
-            </Pressable>
-          </Link>
+          <BackButton href="/(app)" />
 
           {story.image_url && (
             <Image source={{ uri: story.image_url }} style={styles.heroImage} contentFit="cover" />
@@ -235,7 +226,7 @@ export default function StoryPreview() {
           {story.daily_lesson && (
             <ThemedView style={styles.lessonCard}>
               <ThemedView style={styles.lessonHeaderRow}>
-                <Ionicons name="bulb-outline" size={16} color="#700a0a" />
+                <Ionicons name="bulb-outline" size={16} color="#C01918" />
                 <ThemedText type="smallBold" style={styles.lessonHeading}>
                   Today&apos;s Lesson
                 </ThemedText>
@@ -247,7 +238,7 @@ export default function StoryPreview() {
           {story.reflection_question && (
             <ThemedView style={[styles.reflectionCard, { borderColor: theme.border }]}>
               <ThemedView style={styles.lessonHeaderRow}>
-                <Ionicons name="help-circle-outline" size={16} color="#700a0a" />
+                <Ionicons name="help-circle-outline" size={16} color="#C01918" />
                 <ThemedText type="smallBold" style={styles.lessonHeading}>
                   Reflect
                 </ThemedText>
@@ -280,16 +271,16 @@ export default function StoryPreview() {
 
           <ThemedView style={styles.actionsRow}>
             <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={handleFavoriteToggle}>
-              <Ionicons name={isFavorited ? 'checkmark' : 'bookmark-outline'} size={16} color="#700a0a" />
+              <Ionicons name={isFavorited ? 'checkmark' : 'bookmark-outline'} size={16} color="#C01918" />
               <ThemedText style={styles.actionButtonText}>{isFavorited ? 'Saved' : 'Save'}</ThemedText>
             </Pressable>
             <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={handleShare}>
-              <Ionicons name="share-outline" size={16} color="#700a0a" />
+              <Ionicons name="share-outline" size={16} color="#C01918" />
               <ThemedText style={styles.actionButtonText}>Share</ThemedText>
             </Pressable>
             {story.audio_url && (
               <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={handleListenToggle}>
-                <Ionicons name={playerStatus.playing ? 'pause' : 'headset-outline'} size={16} color="#700a0a" />
+                <Ionicons name={playerStatus.playing ? 'pause' : 'headset-outline'} size={16} color="#C01918" />
                 <ThemedText style={styles.actionButtonText}>
                   {playerStatus.playing ? 'Pause' : 'Listen'}
                 </ThemedText>
@@ -347,27 +338,20 @@ const styles = StyleSheet.create({
   skeletonTitle: { width: '70%', height: 31, borderRadius: 6 },
   skeletonLine: { width: '100%', height: 24, borderRadius: 4 },
   skeletonLineShort: { width: '60%', height: 24, borderRadius: 4 },
-  backLinkCombined: {
-    marginBottom: Spacing.two,
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
   heroImage: { width: '100%', height: 220, borderRadius: 16, marginBottom: Spacing.two },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  categoryTag: { color: '#700a0a', fontWeight: '600', textTransform: 'uppercase' },
+  categoryTag: { color: '#C01918', fontWeight: '600', textTransform: 'uppercase' },
   readTime: { opacity: 0.6 },
   title: { fontSize: 25, lineHeight: 31 },
   excerpt: { fontSize: 16, lineHeight: 24, opacity: 0.8 },
   lessonCard: {
     borderRadius: 12,
     padding: Spacing.three,
-    backgroundColor: 'rgba(112, 10, 10,0.08)',
+    backgroundColor: 'rgba(192, 25, 24,0.08)',
     gap: Spacing.one,
   },
   lessonHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  lessonHeading: { color: '#700a0a' },
+  lessonHeading: { color: '#C01918' },
   lessonText: { fontSize: 15, lineHeight: 22, opacity: 0.9 },
   reflectionCard: {
     borderRadius: 12,
@@ -386,7 +370,7 @@ const styles = StyleSheet.create({
   completedBadgeText: { color: '#32b45a', fontWeight: '600' },
   progressSection: { gap: 4 },
   progressTrack: { height: 5, backgroundColor: 'rgba(128,128,128,0.3)', borderRadius: 3, overflow: 'hidden' },
-  progressFill: { height: 5, backgroundColor: '#700a0a' },
+  progressFill: { height: 5, backgroundColor: '#C01918' },
   progressLabel: { opacity: 0.6 },
   primaryButton: {
     backgroundColor: '#700a0a',
@@ -400,12 +384,12 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#700a0a',
+    borderColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two + 2,
     alignItems: 'center',
   },
-  actionButtonText: { color: '#700a0a', fontWeight: '600' },
+  actionButtonText: { color: '#C01918', fontWeight: '600' },
   actionButtonRow: { flexDirection: 'row', justifyContent: 'center', gap: 6 },
   chaptersSection: { gap: Spacing.two, marginTop: Spacing.two },
   chaptersHeading: { opacity: 0.85 },
@@ -422,10 +406,10 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: 'rgba(112, 10, 10,0.14)',
+    backgroundColor: 'rgba(192, 25, 24,0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  chapterNumberText: { color: '#700a0a' },
+  chapterNumberText: { color: '#C01918' },
   chapterTitle: { flex: 1 },
 });

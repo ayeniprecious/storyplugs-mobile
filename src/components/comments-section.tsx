@@ -95,7 +95,7 @@ export function CommentsSection({ storyId }: { storyId: string }) {
       {error && <ThemedText style={styles.error}>{error}</ThemedText>}
 
       {loading ? (
-        <ActivityIndicator color="#700a0a" style={{ marginTop: Spacing.two }} />
+        <ActivityIndicator color="#C01918" style={{ marginTop: Spacing.two }} />
       ) : comments.length === 0 ? (
         <ThemedText type="small" style={styles.emptyHint}>
           Be the first to comment.
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     maxHeight: 70,
   },
   postButton: {
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 15,
     width: 30,
     height: 30,
@@ -225,12 +225,12 @@ const styles = StyleSheet.create({
   },
   commentTime: { opacity: 0.5 },
   commentText: { fontSize: 14, lineHeight: 20, opacity: 0.9 },
-  replyLink: { color: '#700a0a', fontWeight: '600', marginTop: 2 },
+  replyLink: { color: '#C01918', fontWeight: '600', marginTop: 2 },
   officialBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 6,
     paddingHorizontal: 4,
     paddingVertical: 0,

@@ -115,13 +115,13 @@ export default function Personalize() {
                     style={[styles.optionCard, selected && styles.optionCardSelected]}
                   >
                     <View style={[styles.optionIcon, selected && styles.optionIconSelected]}>
-                      <Ionicons name={goal.icon} size={20} color={selected ? '#fff' : '#700a0a'} />
+                      <Ionicons name={goal.icon} size={20} color={selected ? '#fff' : '#C01918'} />
                     </View>
                     <View style={styles.optionTextGroup}>
                       <Text style={styles.optionLabel}>{goal.label}</Text>
                       <Text style={styles.optionBlurb}>{goal.blurb}</Text>
                     </View>
-                    {selected && <Ionicons name="checkmark-circle" size={22} color="#700a0a" />}
+                    {selected && <Ionicons name="checkmark-circle" size={22} color="#C01918" />}
                   </Pressable>
                 );
               })}
@@ -193,8 +193,8 @@ const styles = StyleSheet.create({
     marginRight: 70,
   },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#3a3a3c' },
-  dotActive: { backgroundColor: '#700a0a', width: 22 },
-  dotDone: { backgroundColor: '#700a0a', opacity: 0.5 },
+  dotActive: { backgroundColor: '#C01918', width: 22 },
+  dotDone: { backgroundColor: '#C01918', opacity: 0.5 },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: Spacing.two + 4, paddingVertical: Spacing.three, gap: Spacing.two },
   footer: { paddingHorizontal: Spacing.two + 4, paddingBottom: Spacing.three, gap: Spacing.two },
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#3a3a3c',
   },
-  chipSelected: { backgroundColor: '#700a0a', borderColor: '#700a0a' },
+  chipSelected: { backgroundColor: '#C01918', borderColor: '#C01918' },
   chipText: { color: 'rgba(255,255,255,0.85)', fontSize: 14 },
   chipTextSelected: { color: '#fff', fontWeight: '600', fontSize: 14 },
   optionCard: {
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     borderColor: '#3a3a3c',
     marginBottom: Spacing.two,
   },
-  optionCardSelected: { borderColor: '#700a0a' },
+  optionCardSelected: { borderColor: '#C01918' },
   optionIcon: {
     width: 40,
     height: 40,
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.08)',
   },
-  optionIconSelected: { backgroundColor: '#700a0a' },
+  optionIconSelected: { backgroundColor: '#C01918' },
   optionTextGroup: { flex: 1, gap: 2 },
   optionLabel: { color: '#fff', fontSize: 14, fontWeight: '600' },
   optionBlurb: { color: 'rgba(255,255,255,0.6)', fontSize: 13 },
@@ -246,8 +246,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioSelected: { borderColor: '#700a0a' },
-  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#700a0a' },
+  radioSelected: { borderColor: '#C01918' },
+  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#C01918' },
   error: { color: '#ff453a', marginTop: Spacing.two, fontSize: 14 },
   primaryButton: {
     backgroundColor: '#700a0a',

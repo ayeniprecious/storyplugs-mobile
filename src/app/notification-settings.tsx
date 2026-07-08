@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BackButton } from '@/components/back-button';
 import { SettingsGroup } from '@/components/settings-group';
 import { SettingsRow } from '@/components/settings-row';
 import { ThemedText } from '@/components/themed-text';
@@ -19,14 +19,14 @@ export default function NotificationSettings() {
   const { profile, saveNotificationPreferences } = useProfile();
 
   const [selectedTypes, setSelectedTypes] = useState<NotificationContentType[]>([]);
-  const [selectedTime, setSelectedTime] = useState('08:00');
+  const [selectedTime, setSelectedTime] = useState('anytime');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (profile) {
       setSelectedTypes(profile.notification_types);
-      setSelectedTime(profile.notification_time.slice(0, 5));
+      setSelectedTime(profile.notification_time ? profile.notification_time.slice(0, 5) : 'anytime');
     }
   }, [profile]);
 
@@ -38,7 +38,7 @@ export default function NotificationSettings() {
   async function handleSave() {
     if (selectedTypes.length === 0) return;
     setSaving(true);
-    await saveNotificationPreferences(selectedTypes, selectedTime);
+    await saveNotificationPreferences(selectedTypes, selectedTime === 'anytime' ? null : selectedTime);
     setSaving(false);
     setSaved(true);
   }
@@ -47,12 +47,7 @@ export default function NotificationSettings() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ThemedView style={styles.header}>
-          <Link href="/profile" asChild>
-            <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#700a0a" />
-              <ThemedText type="link">Back</ThemedText>
-            </Pressable>
-          </Link>
+          <BackButton href="/profile" />
           <ThemedText type="title" style={styles.title}>
             Notifications
           </ThemedText>
@@ -126,7 +121,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.two + 4, paddingTop: Spacing.three },
   header: { gap: Spacing.two, marginBottom: Spacing.two },
-  backLinkCombined: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   title: { fontSize: 24, lineHeight: 30 },
   scrollContent: { paddingBottom: Spacing.six },
   sectionHint: { opacity: 0.85, marginTop: Spacing.two, marginBottom: Spacing.two },
@@ -137,7 +131,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: 'rgba(128,128,128,0.14)',
   },
-  chipSelected: { backgroundColor: '#700a0a' },
+  chipSelected: { backgroundColor: '#C01918' },
   chipTextSelected: { color: '#fff', fontWeight: '600' },
   saveButton: {
     backgroundColor: '#700a0a',

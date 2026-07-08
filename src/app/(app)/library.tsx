@@ -137,7 +137,7 @@ export default function Library() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handlePullToRefresh} tintColor="#700a0a" />
+            <RefreshControl refreshing={refreshing} onRefresh={handlePullToRefresh} tintColor="#C01918" />
           }
         >
           <ThemedText type="title" style={styles.title}>
@@ -241,7 +241,7 @@ export default function Library() {
                     <Ionicons
                       name={completedExpanded ? 'chevron-up' : 'chevron-down'}
                       size={14}
-                      color="#700a0a"
+                      color="#C01918"
                     />
                   </ThemedView>
                 )}
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     gap: 4,
     backgroundColor: 'transparent',
   },
-  collapsibleToggle: { color: '#700a0a', fontWeight: '600' },
+  collapsibleToggle: { color: '#C01918', fontWeight: '600' },
   emptyHint: { opacity: 0.6, marginBottom: Spacing.two },
   statsRow: {
     flexDirection: 'row',
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   rowBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
   categoryLabel: { opacity: 0.5 },
   progressTrack: { height: 4, backgroundColor: 'rgba(128,128,128,0.3)', borderRadius: 2, overflow: 'hidden' },
-  progressFill: { height: 4, backgroundColor: '#700a0a' },
+  progressFill: { height: 4, backgroundColor: '#C01918' },
   progressLabel: { opacity: 0.6 },
   removeButton: { paddingHorizontal: Spacing.three, alignSelf: 'stretch', justifyContent: 'center' },
 });

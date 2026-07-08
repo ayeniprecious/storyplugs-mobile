@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BackButton } from '@/components/back-button';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -34,12 +35,7 @@ export default function Notifications() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ThemedView style={styles.header}>
-          <Link href="/(app)" asChild>
-            <Pressable style={styles.backLinkCombined}>
-              <Ionicons name="chevron-back" size={16} color="#700a0a" />
-              <ThemedText type="link">Back</ThemedText>
-            </Pressable>
-          </Link>
+          <BackButton href="/(app)" />
           <ThemedText type="title" style={styles.title}>
             Notifications
           </ThemedText>
@@ -118,10 +114,9 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.two + 4, paddingTop: Spacing.three },
   header: { gap: Spacing.two, marginBottom: Spacing.two },
-  backLinkCombined: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   title: { fontSize: 24, lineHeight: 30 },
   actionsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: Spacing.three },
-  action: { color: '#700a0a' },
+  action: { color: '#C01918' },
   actionDisabled: { opacity: 0.3 },
   emptyHint: { opacity: 0.6, marginTop: Spacing.four },
   skeletonLineTitle: { width: '50%', height: 20, borderRadius: 4 },
@@ -138,7 +133,7 @@ const styles = StyleSheet.create({
   },
   rowBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
   rowHeaderLine: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'transparent' },
-  unreadDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#700a0a' },
+  unreadDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#C01918' },
   rowText: { opacity: 0.75 },
   rowTime: { opacity: 0.5 },
   removeButton: { paddingHorizontal: 4 },

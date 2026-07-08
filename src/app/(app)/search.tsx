@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   suggestionSection: { gap: Spacing.two },
   suggestionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   suggestionHeading: { opacity: 0.85 },
-  clearAll: { color: '#700a0a' },
+  clearAll: { color: '#C01918' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   chip: {
     flexDirection: 'row',
@@ -179,6 +179,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: 20,
-    backgroundColor: 'rgba(112, 10, 10,0.15)',
+    backgroundColor: 'rgba(192, 25, 24,0.15)',
   },
 });

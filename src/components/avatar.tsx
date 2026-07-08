@@ -41,9 +41,11 @@ export function Avatar({ url, fallbackLetter, size = 30, streakCount = 0 }: Avat
 }
 
 const styles = StyleSheet.create({
-  image: { backgroundColor: '#3a3a3c' },
+  // White, not the theme background -- so a transparent-background upload shows
+  // cleanly instead of blending into the dark theme.
+  image: { backgroundColor: '#ffffff' },
   fallback: {
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -52,7 +54,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -6,
     alignSelf: 'center',
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     paddingHorizontal: 4,
     alignItems: 'center',
     justifyContent: 'center',

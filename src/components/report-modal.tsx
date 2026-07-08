@@ -69,10 +69,10 @@ export function ReportModal({ visible, onClose, targetType, targetId }: ReportMo
                     setReason(r);
                     setError(null);
                   }}
-                  style={[styles.reasonRow, { borderColor: reason === r ? '#700a0a' : theme.border }]}
+                  style={[styles.reasonRow, { borderColor: reason === r ? '#C01918' : theme.border }]}
                 >
                   <ThemedText type="small">{r}</ThemedText>
-                  <ThemedView style={[styles.radio, { borderColor: reason === r ? '#700a0a' : theme.border }]}>
+                  <ThemedView style={[styles.radio, { borderColor: reason === r ? '#C01918' : theme.border }]}>
                     {reason === r && <ThemedView style={styles.radioInner} />}
                   </ThemedView>
                 </Pressable>
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioInner: { width: 9, height: 9, borderRadius: 5, backgroundColor: '#700a0a' },
+  radioInner: { width: 9, height: 9, borderRadius: 5, backgroundColor: '#C01918' },
   error: { color: '#ff453a', fontSize: 13, marginTop: Spacing.one },
   primaryButton: {
     backgroundColor: '#700a0a',
