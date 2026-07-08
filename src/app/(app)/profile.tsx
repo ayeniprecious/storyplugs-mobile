@@ -1,7 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
@@ -533,6 +542,34 @@ export default function Profile() {
             )}
           </Pressable>
 
+          <ThemedText type="smallBold" style={styles.sectionHeading}>
+            Support
+          </ThemedText>
+          <Link href="/help" asChild>
+            <Pressable style={StyleSheet.flatten([styles.linkRow, { borderColor: theme.border }])}>
+              <ThemedText type="small">Help</ThemedText>
+              <Ionicons name="chevron-forward" size={16} color={theme.placeholder} />
+            </Pressable>
+          </Link>
+          <Link href="/feedback" asChild>
+            <Pressable style={StyleSheet.flatten([styles.linkRow, { borderColor: theme.border }])}>
+              <ThemedText type="small">Feedback</ThemedText>
+              <Ionicons name="chevron-forward" size={16} color={theme.placeholder} />
+            </Pressable>
+          </Link>
+          <Link href="/about" asChild>
+            <Pressable style={StyleSheet.flatten([styles.linkRow, { borderColor: theme.border }])}>
+              <ThemedText type="small">About</ThemedText>
+              <Ionicons name="chevron-forward" size={16} color={theme.placeholder} />
+            </Pressable>
+          </Link>
+          <Link href="/privacy" asChild>
+            <Pressable style={StyleSheet.flatten([styles.linkRow, { borderColor: theme.border }])}>
+              <ThemedText type="small">Privacy</ThemedText>
+              <Ionicons name="chevron-forward" size={16} color={theme.placeholder} />
+            </Pressable>
+          </Link>
+
           <Pressable style={[styles.signOutButton, { borderColor: theme.border }]} onPress={signOut}>
             <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
           </Pressable>
@@ -640,6 +677,16 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.one + 4,
   },
   checkbox: { width: 18, height: 18, borderRadius: 5, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  linkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.two + 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: Spacing.one + 4,
+  },
   timeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one + 4, marginBottom: Spacing.two },
   timeChip: {
     paddingHorizontal: Spacing.two + 4,

@@ -60,12 +60,26 @@ export function useComments(storyId: string) {
       }
     }
 
-    const withAuthor: CommentWithAuthor[] = list.map((c) => ({
-      ...c,
-      authorName: profileById.get(c.user_id)?.display_name || "Anonymous",
-      authorAvatarUrl: profileById.get(c.user_id)?.avatar_url ?? null,
-      authorStreak: profileById.get(c.user_id)?.current_streak ?? 0,
-    }));
+    const withAuthor: CommentWithAuthor[] = list.map((c) => {
+      // is_anonymous is set server-side at insert time (see
+      // 20260719000000_comment_identity_and_feedback.sql) -- never show the
+      // real name/avatar/streak for these, even though the profile lookup
+      // above may still have real data for this user from elsewhere.
+      if (c.is_anonymous) {
+        return {
+          ...c,
+          authorName: c.user_id === user?.id ? "You" : "Anonymous",
+          authorAvatarUrl: null,
+          authorStreak: 0,
+        };
+      }
+      return {
+        ...c,
+        authorName: profileById.get(c.user_id)?.display_name || "Anonymous",
+        authorAvatarUrl: profileById.get(c.user_id)?.avatar_url ?? null,
+        authorStreak: profileById.get(c.user_id)?.current_streak ?? 0,
+      };
+    });
 
     const repliesByParent = new Map<string, CommentWithAuthor[]>();
     const topLevel: CommentWithAuthor[] = [];
@@ -116,12 +130,15 @@ export function useComments(storyId: string) {
         setError(message);
         return { error: message };
       }
-      const newComment: CommentWithAuthor = {
-        ...(data as Comment),
-        authorName: profile?.display_name || "You",
-        authorAvatarUrl: profile?.avatar_url ?? null,
-        authorStreak: 0,
-      };
+      const inserted = data as Comment;
+      const newComment: CommentWithAuthor = inserted.is_anonymous
+        ? { ...inserted, authorName: "You", authorAvatarUrl: null, authorStreak: 0 }
+        : {
+            ...inserted,
+            authorName: profile?.display_name || "You",
+            authorAvatarUrl: profile?.avatar_url ?? null,
+            authorStreak: 0,
+          };
       if (parentId) {
         setComments((prev) =>
           prev.map((c) => (c.id === parentId ? { ...c, replies: [...c.replies, newComment] } : c))

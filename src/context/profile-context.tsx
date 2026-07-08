@@ -18,6 +18,7 @@ interface ProfileContextValue {
     storyLength: StoryLengthPref
   ) => Promise<{ error: string | null }>;
   updateDisplayName: (name: string) => Promise<{ error: string | null }>;
+  setHideIdentityInComments: (hide: boolean) => Promise<{ error: string | null }>;
 }
 
 const ProfileContext = createContext<ProfileContextValue | null>(null);
@@ -92,6 +93,19 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     [user?.id, fetchProfile]
   );
 
+  const setHideIdentityInComments = useCallback(
+    async (hide: boolean) => {
+      if (!user?.id) return { error: "Not signed in." };
+      const { error } = await supabase
+        .from("profiles")
+        .update({ hide_identity_in_comments: hide })
+        .eq("id", user.id);
+      if (!error) await fetchProfile(user.id);
+      return { error: error?.message ?? null };
+    },
+    [user?.id, fetchProfile]
+  );
+
   const value = useMemo(
     () => ({
       profile,
@@ -100,8 +114,17 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       saveNotificationPreferences,
       savePersonalization,
       updateDisplayName,
+      setHideIdentityInComments,
     }),
-    [profile, loading, refreshProfile, saveNotificationPreferences, savePersonalization, updateDisplayName]
+    [
+      profile,
+      loading,
+      refreshProfile,
+      saveNotificationPreferences,
+      savePersonalization,
+      updateDisplayName,
+      setHideIdentityInComments,
+    ]
   );
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

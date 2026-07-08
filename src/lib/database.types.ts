@@ -22,6 +22,8 @@ export interface Profile {
   interests: string[];
   personal_goals: string[];
   story_length_pref: StoryLengthPref | null;
+  // Privacy (20260719000000_comment_identity_and_feedback.sql).
+  hide_identity_in_comments: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -113,6 +115,20 @@ export interface Comment {
   body: string;
   created_at: string;
   parent_id: string | null;
+  is_anonymous: boolean;
+}
+
+export interface Feedback {
+  id: string;
+  user_id: string;
+  message: string;
+  created_at: string;
+}
+
+export interface AppSetting {
+  key: string;
+  value: string | null;
+  updated_at: string;
 }
 
 export type ReportTargetType = "story" | "comment" | "user";
