@@ -13,6 +13,7 @@ import { useAuth } from '@/context/auth-context';
 import { useProfile } from '@/context/profile-context';
 import { useAvatarUpload } from '@/hooks/use-avatar-upload';
 import { useTheme } from '@/hooks/use-theme';
+import { canChangeDisplayName, getNextNameChangeDate } from '@/lib/display-name-lock';
 
 export default function EditProfile() {
   const { user } = useAuth();
@@ -31,6 +32,11 @@ export default function EditProfile() {
 
   const initial = (profile?.display_name?.[0] ?? user?.email?.[0] ?? 'U').toUpperCase();
   const nameChanged = nameInput.trim() !== (profile?.display_name ?? '') && nameInput.trim() !== '';
+  const nameLocked = !canChangeDisplayName(profile?.display_name_changed_at ?? null);
+  const nameUnlockDate = getNextNameChangeDate(profile?.display_name_changed_at ?? null);
+  const upcomingLockDate = getNextNameChangeDate(new Date().toISOString());
+  const dateLabel = (d: Date | null) =>
+    d?.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
 
   async function handleSaveName() {
     setSavingName(true);
@@ -88,9 +94,14 @@ export default function EditProfile() {
               }}
               placeholder="Your name"
               placeholderTextColor={theme.placeholder}
-              style={[styles.nameInput, { borderColor: theme.border, color: theme.text }]}
+              editable={!nameLocked}
+              style={[
+                styles.nameInput,
+                { borderColor: theme.border, color: theme.text },
+                nameLocked && styles.nameInputLocked,
+              ]}
             />
-            {nameChanged && (
+            {!nameLocked && nameChanged && (
               <Pressable onPress={handleSaveName} disabled={savingName} hitSlop={8}>
                 {savingName ? (
                   <ActivityIndicator size="small" color="#C01918" />
@@ -100,6 +111,18 @@ export default function EditProfile() {
               </Pressable>
             )}
           </ThemedView>
+          {nameLocked ? (
+            <ThemedText type="small" style={styles.lockHint}>
+              You can change your name again on {dateLabel(nameUnlockDate)}.
+            </ThemedText>
+          ) : (
+            nameChanged && (
+              <ThemedText type="small" style={styles.lockHint}>
+                Names can only be changed once every 6 months — if you save this now, you won&apos;t be
+                able to change it again until {dateLabel(upcomingLockDate)}.
+              </ThemedText>
+            )
+          )}
           {nameError && (
             <ThemedText type="small" style={styles.errorText}>
               {nameError}
@@ -176,6 +199,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
   },
   saveLink: { color: '#C01918', fontWeight: '600' },
+  nameInputLocked: { opacity: 0.5 },
+  lockHint: { alignSelf: 'flex-start', opacity: 0.6, marginTop: 4, lineHeight: 18 },
   errorText: { color: '#ff453a', alignSelf: 'flex-start' },
   readonlyValue: { alignSelf: 'flex-start', opacity: 0.8, fontSize: 16 },
   memberSince: { alignSelf: 'flex-start', opacity: 0.45, marginTop: Spacing.three },

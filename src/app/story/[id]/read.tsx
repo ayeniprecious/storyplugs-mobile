@@ -163,6 +163,13 @@ export default function StoryRead() {
         <ThemedView style={[styles.progressFill, { width: `${progress?.progressPercent ?? 0}%` }]} />
       </ThemedView>
       <SafeAreaView style={styles.safeArea}>
+        <ThemedView style={styles.topRow}>
+          <BackButton href={{ pathname: '/story/[id]', params: { id } }} />
+          <Pressable onPress={() => setReportingStory(true)} hitSlop={8}>
+            <Ionicons name="flag-outline" size={18} color="#8a8a8e" />
+          </Pressable>
+        </ThemedView>
+
         <ScrollView
           ref={scrollRef}
           contentContainerStyle={styles.scrollContent}
@@ -171,13 +178,6 @@ export default function StoryRead() {
           onLayout={handleScrollViewLayout}
           scrollEventThrottle={200}
         >
-          <ThemedView style={styles.topRow}>
-            <BackButton href={{ pathname: '/story/[id]', params: { id } }} />
-            <Pressable onPress={() => setReportingStory(true)} hitSlop={8}>
-              <Ionicons name="flag-outline" size={18} color="#8a8a8e" />
-            </Pressable>
-          </ThemedView>
-
           {hasChapters ? (
             <ThemedText type="small" style={styles.categoryTag}>
               Chapter {chapterIndex + 1} of {chapters.length}
@@ -264,7 +264,6 @@ const styles = StyleSheet.create({
   centerFill: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two },
   scrollContent: {
     paddingHorizontal: Spacing.two + 4,
-    paddingTop: Spacing.three,
     gap: Spacing.two,
     paddingBottom: Spacing.six,
   },
@@ -279,7 +278,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: Spacing.two,
+    paddingHorizontal: Spacing.two + 4,
+    paddingTop: Spacing.three,
+    paddingBottom: Spacing.two,
     backgroundColor: 'transparent',
   },
   categoryTag: { color: '#C01918', fontWeight: '600', textTransform: 'uppercase' },

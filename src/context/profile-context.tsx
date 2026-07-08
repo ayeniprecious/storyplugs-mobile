@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/context/auth-context";
+import { canChangeDisplayName, getNextNameChangeDate } from "@/lib/display-name-lock";
 import type { NotificationContentType, Profile, StoryLengthPref } from "@/lib/database.types";
 import { supabase } from "@/lib/supabase";
 
@@ -89,14 +90,23 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       if (!user?.id) return { error: "Not signed in." };
       const trimmed = name.trim();
       if (!trimmed) return { error: "Name can't be empty." };
+      if (!canChangeDisplayName(profile?.display_name_changed_at ?? null)) {
+        const next = getNextNameChangeDate(profile?.display_name_changed_at ?? null);
+        const nextLabel = next?.toLocaleDateString(undefined, {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
+        return { error: `You can change your name again on ${nextLabel}.` };
+      }
       const { error } = await supabase
         .from("profiles")
-        .update({ display_name: trimmed })
+        .update({ display_name: trimmed, display_name_changed_at: new Date().toISOString() })
         .eq("id", user.id);
       if (!error) await fetchProfile(user.id, { silent: true });
       return { error: error?.message ?? null };
     },
-    [user?.id, fetchProfile]
+    [user?.id, profile?.display_name_changed_at, fetchProfile]
   );
 
   const setHideIdentityInComments = useCallback(

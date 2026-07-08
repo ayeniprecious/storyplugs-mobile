@@ -12,6 +12,8 @@ export type StoryLengthPref = "short" | "medium" | "long" | "any";
 export interface Profile {
   id: string;
   display_name: string | null;
+  // 20260721000000_display_name_change_lock.sql — null means never changed via the app yet.
+  display_name_changed_at: string | null;
   avatar_url: string | null;
   // null means "Anytime" -- no specific delivery-time preference.
   notification_time: string | null;
