@@ -186,11 +186,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
-    alignSelf: 'stretch',
     backgroundColor: 'transparent',
   },
   nameInput: {
-    flex: 1,
+    width: 220,
     fontSize: 16,
     fontWeight: '600',
     borderWidth: 1,

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
@@ -19,27 +19,28 @@ export default function Profile() {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const theme = useTheme();
+  const [signingOut, setSigningOut] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const initial = (profile?.display_name?.[0] ?? user?.email?.[0] ?? 'U').toUpperCase();
 
-  function confirmDeleteAccount() {
-    Alert.alert(
-      'Delete Account',
-      'This permanently deletes your account and all your data. This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: handleDeleteAccount },
-      ]
-    );
+  async function handleSignOut() {
+    setSigningOut(true);
+    await signOut();
   }
 
+  // react-native-web has no Alert.alert UI at all -- tapping Delete Account
+  // silently did nothing on web. A real Modal works identically everywhere.
   async function handleDeleteAccount() {
+    setConfirmingDelete(false);
     setDeleting(true);
+    setDeleteError(null);
     const { error } = await supabase.functions.invoke('delete-account');
     setDeleting(false);
     if (error) {
-      Alert.alert('Couldn’t delete account', error.message);
+      setDeleteError(error.message);
       return;
     }
     await signOut();
@@ -86,18 +87,58 @@ export default function Profile() {
           </SettingsGroup>
 
           <SettingsGroup>
-            <SettingsRow label="Sign Out" onPress={signOut} isLast />
+            <SettingsRow
+              label={signingOut ? 'Signing Out…' : 'Sign Out'}
+              onPress={handleSignOut}
+              disabled={signingOut}
+              right={signingOut ? <ActivityIndicator size="small" color={theme.text} /> : undefined}
+              isLast
+            />
           </SettingsGroup>
 
-          <Pressable onPress={confirmDeleteAccount} disabled={deleting} style={styles.deleteButton}>
+          <Pressable onPress={() => setConfirmingDelete(true)} disabled={deleting} style={styles.deleteButton}>
             {deleting ? (
               <ActivityIndicator color="#ff453a" />
             ) : (
               <ThemedText style={styles.deleteButtonText}>Delete Account</ThemedText>
             )}
           </Pressable>
+          {deleteError && (
+            <ThemedText type="small" style={styles.deleteErrorText}>
+              {deleteError}
+            </ThemedText>
+          )}
         </ScrollView>
       </SafeAreaView>
+
+      <Modal
+        visible={confirmingDelete}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setConfirmingDelete(false)}
+      >
+        <Pressable style={styles.modalBackdrop} onPress={() => setConfirmingDelete(false)}>
+          <ThemedView type="backgroundElement" style={styles.modalCard}>
+            <ThemedText type="smallBold" style={styles.modalTitle}>
+              Delete Account
+            </ThemedText>
+            <ThemedText type="small" style={styles.modalBody}>
+              This permanently deletes your account and all your data. This cannot be undone.
+            </ThemedText>
+            <ThemedView style={styles.modalActions}>
+              <Pressable
+                style={[styles.modalButton, { borderColor: theme.border }]}
+                onPress={() => setConfirmingDelete(false)}
+              >
+                <ThemedText style={styles.modalCancelText}>Cancel</ThemedText>
+              </Pressable>
+              <Pressable style={[styles.modalButton, styles.modalDeleteButton]} onPress={handleDeleteAccount}>
+                <ThemedText style={styles.modalDeleteText}>Delete</ThemedText>
+              </Pressable>
+            </ThemedView>
+          </ThemedView>
+        </Pressable>
+      </Modal>
     </ThemedView>
   );
 }
@@ -123,4 +164,32 @@ const styles = StyleSheet.create({
   bannerEmail: { opacity: 0.6 },
   deleteButton: { alignItems: 'center', paddingVertical: Spacing.two },
   deleteButtonText: { color: '#ff453a', fontWeight: '500', opacity: 0.85 },
+  deleteErrorText: { color: '#ff453a', textAlign: 'center' },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.four,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: 14,
+    padding: Spacing.three,
+    gap: Spacing.two,
+  },
+  modalTitle: { fontSize: 17 },
+  modalBody: { opacity: 0.75, lineHeight: 20 },
+  modalActions: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.two, backgroundColor: 'transparent' },
+  modalButton: {
+    flex: 1,
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingVertical: Spacing.two,
+    alignItems: 'center',
+  },
+  modalCancelText: { fontWeight: '600' },
+  modalDeleteButton: { backgroundColor: '#ff453a', borderColor: '#ff453a' },
+  modalDeleteText: { color: '#fff', fontWeight: '600' },
 });
