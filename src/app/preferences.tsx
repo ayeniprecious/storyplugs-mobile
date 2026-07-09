@@ -58,7 +58,7 @@ export default function Preferences() {
         </ThemedView>
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <ThemedText type="smallBold" style={styles.sectionHint}>
+          <ThemedText type="small" style={styles.sectionHint}>
             Themes you love
           </ThemedText>
           <ThemedView style={styles.chipWrap}>
@@ -78,7 +78,7 @@ export default function Preferences() {
             })}
           </ThemedView>
 
-          <ThemedText type="smallBold" style={styles.sectionHint}>
+          <ThemedText type="small" style={styles.sectionHint}>
             What brings you here
           </ThemedText>
           <ThemedView style={styles.chipWrap}>
@@ -98,7 +98,7 @@ export default function Preferences() {
             })}
           </ThemedView>
 
-          <ThemedText type="smallBold" style={styles.sectionHint}>
+          <ThemedText type="small" style={styles.sectionHint}>
             Preferred story length
           </ThemedText>
           <ThemedView style={styles.chipWrap}>
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   header: { gap: Spacing.two, marginBottom: Spacing.two },
   title: { fontSize: 24, lineHeight: 30 },
   scrollContent: { paddingBottom: Spacing.six },
-  sectionHint: { opacity: 0.85, marginTop: Spacing.two, marginBottom: Spacing.two },
+  sectionHint: { opacity: 0.6, marginTop: Spacing.two, marginBottom: Spacing.two },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginBottom: Spacing.two },
   chip: {
     paddingHorizontal: Spacing.three,
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   // Deliberately not red -- this page already shows a lot of chips, and an all-red
   // "active" state on top of the rest of the app's red accent reads as too much.
   chipSelected: { backgroundColor: '#2f6f76' },
-  chipTextSelected: { color: '#fff', fontWeight: '600' },
+  chipTextSelected: { color: '#fff' },
   saveButton: {
     backgroundColor: '#700a0a',
     borderRadius: 10,

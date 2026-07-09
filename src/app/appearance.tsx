@@ -34,7 +34,7 @@ export default function Appearance() {
         </ThemedView>
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <ThemedText type="smallBold" style={styles.sectionHint}>
+          <ThemedText type="small" style={styles.sectionHint}>
             Theme
           </ThemedText>
           <ThemedView style={styles.chipWrap}>
@@ -54,7 +54,7 @@ export default function Appearance() {
             })}
           </ThemedView>
 
-          <ThemedText type="smallBold" style={styles.sectionHint}>
+          <ThemedText type="small" style={styles.sectionHint}>
             Text Size
           </ThemedText>
           <ThemedView style={styles.chipWrap}>
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   header: { gap: Spacing.two, marginBottom: Spacing.two },
   title: { fontSize: 24, lineHeight: 30 },
   scrollContent: { paddingBottom: Spacing.six },
-  sectionHint: { opacity: 0.85, marginTop: Spacing.two, marginBottom: Spacing.two },
+  sectionHint: { opacity: 0.6, marginTop: Spacing.two, marginBottom: Spacing.two },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginBottom: Spacing.two },
   chip: {
     paddingHorizontal: Spacing.three,

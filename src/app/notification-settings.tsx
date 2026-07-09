@@ -72,7 +72,7 @@ export default function NotificationSettings() {
             ))}
           </SettingsGroup>
 
-          <ThemedText type="smallBold" style={styles.sectionHint}>
+          <ThemedText type="small" style={styles.sectionHint}>
             Delivery time
           </ThemedText>
           <ThemedView style={styles.chipWrap}>
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   header: { gap: Spacing.two, marginBottom: Spacing.two },
   title: { fontSize: 24, lineHeight: 30 },
   scrollContent: { paddingBottom: Spacing.six },
-  sectionHint: { opacity: 0.85, marginTop: Spacing.two, marginBottom: Spacing.two },
+  sectionHint: { opacity: 0.6, marginTop: Spacing.two, marginBottom: Spacing.two },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginBottom: Spacing.two },
   chip: {
     paddingHorizontal: Spacing.three,

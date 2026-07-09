@@ -209,7 +209,7 @@ export default function Home() {
 
           {quote && (
             <ThemedView type="backgroundElement" style={styles.quoteCard}>
-              <ThemedText type="smallBold" style={styles.sectionLabel}>
+              <ThemedText type="small" style={styles.sectionLabel}>
                 Quote of the Day
               </ThemedText>
               <ThemedText style={styles.quoteText}>
@@ -225,7 +225,7 @@ export default function Home() {
 
           {reflection && (
             <ThemedView type="backgroundElement" style={styles.quoteCard}>
-              <ThemedText type="smallBold" style={styles.sectionLabel}>
+              <ThemedText type="small" style={styles.sectionLabel}>
                 Reflection of the Day
               </ThemedText>
               <ThemedText style={styles.quoteText}>
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   longestStreakText: { opacity: 0.5, marginTop: -Spacing.two },
   centerBlock: { marginTop: Spacing.five },
   quoteCard: { borderRadius: 16, padding: Spacing.three, gap: Spacing.two },
-  sectionLabel: { opacity: 0.6, textTransform: "uppercase" },
+  sectionLabel: { opacity: 0.6, fontSize: 11, textTransform: "uppercase" },
   quoteText: { fontSize: 18, lineHeight: 26, fontStyle: "italic" },
   quoteAuthor: { opacity: 0.6, textAlign: "right" },
   emptyCard: {
