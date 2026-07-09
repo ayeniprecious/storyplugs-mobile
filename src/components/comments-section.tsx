@@ -10,6 +10,7 @@ import { OFFICIAL_ACCOUNT_EMAIL } from '@/constants/official-account';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useComments, type CommentWithAuthor } from '@/hooks/use-comments';
+import { useAppSettings } from '@/hooks/use-app-settings';
 import { useTheme } from '@/hooks/use-theme';
 
 function timeAgo(iso: string) {
@@ -26,6 +27,8 @@ function timeAgo(iso: string) {
 export function CommentsSection({ storyId }: { storyId: string }) {
   const { user } = useAuth();
   const theme = useTheme();
+  const { settings } = useAppSettings();
+  const appName = settings.app_name || 'StoryPlugs';
   const { comments, loading, posting, error, addComment, removeComment } = useComments(storyId);
   const [draft, setDraft] = useState('');
   const [reportCommentId, setReportCommentId] = useState<string | null>(null);
@@ -144,7 +147,7 @@ export function CommentsSection({ storyId }: { storyId: string }) {
                 <TextInput
                   value={replyDraft}
                   onChangeText={setReplyDraft}
-                  placeholder="Reply as StoryPlugs…"
+                  placeholder={`Reply as ${appName}…`}
                   placeholderTextColor={theme.placeholder}
                   style={[styles.input, { borderColor: theme.border, color: theme.text }]}
                   multiline

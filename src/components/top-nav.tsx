@@ -9,6 +9,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useProfile } from '@/context/profile-context';
+import { useAppSettings } from '@/hooks/use-app-settings';
 import { useTheme } from '@/hooks/use-theme';
 import { useNotifications } from '@/hooks/use-notifications';
 
@@ -16,6 +17,8 @@ export function TopNav({ overlay = false }: { overlay?: boolean }) {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { unreadCount } = useNotifications();
+  const { settings } = useAppSettings();
+  const appName = settings.app_name || 'StoryPlugs';
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const initial = (profile?.display_name?.[0] ?? user?.email?.[0] ?? 'U').toUpperCase();
@@ -32,7 +35,7 @@ export function TopNav({ overlay = false }: { overlay?: boolean }) {
         source={require('@/assets/images/logo-mark.png')}
         style={styles.logo}
         resizeMode="contain"
-        accessibilityLabel="StoryPlugs"
+        accessibilityLabel={appName}
       />
       <ThemedView style={[styles.actions, overlay && styles.transparentBg]}>
         <Link href="/search" asChild>

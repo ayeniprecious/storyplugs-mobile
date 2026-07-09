@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
+import { useAppSettings } from '@/hooks/use-app-settings';
 
 // Closes the in-progress auth browser tab/popup when it redirects back with
 // the OAuth result -- see the Expo + Supabase OAuth guide.
@@ -15,6 +16,8 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function SignIn() {
   const { signInWithEmail, signInWithGoogle } = useAuth();
+  const { settings } = useAppSettings();
+  const appName = settings.app_name || 'StoryPlugs';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -51,7 +54,7 @@ export default function SignIn() {
             <Text style={styles.backLabel}>Back</Text>
           </Pressable>
         )}
-        <Text style={styles.title}>StoryPlugs</Text>
+        <Text style={styles.title}>{appName}</Text>
         <Text style={styles.subtitle}>Your daily emotional vitamin</Text>
 
         <TextInput

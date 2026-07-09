@@ -15,6 +15,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useCategories } from '@/context/categories-context';
+import { useAppSettings } from '@/hooks/use-app-settings';
 import { useFavorite } from '@/hooks/use-favorite';
 import { useStoryChapters } from '@/hooks/use-story-chapters';
 import { useTheme } from '@/hooks/use-theme';
@@ -29,6 +30,8 @@ interface PreviewProgress {
 export default function StoryPreview() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const { settings } = useAppSettings();
+  const appName = settings.app_name || 'StoryPlugs';
   const theme = useTheme();
   const [story, setStory] = useState<Story | null>(null);
   const [similar, setSimilar] = useState<Story[]>([]);
@@ -123,7 +126,7 @@ export default function StoryPreview() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       const result = await Share.share({
-        message: `"${story.title}" — a story from StoryPlugs.\n\n${story.body.slice(0, 140)}...`,
+        message: `"${story.title}" — a story from ${appName}.\n\n${story.body.slice(0, 140)}...`,
         title: story.title,
       });
       if (result.action === Share.sharedAction && user?.id) {
