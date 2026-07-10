@@ -59,16 +59,27 @@ export function useNotifications() {
     // Multiple components (TopNav, the Notifications screen) can hold this hook at the same
     // time — Home stays mounted behind pushed screens — so each instance needs its own channel
     // name; reusing one across simultaneous subscribers throws on the second `.subscribe()`.
+    const suffix = Math.random().toString(36).slice(2);
     const channel = supabase
-      .channel(`notification_recipients:${user.id}:${Math.random().toString(36).slice(2)}`)
+      .channel(`notification_recipients:${user.id}:${suffix}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notification_recipients", filter: `user_id=eq.${user.id}` },
         () => refresh()
       )
       .subscribe();
+
+    // notification_recipients only changes when a notification is sent or read/removed --
+    // an admin editing an existing notification's title/body updates the parent `notifications`
+    // row instead, which has no user_id to filter on, so this listens unfiltered.
+    const contentChannel = supabase
+      .channel(`notifications:${user.id}:${suffix}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, () => refresh())
+      .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(contentChannel);
     };
   }, [user?.id, refresh]);
 
