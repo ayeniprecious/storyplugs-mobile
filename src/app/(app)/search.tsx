@@ -54,7 +54,7 @@ export default function Search() {
           </ThemedView>
           <ThemedView style={styles.chipRow}>
             {recent.map((term) => (
-              <ThemedView key={term} style={[styles.chip, { borderColor: theme.border }]}>
+              <ThemedView key={term} style={styles.chip}>
                 <Pressable onPress={() => setQuery(term)}>
                   <ThemedText type="small">{term}</ThemedText>
                 </Pressable>
@@ -96,15 +96,23 @@ export default function Search() {
         <ThemedText type="title" style={styles.title}>
           Search
         </ThemedText>
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          onSubmitEditing={() => addSearch(query)}
-          returnKeyType="search"
-          placeholder="Search by title or category"
-          placeholderTextColor={theme.placeholder}
-          style={[styles.input, { color: theme.text, borderColor: theme.border }]}
-        />
+        <ThemedView style={[styles.inputWrap, { borderColor: theme.border }]}>
+          <Ionicons name="search-outline" size={18} color={theme.placeholder} style={styles.inputIcon} />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            onSubmitEditing={() => addSearch(query)}
+            returnKeyType="search"
+            placeholder="Search by title or category"
+            placeholderTextColor={theme.placeholder}
+            style={[styles.input, { color: theme.text }]}
+          />
+          {query.length > 0 && (
+            <Pressable onPress={() => setQuery('')} hitSlop={8} accessibilityLabel="Clear search">
+              <Ionicons name="close-circle" size={18} color={theme.placeholder} />
+            </Pressable>
+          )}
+        </ThemedView>
 
         {loading ? (
           <ThemedView style={styles.skeletonGrid}>
@@ -115,12 +123,13 @@ export default function Search() {
             ))}
           </ThemedView>
         ) : results.length === 0 ? (
-          <>
-            {!isSearching && suggestions}
+          isSearching ? (
             <ThemedText type="small" style={styles.hint}>
               No results for &ldquo;{query}&rdquo;.
             </ThemedText>
-          </>
+          ) : (
+            suggestions
+          )
         ) : (
           <FlatList
             data={results}
@@ -145,13 +154,20 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.two + 4, paddingTop: Spacing.three },
   title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.three },
-  input: {
+  inputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: Spacing.three,
+    marginBottom: Spacing.three,
+  },
+  inputIcon: { backgroundColor: 'transparent' },
+  input: {
+    flex: 1,
     paddingVertical: Spacing.two + 4,
     fontSize: 16,
-    marginBottom: Spacing.three,
   },
   hint: { opacity: 0.6 },
   list: { paddingBottom: Spacing.six },
@@ -173,12 +189,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: 20,
-    borderWidth: 1,
+    backgroundColor: 'rgba(128,128,128,0.14)',
   },
   popularChip: {
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: 20,
-    backgroundColor: 'rgba(192, 25, 24,0.15)',
+    backgroundColor: 'rgba(128,128,128,0.14)',
   },
 });

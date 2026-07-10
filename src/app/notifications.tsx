@@ -81,8 +81,8 @@ export default function Notifications() {
                 <ThemedView type="backgroundElement" style={styles.row}>
                   <ThemedView style={styles.rowBody}>
                     <ThemedView style={styles.rowHeaderLine}>
-                      {!item.read && <ThemedView style={styles.unreadDot} />}
-                      <ThemedText type={item.read ? 'default' : 'smallBold'} numberOfLines={1}>
+                      <ThemedView style={[styles.unreadDot, item.read && styles.readDot]} />
+                      <ThemedText type={item.read ? 'small' : 'smallBold'} numberOfLines={1}>
                         {item.notification.title}
                       </ThemedText>
                     </ThemedView>
@@ -134,6 +134,7 @@ const styles = StyleSheet.create({
   rowBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
   rowHeaderLine: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'transparent' },
   unreadDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#C01918' },
+  readDot: { backgroundColor: '#fff' },
   rowText: { opacity: 0.75 },
   rowTime: { opacity: 0.5 },
   removeButton: { paddingHorizontal: 4 },
