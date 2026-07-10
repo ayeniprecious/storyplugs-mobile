@@ -27,6 +27,9 @@ interface PreviewProgress {
   progressPercent: number;
 }
 
+const EXCERPT_LINE_HEIGHT = 24;
+const EXCERPT_COLLAPSED_HEIGHT = EXCERPT_LINE_HEIGHT * 4;
+
 export default function StoryPreview() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
@@ -39,6 +42,8 @@ export default function StoryPreview() {
   const [notFound, setNotFound] = useState(false);
   const [previewProgress, setPreviewProgress] = useState<PreviewProgress | null>(null);
   const [progressLoading, setProgressLoading] = useState(true);
+  const [excerptExpanded, setExcerptExpanded] = useState(false);
+  const [excerptOverflows, setExcerptOverflows] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   const { isFavorited, toggle: toggleFavorite } = useFavorite(id ?? '');
@@ -198,8 +203,10 @@ export default function StoryPreview() {
   if (completed) ctaLabel = 'Read Again';
   else if (started) ctaLabel = 'Continue Reading';
 
+  // 160 wpm reads as a comfortable, attentive pace for these stories -- fast enough that a
+  // short story isn't overestimated, slow enough that a longer one doesn't feel rushed.
   const wordCount = story.body.trim().split(/\s+/).filter(Boolean).length;
-  const readMinutes = Math.max(1, Math.round(wordCount / 200));
+  const readMinutes = Math.max(1, Math.ceil(wordCount / 160));
 
   return (
     <ThemedView style={styles.container}>
@@ -222,9 +229,26 @@ export default function StoryPreview() {
           <ThemedText type="title" style={styles.title}>
             {story.title}
           </ThemedText>
-          <ThemedText style={styles.excerpt} numberOfLines={4}>
-            {story.body}
-          </ThemedText>
+          <ThemedView style={styles.excerptWrap}>
+            <ThemedText style={styles.excerpt} numberOfLines={excerptExpanded ? undefined : 4}>
+              {story.body}
+            </ThemedText>
+            {!excerptExpanded && (
+              <ThemedText
+                style={[styles.excerpt, styles.excerptMeasure]}
+                onLayout={(e) => setExcerptOverflows(e.nativeEvent.layout.height > EXCERPT_COLLAPSED_HEIGHT + 2)}
+              >
+                {story.body}
+              </ThemedText>
+            )}
+          </ThemedView>
+          {excerptOverflows && (
+            <Pressable onPress={() => setExcerptExpanded((prev) => !prev)} hitSlop={8}>
+              <ThemedText style={styles.excerptToggle}>
+                {excerptExpanded ? 'See less' : 'See more'}
+              </ThemedText>
+            </Pressable>
+          )}
 
           {story.daily_lesson && (
             <ThemedView style={styles.lessonCard}>
@@ -346,7 +370,10 @@ const styles = StyleSheet.create({
   categoryTag: { color: '#C01918', fontWeight: '600', textTransform: 'uppercase' },
   readTime: { opacity: 0.6 },
   title: { fontSize: 25, lineHeight: 31 },
-  excerpt: { fontSize: 16, lineHeight: 24, opacity: 0.8 },
+  excerptWrap: { position: 'relative' },
+  excerpt: { fontSize: 16, lineHeight: EXCERPT_LINE_HEIGHT, opacity: 0.8 },
+  excerptMeasure: { position: 'absolute', top: 0, left: 0, right: 0, opacity: 0, zIndex: -1 },
+  excerptToggle: { color: '#C01918', fontWeight: '600', marginTop: 4 },
   lessonCard: {
     borderRadius: 12,
     padding: Spacing.three,
