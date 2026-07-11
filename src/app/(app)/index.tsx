@@ -2,9 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
+  Animated,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
 } from "react-native";
 
@@ -23,6 +23,7 @@ import { useAllStories } from "@/hooks/use-all-stories";
 import { useContinueReading } from "@/hooks/use-continue-reading";
 import { useDailyContent } from "@/hooks/use-daily-content";
 import { useReadingStreak } from "@/hooks/use-reading-streak";
+import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 import { buildRecommendations } from "@/lib/recommendations";
 
 function getTimeOfDayGreeting() {
@@ -75,6 +76,7 @@ export default function Home() {
     refresh: refreshStreak,
   } = useReadingStreak();
   const [refreshing, setRefreshing] = useState(false);
+  const { registerContainer, registerRow, handleScroll } = useScrollReveal();
 
   const displayName = (
     profile?.display_name?.trim() ||
@@ -121,8 +123,10 @@ export default function Home() {
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView
+      <Animated.ScrollView
         contentContainerStyle={styles.scrollContent}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -161,7 +165,7 @@ export default function Home() {
           </ThemedView>
         )}
 
-        <ThemedView style={styles.bodyPadding}>
+        <ThemedView style={styles.bodyPadding} {...registerContainer("body")}>
           {!loading && error && (
             <ThemedView type="backgroundElement" style={styles.emptyCard}>
               <ThemedText type="smallBold">
@@ -208,40 +212,48 @@ export default function Home() {
           )}
 
           {quote && (
-            <ThemedView type="backgroundElement" style={styles.quoteCard}>
-              <ThemedText type="small" style={styles.sectionLabel}>
-                Quote of the Day
-              </ThemedText>
-              <ThemedText style={styles.quoteText}>
-                &ldquo;{quote.text}&rdquo;
-              </ThemedText>
-              {quote.author && (
-                <ThemedText type="small" style={styles.quoteAuthor}>
-                  — {quote.author}
+            <Animated.View {...registerRow("quote", "body")}>
+              <ThemedView type="backgroundElement" style={styles.quoteCard}>
+                <ThemedText type="small" style={styles.sectionLabel}>
+                  Quote of the Day
                 </ThemedText>
-              )}
-            </ThemedView>
+                <ThemedText style={styles.quoteText}>
+                  &ldquo;{quote.text}&rdquo;
+                </ThemedText>
+                {quote.author && (
+                  <ThemedText type="small" style={styles.quoteAuthor}>
+                    — {quote.author}
+                  </ThemedText>
+                )}
+              </ThemedView>
+            </Animated.View>
           )}
 
           {reflection && (
-            <ThemedView type="backgroundElement" style={styles.quoteCard}>
-              <ThemedText type="small" style={styles.sectionLabel}>
-                Reflection of the Day
-              </ThemedText>
-              <ThemedText style={styles.quoteText}>
-                {reflection.text}
-              </ThemedText>
-            </ThemedView>
+            <Animated.View {...registerRow("reflection", "body")}>
+              <ThemedView type="backgroundElement" style={styles.quoteCard}>
+                <ThemedText type="small" style={styles.sectionLabel}>
+                  Reflection of the Day
+                </ThemedText>
+                <ThemedText style={styles.quoteText}>
+                  {reflection.text}
+                </ThemedText>
+              </ThemedView>
+            </Animated.View>
           )}
 
           {continueLoading ? (
             <CategoryRowSkeleton />
           ) : (
-            <ContinueReadingRow items={continueItems} />
+            <Animated.View {...registerRow("continue-reading", "body")}>
+              <ContinueReadingRow items={continueItems} />
+            </Animated.View>
           )}
 
           {recommended.length > 0 && (
-            <CategoryRow label="Recommended for You" stories={recommended} />
+            <Animated.View {...registerRow("recommended", "body")}>
+              <CategoryRow label="Recommended for You" stories={recommended} />
+            </Animated.View>
           )}
 
           <ThemedText type="subtitle" style={styles.browseHeading}>
@@ -256,15 +268,16 @@ export default function Home() {
             </>
           ) : (
             orderedCategories.map((category) => (
-              <CategoryRow
-                key={category}
-                label={categoryLabels[category] ?? category}
-                stories={byCategory[category] ?? []}
-              />
+              <Animated.View key={category} {...registerRow(`category-${category}`, "body")}>
+                <CategoryRow
+                  label={categoryLabels[category] ?? category}
+                  stories={byCategory[category] ?? []}
+                />
+              </Animated.View>
             ))
           )}
         </ThemedView>
-      </ScrollView>
+      </Animated.ScrollView>
     </ThemedView>
   );
 }
