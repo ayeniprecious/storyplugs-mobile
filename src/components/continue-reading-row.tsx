@@ -3,10 +3,8 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { StoryCard } from '@/components/story-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { HomeCardWidth, Spacing } from '@/constants/theme';
 import type { Story } from '@/lib/database.types';
-
-const CARD_WIDTH = 112;
 
 interface ContinueReadingItem {
   story: Story;
@@ -36,5 +34,5 @@ const styles = StyleSheet.create({
   section: { gap: Spacing.two, marginBottom: Spacing.two },
   heading: { opacity: 0.85 },
   row: { gap: Spacing.two },
-  cardWrap: { width: CARD_WIDTH },
+  cardWrap: { width: HomeCardWidth },
 });

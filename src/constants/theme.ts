@@ -67,3 +67,8 @@ export const Spacing = {
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+// Home's horizontal-scroll story cards (Continue Reading, Recommended, category rows).
+// Was 112 (height 168 at the card's 2:3 aspect ratio) -- bumped up modestly since that
+// read as too small, without going so large it dominates the screen.
+export const HomeCardWidth = 128;
