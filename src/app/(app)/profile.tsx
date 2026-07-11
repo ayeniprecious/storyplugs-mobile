@@ -147,8 +147,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: Spacing.two + 4,
-    paddingTop: Spacing.three,
+    paddingHorizontal: Spacing.three + 4,
+    paddingTop: Spacing.four,
     paddingBottom: Spacing.six,
   },
   title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.two },

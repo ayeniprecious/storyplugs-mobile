@@ -135,7 +135,8 @@ const styles = StyleSheet.create({
   rowHeaderLine: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'transparent' },
   unreadDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#C01918' },
   readDot: { backgroundColor: '#fff' },
-  rowText: { opacity: 0.75 },
-  rowTime: { opacity: 0.5 },
+  // Lines up with the title text, which starts after the 7px dot + 6px gap in rowHeaderLine.
+  rowText: { opacity: 0.75, marginLeft: 13 },
+  rowTime: { opacity: 0.5, marginLeft: 13 },
   removeButton: { paddingHorizontal: 4 },
 });
