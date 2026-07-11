@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Animated, Dimensions, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 
-// How far below the fold (in px) a row can still be when its fade-in starts, so it's
-// already comfortably faded in by the time it's fully scrolled into view rather than
-// popping in abruptly right as it appears.
-const REVEAL_MARGIN = 100;
-const FADE_DURATION = 400;
+// Negative means the row must already be a little way into the viewport before it starts
+// fading in -- with a positive margin the whole fade could finish while still off-screen
+// (invisible to the user), especially combined with a longer duration.
+const REVEAL_MARGIN = -40;
+const FADE_DURATION = 700;
 
 interface RowEntry {
   rawY: number;
