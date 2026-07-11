@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 1,
   },
-  newBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+  newBadgeText: { color: '#fff', fontSize: 10, lineHeight: 12, fontWeight: '700' },
   progressTrack: {
     position: 'absolute',
     left: 0,
