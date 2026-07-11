@@ -95,5 +95,33 @@ export function useScrollReveal() {
     reveal(0, Dimensions.get('window').height);
   }, [reveal]);
 
-  return { registerContainer, registerRow, handleScroll };
+  // FlatList-specific: a virtualized cell's onLayout reports position relative to its own
+  // cell wrapper (always 0), so the manual offset math above doesn't apply inside one.
+  // FlatList's own viewability tracking is the correct tool for exactly this instead.
+  const getRowOpacity = getOpacity;
+
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: Array<{ key: string; isViewable: boolean }> }) => {
+      viewableItems.forEach(({ key, isViewable }) => {
+        if (!isViewable || revealed.has(key)) return;
+        revealed.add(key);
+        Animated.timing(getOpacity(key), {
+          toValue: 1,
+          duration: FADE_DURATION,
+          useNativeDriver: true,
+        }).start();
+      });
+    }
+  ).current;
+
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 15 }).current;
+
+  return {
+    registerContainer,
+    registerRow,
+    handleScroll,
+    getRowOpacity,
+    onViewableItemsChanged,
+    viewabilityConfig,
+  };
 }

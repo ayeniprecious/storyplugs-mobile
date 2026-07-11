@@ -20,6 +20,13 @@ function truncateTitle(title: string) {
   return `${trimmed.slice(0, MAX_TITLE_LENGTH).trimEnd()}…`;
 }
 
+const NEW_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+
+function isNewStory(story: Story) {
+  if (!story.published_at) return false;
+  return Date.now() - new Date(story.published_at).getTime() < NEW_WINDOW_MS;
+}
+
 export function StoryCard({ story, progressPercent }: { story: Story; progressPercent?: number }) {
   const hasProgress = progressPercent !== undefined;
   return (
@@ -33,6 +40,11 @@ export function StoryCard({ story, progressPercent }: { story: Story; progressPe
           locations={[0.55, 1]}
           style={StyleSheet.absoluteFill}
         />
+        {isNewStory(story) && (
+          <ThemedView style={styles.newBadge}>
+            <ThemedText style={styles.newBadgeText}>New</ThemedText>
+          </ThemedView>
+        )}
         <ThemedText numberOfLines={1} style={[styles.title, hasProgress && styles.titleWithProgress]}>
           {truncateTitle(story.title)}
         </ThemedText>
@@ -57,6 +69,16 @@ const styles = StyleSheet.create({
   },
   title: { color: '#fff', fontSize: 13, fontWeight: '600', padding: 8, lineHeight: 17 },
   titleWithProgress: { paddingBottom: 14 },
+  newBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: '#C01918',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  newBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
   progressTrack: {
     position: 'absolute',
     left: 0,
