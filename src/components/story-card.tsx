@@ -71,12 +71,12 @@ const styles = StyleSheet.create({
   titleWithProgress: { paddingBottom: 14 },
   newBadge: {
     position: 'absolute',
-    top: 6,
-    right: 6,
+    top: 0,
+    right: 0,
     backgroundColor: '#C01918',
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    borderBottomLeftRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 1,
   },
   newBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
   progressTrack: {
