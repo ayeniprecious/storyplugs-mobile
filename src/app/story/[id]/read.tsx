@@ -11,6 +11,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Text,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -49,6 +50,7 @@ export default function StoryRead() {
   const scrollRef = useRef<ScrollView>(null);
   const scrollDimsRef = useRef({ contentHeight: 0, viewportHeight: 0 });
   const autoScrollYRef = useRef(0);
+  const bodyBlockRef = useRef({ y: 0, height: 0 });
 
   const { chapters, loading: chaptersLoading } = useStoryChapters(id ?? '');
   const { progress, markComplete, updateProgressPercent } = useStoryProgress(id ?? '');
@@ -159,6 +161,32 @@ export default function StoryRead() {
     scrollDimsRef.current.viewportHeight = event.nativeEvent.layout.height;
     maybeReportFullyVisible();
   }
+
+  function handleBodyLayout(event: LayoutChangeEvent) {
+    bodyBlockRef.current = { y: event.nativeEvent.layout.y, height: event.nativeEvent.layout.height };
+  }
+
+  // Keeps the screen in sync with the TTS voice: estimates the current sentence's on-screen
+  // position (proportionally, by how far through the body's sentences it is) and scrolls to
+  // bring it back into view whenever it's drifted off-screen -- otherwise the voice keeps
+  // reading past what's visible and the listener loses their place. Skipped while Reader
+  // Mode's own manual auto-scroll is running, since that's an explicit user choice.
+  useEffect(() => {
+    if (autoScrollOn) return;
+    if (tts.currentIndex < 0 || tts.sentences.length <= 1) return;
+    const { y, height } = bodyBlockRef.current;
+    if (height === 0) return;
+    const estimatedY = y + (tts.currentIndex / (tts.sentences.length - 1)) * height;
+    const { viewportHeight } = scrollDimsRef.current;
+    const visibleTop = autoScrollYRef.current;
+    const visibleBottom = visibleTop + viewportHeight;
+    const margin = 80;
+    if (estimatedY < visibleTop + margin || estimatedY > visibleBottom - margin) {
+      const targetY = Math.max(0, estimatedY - viewportHeight * 0.3);
+      autoScrollYRef.current = targetY;
+      scrollRef.current?.scrollTo({ y: targetY, animated: true });
+    }
+  }, [tts.currentIndex, autoScrollOn, tts.sentences.length]);
 
   useEffect(() => {
     if (!autoScrollOn) return;
@@ -302,13 +330,20 @@ export default function StoryRead() {
             {story.title}
           </ThemedText>
           <ThemedText
+            onLayout={handleBodyLayout}
             style={[
               styles.body,
               readerColors && { color: readerColors.text, opacity: 1 },
               readerModeActive && { fontSize: BODY_FONT_SIZE * readerFontScale },
             ]}
           >
-            {bodyText}
+            {hasRecordedAudio
+              ? bodyText
+              : tts.sentences.map((sentence, i) => (
+                  <Text key={i} style={i === tts.currentIndex ? styles.activeSentence : undefined}>
+                    {sentence.text}{' '}
+                  </Text>
+                ))}
           </ThemedText>
 
           {hasChapters && (
@@ -496,6 +531,7 @@ const styles = StyleSheet.create({
   categoryTag: { color: '#C01918', fontWeight: '600', textTransform: 'uppercase' },
   title: { fontSize: TITLE_FONT_SIZE, lineHeight: 31 },
   body: { fontSize: BODY_FONT_SIZE, lineHeight: 24, opacity: 0.9 },
+  activeSentence: { backgroundColor: 'rgba(192,25,24,0.22)', fontWeight: '700' },
   chapterNavRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: Spacing.two },
   chapterNavButton: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   chapterNavButtonDisabled: { opacity: 0.4 },
