@@ -232,6 +232,10 @@ export default function StoryRead() {
   const isLastChapter = !hasChapters || chapterIndex === chapters.length - 1;
   const isFirstChapter = chapterIndex === 0;
   const readerColors = readerModeActive ? Colors[readerTheme] : null;
+  // A low-opacity red highlight reads fine on a light background but nearly disappears
+  // against a dark one, so dark mode (whichever theme is actually driving the screen right
+  // now -- Reader Mode's own or the app-wide one) gets a stronger, more opaque version.
+  const isDarkNow = readerModeActive ? readerTheme === 'dark' : resolvedScheme === 'dark';
 
   function goToChapter(nextChapterNumber: number) {
     router.setParams({ chapter: String(nextChapterNumber) });
@@ -340,7 +344,16 @@ export default function StoryRead() {
             {hasRecordedAudio
               ? bodyText
               : tts.sentences.map((sentence, i) => (
-                  <Text key={i} style={i === tts.currentIndex ? styles.activeSentence : undefined}>
+                  <Text
+                    key={i}
+                    style={
+                      i === tts.currentIndex
+                        ? isDarkNow
+                          ? styles.activeSentenceDark
+                          : styles.activeSentence
+                        : undefined
+                    }
+                  >
                     {sentence.text}{' '}
                   </Text>
                 ))}
@@ -532,6 +545,7 @@ const styles = StyleSheet.create({
   title: { fontSize: TITLE_FONT_SIZE, lineHeight: 31 },
   body: { fontSize: BODY_FONT_SIZE, lineHeight: 24, opacity: 0.9 },
   activeSentence: { backgroundColor: 'rgba(192,25,24,0.22)', fontWeight: '700' },
+  activeSentenceDark: { backgroundColor: 'rgba(255,255,255,0.22)', color: '#fff', fontWeight: '700' },
   chapterNavRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: Spacing.two },
   chapterNavButton: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   chapterNavButtonDisabled: { opacity: 0.4 },
