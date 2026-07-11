@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -49,8 +48,6 @@ export default function StoryPreview() {
   const { isFavorited, toggle: toggleFavorite } = useFavorite(id ?? '');
   const { labels: categoryLabels } = useCategories();
   const { chapters, loading: chaptersLoading } = useStoryChapters(id ?? '');
-  const player = useAudioPlayer(story?.audio_url ? { uri: story.audio_url } : null);
-  const playerStatus = useAudioPlayerStatus(player);
 
   useEffect(() => {
     let cancelled = false;
@@ -140,16 +137,6 @@ export default function StoryPreview() {
       }
     } catch {
       // user cancelled or share sheet unavailable on this platform — nothing to recover from
-    }
-  }
-
-  function handleListenToggle() {
-    if (!story?.audio_url) return;
-    Haptics.selectionAsync();
-    if (playerStatus.playing) {
-      player.pause();
-    } else {
-      player.play();
     }
   }
 
@@ -305,14 +292,6 @@ export default function StoryPreview() {
               <Ionicons name="share-outline" size={16} color="#C01918" />
               <ThemedText style={styles.actionButtonText}>Share</ThemedText>
             </Pressable>
-            {story.audio_url && (
-              <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={handleListenToggle}>
-                <Ionicons name={playerStatus.playing ? 'pause' : 'headset-outline'} size={16} color="#C01918" />
-                <ThemedText style={styles.actionButtonText}>
-                  {playerStatus.playing ? 'Pause' : 'Listen'}
-                </ThemedText>
-              </Pressable>
-            )}
           </ThemedView>
 
           {!chaptersLoading && chapters.length > 0 && (

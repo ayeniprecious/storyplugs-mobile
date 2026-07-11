@@ -1,8 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   LayoutChangeEvent,
+  Modal,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
@@ -17,13 +20,26 @@ import { ReportModal } from '@/components/report-modal';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Colors, Spacing } from '@/constants/theme';
 import { useCategories } from '@/context/categories-context';
+import { useProfile } from '@/context/profile-context';
+import { useThemePrefs } from '@/context/theme-prefs-context';
 import { useRecordActivity } from '@/hooks/use-record-activity';
 import { useStoryChapters } from '@/hooks/use-story-chapters';
 import { useStoryProgress } from '@/hooks/use-story-progress';
+import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 import type { Story } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
+
+const BODY_FONT_SIZE = 16;
+const TITLE_FONT_SIZE = 25;
+const READER_FONT_MIN = 0.85;
+const READER_FONT_MAX = 1.6;
+const READER_FONT_STEP = 0.15;
+
+// px advanced per tick -- 5 levels from a gentle drift to a brisk pace.
+const AUTO_SCROLL_SPEEDS = [0.4, 0.8, 1.4, 2.2, 3.2];
+const AUTO_SCROLL_INTERVAL_MS = 50;
 
 export default function StoryRead() {
   const { id, chapter } = useLocalSearchParams<{ id: string; chapter?: string }>();
@@ -32,12 +48,25 @@ export default function StoryRead() {
   const [notFound, setNotFound] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const scrollDimsRef = useRef({ contentHeight: 0, viewportHeight: 0 });
+  const autoScrollYRef = useRef(0);
 
   const { chapters, loading: chaptersLoading } = useStoryChapters(id ?? '');
   const { progress, markComplete, updateProgressPercent } = useStoryProgress(id ?? '');
   const { labels: categoryLabels } = useCategories();
+  const { profile } = useProfile();
+  const { resolvedScheme } = useThemePrefs();
   const [reportingStory, setReportingStory] = useState(false);
   useRecordActivity();
+
+  // Reader Mode -- premium-gated. Its theme/font settings are deliberately independent of
+  // the app-wide Appearance settings, since a reader may want a different look while
+  // actually reading than they use for the rest of the app.
+  const [readerModeActive, setReaderModeActive] = useState(false);
+  const [showPremiumLock, setShowPremiumLock] = useState(false);
+  const [readerTheme, setReaderTheme] = useState<'light' | 'dark'>(resolvedScheme);
+  const [readerFontScale, setReaderFontScale] = useState(1);
+  const [autoScrollOn, setAutoScrollOn] = useState(false);
+  const [speedIndex, setSpeedIndex] = useState(2);
 
   useEffect(() => {
     let cancelled = false;
@@ -73,6 +102,8 @@ export default function StoryRead() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
     scrollDimsRef.current = { contentHeight: 0, viewportHeight: 0 };
+    autoScrollYRef.current = 0;
+    setAutoScrollOn(false);
   }, [id, chapter]);
 
   const hasChapters = chapters.length > 0;
@@ -81,6 +112,14 @@ export default function StoryRead() {
     ? Math.max(0, Math.min(chapters.length - 1, requestedChapter - 1))
     : 0;
   const totalChapters = hasChapters ? chapters.length : 1;
+  const currentChapter = hasChapters ? chapters[chapterIndex] : null;
+  const bodyText = currentChapter ? currentChapter.body : (story?.body ?? '');
+
+  const hasRecordedAudio = !!story?.audio_url;
+  const player = useAudioPlayer(story?.audio_url ? { uri: story.audio_url } : null);
+  const playerStatus = useAudioPlayerStatus(player);
+  const tts = useTextToSpeech(bodyText);
+  const isListening = hasRecordedAudio ? playerStatus.playing : tts.speaking;
 
   // A story's overall progress is how far through ALL of its chapters the
   // reader is, not just the current one -- otherwise scrolling to the bottom
@@ -106,6 +145,7 @@ export default function StoryRead() {
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    autoScrollYRef.current = contentOffset.y;
     const scrollable = contentSize.height - layoutMeasurement.height;
     reportProgress(scrollable <= 0 ? 100 : (contentOffset.y / scrollable) * 100);
   }
@@ -119,6 +159,19 @@ export default function StoryRead() {
     scrollDimsRef.current.viewportHeight = event.nativeEvent.layout.height;
     maybeReportFullyVisible();
   }
+
+  useEffect(() => {
+    if (!autoScrollOn) return;
+    const interval = setInterval(() => {
+      const { contentHeight, viewportHeight } = scrollDimsRef.current;
+      const maxY = Math.max(0, contentHeight - viewportHeight);
+      const nextY = Math.min(maxY, autoScrollYRef.current + AUTO_SCROLL_SPEEDS[speedIndex]);
+      autoScrollYRef.current = nextY;
+      scrollRef.current?.scrollTo({ y: nextY, animated: false });
+      if (nextY >= maxY) setAutoScrollOn(false);
+    }, AUTO_SCROLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [autoScrollOn, speedIndex]);
 
   if (loading || chaptersLoading) {
     return (
@@ -148,26 +201,76 @@ export default function StoryRead() {
     );
   }
 
-  const currentChapter = hasChapters ? chapters[chapterIndex] : null;
-  const bodyText = currentChapter ? currentChapter.body : story.body;
   const isLastChapter = !hasChapters || chapterIndex === chapters.length - 1;
   const isFirstChapter = chapterIndex === 0;
+  const readerColors = readerModeActive ? Colors[readerTheme] : null;
 
   function goToChapter(nextChapterNumber: number) {
     router.setParams({ chapter: String(nextChapterNumber) });
   }
 
+  function handleListenToggle() {
+    Haptics.selectionAsync();
+    if (hasRecordedAudio) {
+      if (playerStatus.playing) {
+        player.pause();
+      } else {
+        player.play();
+      }
+    } else {
+      tts.toggle();
+    }
+  }
+
+  function handleReaderModeToggle() {
+    if (!profile?.is_premium) {
+      setShowPremiumLock(true);
+      return;
+    }
+    Haptics.selectionAsync();
+    setReaderModeActive((prev) => {
+      if (prev) setAutoScrollOn(false);
+      return !prev;
+    });
+  }
+
+  function adjustReaderFont(delta: number) {
+    setReaderFontScale((prev) =>
+      Math.round(Math.min(READER_FONT_MAX, Math.max(READER_FONT_MIN, prev + delta)) * 100) / 100
+    );
+  }
+
+  function adjustSpeed(delta: number) {
+    setSpeedIndex((prev) => Math.min(AUTO_SCROLL_SPEEDS.length - 1, Math.max(0, prev + delta)));
+  }
+
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, readerColors && { backgroundColor: readerColors.background }]}>
       <ThemedView style={styles.progressTrack}>
         <ThemedView style={[styles.progressFill, { width: `${progress?.progressPercent ?? 0}%` }]} />
       </ThemedView>
       <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.topRow}>
+        <ThemedView style={[styles.topRow, readerColors && { backgroundColor: readerColors.background }]}>
           <BackButton href={{ pathname: '/story/[id]', params: { id } }} />
-          <Pressable onPress={() => setReportingStory(true)} hitSlop={8}>
-            <Ionicons name="flag-outline" size={18} color="#8a8a8e" />
-          </Pressable>
+          <ThemedView style={[styles.topRowActions, readerColors && { backgroundColor: readerColors.background }]}>
+            <Pressable onPress={handleListenToggle} hitSlop={8}>
+              <Ionicons
+                name={isListening ? (hasRecordedAudio ? 'pause' : 'stop') : 'headset-outline'}
+                size={20}
+                color={readerColors ? readerColors.text : '#C01918'}
+              />
+            </Pressable>
+            <Pressable onPress={handleReaderModeToggle} hitSlop={8}>
+              <Ionicons
+                name={readerModeActive ? 'book' : 'book-outline'}
+                size={20}
+                color={readerColors ? readerColors.text : '#C01918'}
+              />
+            </Pressable>
+            <Pressable onPress={() => setReportingStory(true)} hitSlop={8}>
+              <Ionicons name="flag-outline" size={18} color={readerColors ? readerColors.textSecondary : '#8a8a8e'} />
+            </Pressable>
+          </ThemedView>
         </ThemedView>
 
         <ScrollView
@@ -188,10 +291,25 @@ export default function StoryRead() {
               {categoryLabels[story.category] ?? story.category}
             </ThemedText>
           )}
-          <ThemedText type="title" style={styles.title}>
+          <ThemedText
+            type="title"
+            style={[
+              styles.title,
+              readerColors && { color: readerColors.text },
+              readerModeActive && { fontSize: TITLE_FONT_SIZE * readerFontScale },
+            ]}
+          >
             {story.title}
           </ThemedText>
-          <ThemedText style={styles.body}>{bodyText}</ThemedText>
+          <ThemedText
+            style={[
+              styles.body,
+              readerColors && { color: readerColors.text, opacity: 1 },
+              readerModeActive && { fontSize: BODY_FONT_SIZE * readerFontScale },
+            ]}
+          >
+            {bodyText}
+          </ThemedText>
 
           {hasChapters && (
             <ThemedView style={styles.chapterNavRow}>
@@ -246,6 +364,79 @@ export default function StoryRead() {
             </>
           )}
         </ScrollView>
+
+        {readerModeActive && (
+          <ThemedView type="backgroundElement" style={styles.readerControls}>
+            <ThemedView style={styles.readerControlRow}>
+              <ThemedText type="small" style={styles.readerControlLabel}>
+                Text size
+              </ThemedText>
+              <ThemedView style={styles.readerControlButtons}>
+                <Pressable
+                  style={styles.readerControlButton}
+                  onPress={() => adjustReaderFont(-READER_FONT_STEP)}
+                  disabled={readerFontScale <= READER_FONT_MIN}
+                >
+                  <ThemedText style={styles.readerControlButtonText}>A-</ThemedText>
+                </Pressable>
+                <Pressable
+                  style={styles.readerControlButton}
+                  onPress={() => adjustReaderFont(READER_FONT_STEP)}
+                  disabled={readerFontScale >= READER_FONT_MAX}
+                >
+                  <ThemedText style={styles.readerControlButtonText}>A+</ThemedText>
+                </Pressable>
+              </ThemedView>
+            </ThemedView>
+
+            <ThemedView style={styles.readerControlRow}>
+              <ThemedText type="small" style={styles.readerControlLabel}>
+                Reader theme
+              </ThemedText>
+              <Pressable
+                style={styles.readerControlButton}
+                onPress={() => setReaderTheme((prev) => (prev === 'light' ? 'dark' : 'light'))}
+              >
+                <Ionicons
+                  name={readerTheme === 'light' ? 'sunny-outline' : 'moon-outline'}
+                  size={16}
+                  color={readerColors?.text}
+                />
+              </Pressable>
+            </ThemedView>
+
+            <ThemedView style={styles.readerControlRow}>
+              <ThemedText type="small" style={styles.readerControlLabel}>
+                Auto-scroll
+              </ThemedText>
+              <ThemedView style={styles.readerControlButtons}>
+                <Pressable
+                  style={styles.readerControlButton}
+                  onPress={() => adjustSpeed(-1)}
+                  disabled={speedIndex <= 0}
+                >
+                  <Ionicons name="remove" size={16} color={readerColors?.text} />
+                </Pressable>
+                <ThemedText type="small" style={styles.speedLabel}>
+                  {speedIndex + 1}/{AUTO_SCROLL_SPEEDS.length}
+                </ThemedText>
+                <Pressable
+                  style={styles.readerControlButton}
+                  onPress={() => adjustSpeed(1)}
+                  disabled={speedIndex >= AUTO_SCROLL_SPEEDS.length - 1}
+                >
+                  <Ionicons name="add" size={16} color={readerColors?.text} />
+                </Pressable>
+                <Pressable
+                  style={[styles.readerControlButton, styles.autoScrollToggle]}
+                  onPress={() => setAutoScrollOn((prev) => !prev)}
+                >
+                  <Ionicons name={autoScrollOn ? 'pause' : 'play'} size={16} color="#fff" />
+                </Pressable>
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
+        )}
       </SafeAreaView>
 
       <ReportModal
@@ -254,6 +445,24 @@ export default function StoryRead() {
         targetType="story"
         targetId={id ?? ''}
       />
+
+      <Modal visible={showPremiumLock} transparent animationType="fade" onRequestClose={() => setShowPremiumLock(false)}>
+        <Pressable style={styles.lockBackdrop} onPress={() => setShowPremiumLock(false)}>
+          <ThemedView style={styles.lockSheet} onStartShouldSetResponder={() => true}>
+            <Ionicons name="lock-closed" size={28} color="#C01918" />
+            <ThemedText type="smallBold" style={styles.lockTitle}>
+              Reader Mode is a premium feature
+            </ThemedText>
+            <ThemedText type="small" style={styles.lockBody}>
+              Auto-scroll, a dedicated reader theme, and font controls are part of premium.
+              Upgrade to unlock them.
+            </ThemedText>
+            <Pressable style={styles.lockButton} onPress={() => setShowPremiumLock(false)}>
+              <ThemedText style={styles.lockButtonText}>Got it</ThemedText>
+            </Pressable>
+          </ThemedView>
+        </Pressable>
+      </Modal>
     </ThemedView>
   );
 }
@@ -283,9 +492,10 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.two,
     backgroundColor: 'transparent',
   },
+  topRowActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, backgroundColor: 'transparent' },
   categoryTag: { color: '#C01918', fontWeight: '600', textTransform: 'uppercase' },
-  title: { fontSize: 25, lineHeight: 31 },
-  body: { fontSize: 16, lineHeight: 24, opacity: 0.9 },
+  title: { fontSize: TITLE_FONT_SIZE, lineHeight: 31 },
+  body: { fontSize: BODY_FONT_SIZE, lineHeight: 24, opacity: 0.9 },
   chapterNavRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: Spacing.two },
   chapterNavButton: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   chapterNavButtonDisabled: { opacity: 0.4 },
@@ -309,4 +519,54 @@ const styles = StyleSheet.create({
   },
   completedBadgeRow: { flexDirection: 'row', justifyContent: 'center', gap: 6 },
   completedBadgeText: { color: '#32b45a', fontWeight: '600' },
+  readerControls: {
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    gap: Spacing.two,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  readerControlRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'transparent',
+  },
+  readerControlLabel: { opacity: 0.7 },
+  readerControlButtons: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, backgroundColor: 'transparent' },
+  readerControlButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(128,128,128,0.14)',
+  },
+  readerControlButtonText: { fontSize: 13, fontWeight: '600' },
+  autoScrollToggle: { backgroundColor: '#C01918' },
+  speedLabel: { width: 28, textAlign: 'center', opacity: 0.7 },
+  lockBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.four,
+  },
+  lockSheet: {
+    borderRadius: 16,
+    padding: Spacing.four,
+    alignItems: 'center',
+    gap: Spacing.two,
+    maxWidth: 320,
+  },
+  lockTitle: { textAlign: 'center' },
+  lockBody: { textAlign: 'center', opacity: 0.7 },
+  lockButton: {
+    marginTop: Spacing.two,
+    backgroundColor: '#700a0a',
+    borderRadius: 10,
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.four,
+  },
+  lockButtonText: { color: '#fff', fontWeight: '600' },
 });

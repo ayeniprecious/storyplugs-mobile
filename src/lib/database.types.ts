@@ -27,6 +27,8 @@ export interface Profile {
   story_length_pref: StoryLengthPref | null;
   // Privacy (20260719000000_comment_identity_and_feedback.sql).
   hide_identity_in_comments: boolean;
+  // Gates Reader Mode -- admin-toggled only, see protect_is_premium() trigger.
+  is_premium: boolean;
   created_at: string;
   updated_at: string;
 }
