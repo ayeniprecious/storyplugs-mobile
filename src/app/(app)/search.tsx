@@ -1,12 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Link } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Animated, FlatList, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { Animated, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CategoryRow } from '@/components/category-row';
 import { FeaturedCarousel } from '@/components/featured-carousel';
 import { Skeleton } from '@/components/skeleton';
-import { isNewStory, StoryCard } from '@/components/story-card';
+import { isNewStory } from '@/components/story-card';
+import { StoryGrid } from '@/components/story-grid';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -15,17 +17,8 @@ import { useAllStories } from '@/hooks/use-all-stories';
 import { useRecentSearches } from '@/hooks/use-recent-searches';
 import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 import { useTheme } from '@/hooks/use-theme';
-import type { Story } from '@/lib/database.types';
 
 const BROWSE_CONTAINER_ID = 'browse';
-
-function chunkPairs(items: Story[]) {
-  const rows: Story[][] = [];
-  for (let i = 0; i < items.length; i += 2) {
-    rows.push(items.slice(i, i + 2));
-  }
-  return rows;
-}
 
 export default function Search() {
   const { byCategory, loading } = useAllStories();
@@ -33,14 +26,7 @@ export default function Search() {
   const { recent, addSearch, removeSearch, clearAll } = useRecentSearches();
   const [query, setQuery] = useState('');
   const theme = useTheme();
-  const {
-    registerContainer,
-    registerRow,
-    handleScroll,
-    getRowOpacity,
-    onViewableItemsChanged,
-    viewabilityConfig,
-  } = useScrollReveal();
+  const { registerContainer, registerRow, handleScroll } = useScrollReveal();
 
   const allStories = useMemo(() => Object.values(byCategory).flat(), [byCategory]);
   const isSearching = query.trim() !== '';
@@ -54,8 +40,6 @@ export default function Search() {
         (categoryLabels[story.category] ?? story.category).toLowerCase().includes(q)
     );
   }, [allStories, query]);
-
-  const resultRows = useMemo(() => chunkPairs(results), [results]);
 
   // Falls back through is_featured -> is_pinned -> most recent, so the
   // carousel is never empty before an admin curates anything.
@@ -102,6 +86,23 @@ export default function Search() {
           )}
         </ThemedView>
 
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoryTabScroll}
+          contentContainerStyle={styles.categoryTabRow}
+        >
+          {categoryOrder.map((category) => (
+            <View key={category}>
+              <Link href={{ pathname: '/category/[slug]', params: { slug: category } }} asChild>
+                <Pressable style={styles.categoryTab}>
+                  <ThemedText type="small">{categoryLabels[category] ?? category}</ThemedText>
+                </Pressable>
+              </Link>
+            </View>
+          ))}
+        </ScrollView>
+
         {loading ? (
           <ThemedView style={styles.skeletonGrid}>
             {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -116,27 +117,7 @@ export default function Search() {
               No results for &ldquo;{query}&rdquo;.
             </ThemedText>
           ) : (
-            <FlatList
-              data={resultRows}
-              keyExtractor={(row) => row[0].id}
-              contentContainerStyle={styles.list}
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-              onViewableItemsChanged={onViewableItemsChanged}
-              viewabilityConfig={viewabilityConfig}
-              renderItem={({ item: row }) => (
-                <Animated.View style={{ opacity: getRowOpacity(row[0].id) }}>
-                  <ThemedView style={styles.row}>
-                    {row.map((story) => (
-                      <ThemedView key={story.id} style={styles.gridCard}>
-                        <StoryCard story={story} />
-                      </ThemedView>
-                    ))}
-                    {row.length === 1 && <ThemedView style={styles.gridCard} />}
-                  </ThemedView>
-                </Animated.View>
-              )}
-            />
+            <StoryGrid stories={results} />
           )
         ) : (
           <ScrollView
@@ -241,8 +222,19 @@ const styles = StyleSheet.create({
   },
   hint: { opacity: 0.6 },
   list: { paddingBottom: Spacing.six },
-  row: { flexDirection: 'row', gap: Spacing.two },
-  gridCard: { flex: 1, marginBottom: Spacing.two },
+  // ScrollView applies flexGrow:1 to itself by default, which is fine when
+  // nested inside an already-scrollable content flow (like CategoryRow's own
+  // horizontal rows) but genuinely competes for space when placed as a direct
+  // sibling of the screen's main scrollable content, as this row is -- opt out
+  // so it takes only its natural content height instead of getting squeezed.
+  categoryTabScroll: { flexGrow: 0, flexShrink: 0 },
+  categoryTabRow: { gap: Spacing.two, paddingBottom: Spacing.three, alignItems: 'flex-start' },
+  categoryTab: {
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two - 2,
+    borderRadius: 20,
+    backgroundColor: 'rgba(128,128,128,0.14)',
+  },
   skeletonGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, backgroundColor: 'transparent' },
   skeletonGridCard: { width: '48%', marginBottom: Spacing.two },
   skeletonPoster: { width: '100%', aspectRatio: 2 / 3, borderRadius: 8 },
