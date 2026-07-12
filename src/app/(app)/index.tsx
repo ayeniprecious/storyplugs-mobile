@@ -11,6 +11,7 @@ import {
 import { CategoryRow } from "@/components/category-row";
 import { ContinueReadingRow } from "@/components/continue-reading-row";
 import { HeroBanner } from "@/components/hero-banner";
+import { RankedStoryList } from "@/components/ranked-story-list";
 import { Skeleton } from "@/components/skeleton";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
@@ -252,7 +253,7 @@ export default function Home() {
 
           {recommended.length > 0 && (
             <Animated.View {...registerRow("recommended", "body")}>
-              <CategoryRow label="Recommended for You" stories={recommended} />
+              <RankedStoryList label="Recommended for You" stories={recommended} />
             </Animated.View>
           )}
 

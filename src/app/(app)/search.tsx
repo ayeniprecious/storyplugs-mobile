@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CategoryRow } from '@/components/category-row';
 import { FeaturedCarousel } from '@/components/featured-carousel';
+import { RankedStoryList } from '@/components/ranked-story-list';
 import { Skeleton } from '@/components/skeleton';
 import { isNewStory } from '@/components/story-card';
 import { StoryGrid } from '@/components/story-grid';
@@ -54,8 +55,10 @@ export default function Search() {
   }, [allStories]);
 
   // Same 7-day window as the "New" ribbon badge on StoryCard, reused rather
-  // than duplicated so the two stay consistent with each other.
-  const newThisWeek = useMemo(() => allStories.filter(isNewStory), [allStories]);
+  // than duplicated so the two stay consistent with each other. Capped --
+  // rendered as a vertical numbered list now, not a horizontal carousel, so
+  // an uncapped week's worth of stories would dominate the whole browse page.
+  const newThisWeek = useMemo(() => allStories.filter(isNewStory).slice(0, 10), [allStories]);
 
   function runSearch(text: string) {
     setQuery(text);
@@ -181,7 +184,7 @@ export default function Search() {
 
               {newThisWeek.length > 0 && (
                 <Animated.View {...registerRow('new-this-week', BROWSE_CONTAINER_ID)}>
-                  <CategoryRow label="New This Week" stories={newThisWeek} />
+                  <RankedStoryList label="New This Week" stories={newThisWeek} />
                 </Animated.View>
               )}
 
