@@ -5,12 +5,51 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/back-button';
 import { SettingsGroup } from '@/components/settings-group';
-import { SettingsRow } from '@/components/settings-row';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { FREE_ARCHIVE_WINDOW_DAYS, STREAK_FREEZES_PER_MONTH } from '@/constants/premium';
 import { Spacing } from '@/constants/theme';
 import { useProfile } from '@/context/profile-context';
 import { useTheme } from '@/hooks/use-theme';
+
+const FEATURES = [
+  { label: 'Reader Mode', description: 'Auto-scroll, a dedicated reader theme, and font controls.' },
+  { label: 'Full Archive Access', description: `Read stories older than ${FREE_ARCHIVE_WINDOW_DAYS} days.` },
+  { label: 'Streak Freeze', description: `${STREAK_FREEZES_PER_MONTH} freezes a month to protect a missed day.` },
+  { label: 'Journal', description: "Write and revisit your own reflections on every story." },
+  { label: 'Offline Downloads', description: 'Save stories to read anytime, even without a signal.' },
+];
+
+function FeatureRow({
+  label,
+  description,
+  unlocked,
+  isLast,
+}: {
+  label: string;
+  description: string;
+  unlocked: boolean;
+  isLast?: boolean;
+}) {
+  const theme = useTheme();
+  return (
+    <ThemedView
+      style={[styles.featureRow, !isLast && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.border }]}
+    >
+      <Ionicons
+        name={unlocked ? 'checkmark-circle' : 'lock-closed-outline'}
+        size={18}
+        color={unlocked ? '#32b45a' : theme.placeholder}
+      />
+      <ThemedView style={styles.featureTextGroup}>
+        <ThemedText type="smallBold">{label}</ThemedText>
+        <ThemedText type="small" style={styles.featureDescription}>
+          {description}
+        </ThemedText>
+      </ThemedView>
+    </ThemedView>
+  );
+}
 
 export default function ManageSubscription() {
   const { profile } = useProfile();
@@ -40,8 +79,8 @@ export default function ManageSubscription() {
             </ThemedText>
             <ThemedText type="small" style={styles.planBody}>
               {isPremium
-                ? "You have full access to Reader Mode's auto-scroll, dedicated reader theme, and font controls."
-                : "Upgrade to unlock Reader Mode's auto-scroll, dedicated reader theme, and custom font sizing."}
+                ? 'You have full access to everything below.'
+                : 'Upgrade to unlock the full archive, streak protection, journaling, and offline reading.'}
             </ThemedText>
           </ThemedView>
 
@@ -49,25 +88,15 @@ export default function ManageSubscription() {
             What's included
           </ThemedText>
           <SettingsGroup>
-            <SettingsRow
-              label="Reader Mode"
-              right={
-                <Ionicons
-                  name={isPremium ? 'checkmark-circle' : 'lock-closed-outline'}
-                  size={18}
-                  color={isPremium ? '#32b45a' : theme.placeholder}
-                />
-              }
-            />
-            <SettingsRow
-              label="More premium perks"
-              isLast
-              right={
-                <ThemedText type="small" style={styles.comingSoonText}>
-                  Coming soon
-                </ThemedText>
-              }
-            />
+            {FEATURES.map((feature, i) => (
+              <FeatureRow
+                key={feature.label}
+                label={feature.label}
+                description={feature.description}
+                unlocked={isPremium}
+                isLast={i === FEATURES.length - 1}
+              />
+            ))}
           </SettingsGroup>
 
           {isPremium ? (
@@ -115,7 +144,15 @@ const styles = StyleSheet.create({
   planTitle: { fontSize: 17 },
   planBody: { opacity: 0.7, textAlign: 'center', lineHeight: 20 },
   sectionHint: { opacity: 0.6, marginBottom: Spacing.two },
-  comingSoonText: { opacity: 0.6 },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.two,
+    paddingVertical: Spacing.two + 4,
+    paddingHorizontal: Spacing.three,
+  },
+  featureTextGroup: { flex: 1, gap: 2, backgroundColor: 'transparent' },
+  featureDescription: { opacity: 0.6 },
   upgradeButton: {
     backgroundColor: '#700a0a',
     borderRadius: 10,

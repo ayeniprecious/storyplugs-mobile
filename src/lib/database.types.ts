@@ -29,6 +29,10 @@ export interface Profile {
   hide_identity_in_comments: boolean;
   // Gates Reader Mode -- admin-toggled only, see protect_is_premium() trigger.
   is_premium: boolean;
+  // Streak Freeze (20260726000000_streak_freeze.sql) -- server-write-only, see
+  // use_streak_freeze() RPC; the authenticated role has UPDATE revoked on these two.
+  streak_freezes_available: number;
+  streak_freezes_reset_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -101,6 +105,9 @@ export interface ReadingActivity {
   id: string;
   user_id: string;
   activity_date: string;
+  // 20260726000000_streak_freeze.sql — true when this day was backfilled by a
+  // Streak Freeze rather than real activity.
+  is_freeze: boolean;
   created_at: string;
 }
 
@@ -149,4 +156,18 @@ export interface Report {
   reviewed_by_admin_id: string | null;
   reviewed_at: string | null;
   created_at: string;
+}
+
+// 20260727000000_journal_entries.sql — premium-gated on insert only (see the
+// journal_entries_insert_own_premium RLS policy); story_title/reflection_question
+// are snapshots taken at write time, not a live join to stories.
+export interface JournalEntry {
+  id: string;
+  user_id: string;
+  story_id: string | null;
+  story_title: string;
+  reflection_question: string;
+  entry: string;
+  created_at: string;
+  updated_at: string;
 }

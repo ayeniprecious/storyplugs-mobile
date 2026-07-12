@@ -13,6 +13,7 @@ import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useProfile } from '@/context/profile-context';
 import { useReadingStreak } from '@/hooks/use-reading-streak';
+import { useStreakFreeze } from '@/hooks/use-streak-freeze';
 import { useTheme } from '@/hooks/use-theme';
 import { supabase } from '@/lib/supabase';
 
@@ -20,6 +21,8 @@ export default function Profile() {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const { currentStreak, longestStreak, loading: streakLoading } = useReadingStreak();
+  const { freezesAvailable, canSaveStreak, applying: applyingFreeze, error: freezeError, applyFreeze } =
+    useStreakFreeze();
   const theme = useTheme();
   const [signingOut, setSigningOut] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -74,6 +77,30 @@ export default function Profile() {
             </Pressable>
           </Link>
 
+          {canSaveStreak && (
+            <ThemedView type="backgroundElement" style={styles.freezeBanner}>
+              <Ionicons name="snow" size={18} color="#3c87f7" />
+              <ThemedView style={styles.freezeBannerTextGroup}>
+                <ThemedText type="smallBold">Save your streak?</ThemedText>
+                <ThemedText type="small" style={styles.freezeBannerBody}>
+                  You missed yesterday — use a Streak Freeze to keep it going.
+                </ThemedText>
+                {freezeError && (
+                  <ThemedText type="small" style={styles.freezeErrorText}>
+                    {freezeError}
+                  </ThemedText>
+                )}
+              </ThemedView>
+              <Pressable style={styles.freezeButton} onPress={applyFreeze} disabled={applyingFreeze}>
+                {applyingFreeze ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <ThemedText style={styles.freezeButtonText}>Use Freeze</ThemedText>
+                )}
+              </Pressable>
+            </ThemedView>
+          )}
+
           <ThemedView type="backgroundElement" style={styles.statsCard}>
             <ThemedView style={styles.statTile}>
               <Ionicons name="flame" size={20} color="#C01918" />
@@ -83,6 +110,11 @@ export default function Profile() {
               <ThemedText type="small" style={styles.statLabel}>
                 Day Streak
               </ThemedText>
+              {profile?.is_premium && (
+                <ThemedText type="small" style={styles.freezeCountLabel}>
+                  {freezesAvailable} freeze{freezesAvailable === 1 ? '' : 's'} left
+                </ThemedText>
+              )}
             </ThemedView>
             <ThemedView style={styles.statDivider} />
             <ThemedView style={styles.statTile}>
@@ -128,6 +160,7 @@ export default function Profile() {
           <SettingsGroup>
             <SettingsRow label="Preferences" href="/preferences" showChevron />
             <SettingsRow label="Notifications" href="/notification-settings" showChevron />
+            <SettingsRow label="My Journal" href="/journal" showChevron />
             <SettingsRow label="Appearance" href="/appearance" showChevron isLast />
           </SettingsGroup>
 
@@ -218,6 +251,25 @@ const styles = StyleSheet.create({
   },
   bannerTextGroup: { flex: 1, gap: 2, backgroundColor: 'transparent' },
   bannerEmail: { opacity: 0.6 },
+  freezeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderRadius: 12,
+    padding: Spacing.three,
+    marginBottom: Spacing.three,
+  },
+  freezeBannerTextGroup: { flex: 1, gap: 2, backgroundColor: 'transparent' },
+  freezeBannerBody: { opacity: 0.7 },
+  freezeErrorText: { color: '#ff453a' },
+  freezeButton: {
+    backgroundColor: '#3c87f7',
+    borderRadius: 10,
+    paddingVertical: Spacing.two - 2,
+    paddingHorizontal: Spacing.two + 4,
+  },
+  freezeButtonText: { color: '#fff', fontWeight: '600', fontSize: 13 },
+  freezeCountLabel: { opacity: 0.5, fontSize: 11 },
   statsCard: {
     flexDirection: 'row',
     alignItems: 'center',

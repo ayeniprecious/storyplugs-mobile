@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useState } from 'react';
 import { Image } from 'expo-image';
 import { Link, useFocusEffect } from 'expo-router';
-import { Pressable, RefreshControl, ScrollView, StyleSheet } from 'react-native';
+import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Skeleton } from '@/components/skeleton';
@@ -12,6 +12,7 @@ import { Spacing } from '@/constants/theme';
 import { useCategories } from '@/context/categories-context';
 import { useCompletedStories } from '@/hooks/use-completed-stories';
 import { useContinueReading } from '@/hooks/use-continue-reading';
+import { useDownloads } from '@/hooks/use-downloads';
 import { useFavoritesList } from '@/hooks/use-favorites-list';
 import type { Story } from '@/lib/database.types';
 
@@ -109,10 +110,11 @@ export default function Library() {
     refresh: refreshSaved,
     removeStory: removeFromSaved,
   } = useFavoritesList();
+  const { downloads, loading: downloadsLoading, refresh: refreshDownloads, removeDownload } = useDownloads();
 
   const refreshAll = useCallback(async () => {
-    await Promise.all([refreshContinue(), refreshCompleted(), refreshSaved()]);
-  }, [refreshContinue, refreshCompleted, refreshSaved]);
+    await Promise.all([refreshContinue(), refreshCompleted(), refreshSaved(), refreshDownloads()]);
+  }, [refreshContinue, refreshCompleted, refreshSaved, refreshDownloads]);
 
   // Story progress can change on a pushed screen (mark complete, save/unsave)
   // while this tab stays mounted behind it — refetch whenever we regain focus
@@ -129,7 +131,7 @@ export default function Library() {
     setRefreshing(false);
   }
 
-  const loading = continueLoading || completedLoading || savedLoading;
+  const loading = continueLoading || completedLoading || savedLoading || downloadsLoading;
 
   return (
     <ThemedView style={styles.container}>
@@ -223,6 +225,29 @@ export default function Library() {
                     removeLabel="Remove from Saved"
                   />
                 ))
+              )}
+
+              {Platform.OS !== 'web' && (
+                <>
+                  <ThemedText type="smallBold" style={styles.sectionHeading}>
+                    Downloads
+                  </ThemedText>
+                  {downloads.length === 0 ? (
+                    <ThemedText type="small" style={styles.emptyHint}>
+                      Stories you download for offline reading (Premium) will show up here.
+                    </ThemedText>
+                  ) : (
+                    downloads.map((story) => (
+                      <LibraryRow
+                        key={story.id}
+                        story={story}
+                        subtitle="Downloaded"
+                        onRemove={() => removeDownload(story.id)}
+                        removeLabel="Remove download"
+                      />
+                    ))
+                  )}
+                </>
               )}
 
               <Pressable

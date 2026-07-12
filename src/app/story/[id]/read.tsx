@@ -4,10 +4,11 @@ import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   LayoutChangeEvent,
-  Modal,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -17,19 +18,23 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/back-button';
 import { CommentsSection } from '@/components/comments-section';
+import { JournalComposer } from '@/components/journal-composer';
+import { PremiumLockModal } from '@/components/premium-lock-modal';
 import { ReportModal } from '@/components/report-modal';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { FREE_ARCHIVE_WINDOW_DAYS } from '@/constants/premium';
 import { Colors, Spacing } from '@/constants/theme';
 import { useCategories } from '@/context/categories-context';
 import { useProfile } from '@/context/profile-context';
 import { useThemePrefs } from '@/context/theme-prefs-context';
+import { isDownloaded, readDownloadedContent, useDownloads } from '@/hooks/use-downloads';
 import { useRecordActivity } from '@/hooks/use-record-activity';
 import { useStoryChapters } from '@/hooks/use-story-chapters';
 import { useStoryProgress } from '@/hooks/use-story-progress';
 import { useTextToSpeech } from '@/hooks/use-text-to-speech';
-import type { Story } from '@/lib/database.types';
+import type { Story, StoryChapter } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 
 const BODY_FONT_SIZE = 16;
@@ -42,22 +47,44 @@ const READER_FONT_STEP = 0.15;
 const AUTO_SCROLL_SPEEDS = [0.4, 0.8, 1.4, 2.2, 3.2];
 const AUTO_SCROLL_INTERVAL_MS = 50;
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+function isOutsideFreeArchiveWindow(publishedAt: string) {
+  return Date.now() - new Date(publishedAt).getTime() > FREE_ARCHIVE_WINDOW_DAYS * DAY_MS;
+}
+
 export default function StoryRead() {
   const { id, chapter } = useLocalSearchParams<{ id: string; chapter?: string }>();
   const [story, setStory] = useState<Story | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  // Set only when this story is being read from its on-disk download rather
+  // than the network -- see the load() effect below.
+  const [offlineChapters, setOfflineChapters] = useState<StoryChapter[] | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const scrollDimsRef = useRef({ contentHeight: 0, viewportHeight: 0 });
   const autoScrollYRef = useRef(0);
   const bodyBlockRef = useRef({ y: 0, height: 0 });
 
-  const { chapters, loading: chaptersLoading } = useStoryChapters(id ?? '');
+  const { profile } = useProfile();
+  const { downloads, downloadStory, removeDownload } = useDownloads();
+  // Free accounts can't read chapter content for stories outside the archive
+  // window -- skip the fetch entirely by passing an empty id (useStoryChapters
+  // treats that as "nothing to load"). See isArchiveLocked below for the
+  // full-screen lock state this backs. Already-downloaded stories also skip
+  // the network fetch -- offlineChapters, once set, is the source of truth.
+  const isArchiveLocked =
+    !!story?.published_at && !profile?.is_premium && isOutsideFreeArchiveWindow(story.published_at);
+  const { chapters: networkChapters, loading: networkChaptersLoading } = useStoryChapters(
+    isArchiveLocked || offlineChapters ? '' : id ?? ''
+  );
+  const chapters = offlineChapters ?? networkChapters;
+  const chaptersLoading = offlineChapters ? false : networkChaptersLoading;
   const { progress, markComplete, updateProgressPercent } = useStoryProgress(id ?? '');
   const { labels: categoryLabels } = useCategories();
-  const { profile } = useProfile();
   const { resolvedScheme } = useThemePrefs();
   const [reportingStory, setReportingStory] = useState(false);
+  const [downloadBusy, setDownloadBusy] = useState(false);
+  const [showDownloadLock, setShowDownloadLock] = useState(false);
   useRecordActivity();
 
   // Reader Mode -- premium-gated. Its theme/font settings are deliberately independent of
@@ -74,6 +101,17 @@ export default function StoryRead() {
     let cancelled = false;
     async function load() {
       setLoading(true);
+
+      if (id && isDownloaded(id)) {
+        const offline = await readDownloadedContent(id);
+        if (!cancelled && offline) {
+          setStory(offline.story);
+          setOfflineChapters(offline.chapters);
+          setLoading(false);
+          return;
+        }
+      }
+
       const { data, error } = await supabase
         .from('stories')
         .select('*')
@@ -82,6 +120,7 @@ export default function StoryRead() {
         .maybeSingle();
 
       if (!cancelled) {
+        setOfflineChapters(null);
         if (error || !data) {
           setNotFound(true);
         } else {
@@ -229,6 +268,31 @@ export default function StoryRead() {
     );
   }
 
+  if (isArchiveLocked) {
+    return (
+      <ThemedView style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          <ThemedView style={styles.topRow}>
+            <BackButton href={{ pathname: '/story/[id]', params: { id } }} />
+          </ThemedView>
+          <ThemedView style={styles.centerFill}>
+            <Ionicons name="lock-closed" size={32} color="#C01918" />
+            <ThemedText type="smallBold" style={styles.archiveLockTitle}>
+              This story is part of the Premium archive
+            </ThemedText>
+            <ThemedText type="small" style={styles.archiveLockBody}>
+              Stories older than {FREE_ARCHIVE_WINDOW_DAYS} days are available to Premium members.
+              Upgrade to unlock the full archive.
+            </ThemedText>
+            <Pressable style={styles.completeButton} onPress={() => router.push('/manage-subscription')}>
+              <ThemedText style={styles.completeButtonText}>View Premium</ThemedText>
+            </Pressable>
+          </ThemedView>
+        </SafeAreaView>
+      </ThemedView>
+    );
+  }
+
   const isLastChapter = !hasChapters || chapterIndex === chapters.length - 1;
   const isFirstChapter = chapterIndex === 0;
   const readerColors = readerModeActive ? Colors[readerTheme] : null;
@@ -236,6 +300,10 @@ export default function StoryRead() {
   // against a dark one, so dark mode (whichever theme is actually driving the screen right
   // now -- Reader Mode's own or the app-wide one) gets a stronger, more opaque version.
   const isDarkNow = readerModeActive ? readerTheme === 'dark' : resolvedScheme === 'dark';
+  // Re-bound to a const so it stays narrowed to non-null inside handleDownloadToggle below --
+  // TS doesn't carry the `if (!story) return` narrowing above into nested function bodies.
+  const currentStory = story;
+  const isStoryDownloaded = downloads.some((d) => d.id === currentStory.id);
 
   function goToChapter(nextChapterNumber: number) {
     router.setParams({ chapter: String(nextChapterNumber) });
@@ -264,6 +332,21 @@ export default function StoryRead() {
       if (prev) setAutoScrollOn(false);
       return !prev;
     });
+  }
+
+  async function handleDownloadToggle() {
+    if (!profile?.is_premium) {
+      setShowDownloadLock(true);
+      return;
+    }
+    Haptics.selectionAsync();
+    setDownloadBusy(true);
+    if (isStoryDownloaded) {
+      await removeDownload(currentStory.id);
+    } else {
+      await downloadStory(currentStory, chapters);
+    }
+    setDownloadBusy(false);
   }
 
   function adjustReaderFont(delta: number) {
@@ -299,6 +382,19 @@ export default function StoryRead() {
                 color={readerColors ? readerColors.text : '#C01918'}
               />
             </Pressable>
+            {Platform.OS !== 'web' && (
+              <Pressable onPress={handleDownloadToggle} hitSlop={8} disabled={downloadBusy}>
+                {downloadBusy ? (
+                  <ActivityIndicator size="small" color={readerColors ? readerColors.text : '#C01918'} />
+                ) : (
+                  <Ionicons
+                    name={isStoryDownloaded ? 'cloud-done' : 'cloud-download-outline'}
+                    size={20}
+                    color={readerColors ? readerColors.text : '#C01918'}
+                  />
+                )}
+              </Pressable>
+            )}
             <Pressable onPress={() => setReportingStory(true)} hitSlop={8}>
               <Ionicons name="flag-outline" size={18} color={readerColors ? readerColors.textSecondary : '#8a8a8e'} />
             </Pressable>
@@ -385,10 +481,17 @@ export default function StoryRead() {
           {isLastChapter && (
             <>
               {story.reflection_question && (
-                <ThemedView type="backgroundElement" style={styles.calloutBox}>
-                  <ThemedText type="smallBold">Reflect</ThemedText>
-                  <ThemedText type="small">{story.reflection_question}</ThemedText>
-                </ThemedView>
+                <>
+                  <ThemedView type="backgroundElement" style={styles.calloutBox}>
+                    <ThemedText type="smallBold">Reflect</ThemedText>
+                    <ThemedText type="small">{story.reflection_question}</ThemedText>
+                  </ThemedView>
+                  <JournalComposer
+                    storyId={id ?? ''}
+                    storyTitle={story.title}
+                    reflectionQuestion={story.reflection_question}
+                  />
+                </>
               )}
               {story.daily_lesson && (
                 <ThemedView type="backgroundElement" style={styles.calloutBox}>
@@ -494,23 +597,19 @@ export default function StoryRead() {
         targetId={id ?? ''}
       />
 
-      <Modal visible={showPremiumLock} transparent animationType="fade" onRequestClose={() => setShowPremiumLock(false)}>
-        <Pressable style={styles.lockBackdrop} onPress={() => setShowPremiumLock(false)}>
-          <ThemedView style={styles.lockSheet} onStartShouldSetResponder={() => true}>
-            <Ionicons name="lock-closed" size={28} color="#C01918" />
-            <ThemedText type="smallBold" style={styles.lockTitle}>
-              Reader Mode is a premium feature
-            </ThemedText>
-            <ThemedText type="small" style={styles.lockBody}>
-              Auto-scroll, a dedicated reader theme, and font controls are part of premium.
-              Upgrade to unlock them.
-            </ThemedText>
-            <Pressable style={styles.lockButton} onPress={() => setShowPremiumLock(false)}>
-              <ThemedText style={styles.lockButtonText}>Got it</ThemedText>
-            </Pressable>
-          </ThemedView>
-        </Pressable>
-      </Modal>
+      <PremiumLockModal
+        visible={showPremiumLock}
+        onClose={() => setShowPremiumLock(false)}
+        title="Reader Mode is a premium feature"
+        body="Auto-scroll, a dedicated reader theme, and font controls are part of premium. Upgrade to unlock them."
+      />
+
+      <PremiumLockModal
+        visible={showDownloadLock}
+        onClose={() => setShowDownloadLock(false)}
+        title="Offline downloads are a premium feature"
+        body="Save stories to read anytime, even without a signal. Upgrade to start downloading."
+      />
     </ThemedView>
   );
 }
@@ -519,6 +618,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   centerFill: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two },
+  archiveLockTitle: { textAlign: 'center' },
+  archiveLockBody: { textAlign: 'center', opacity: 0.7, paddingHorizontal: Spacing.four },
   scrollContent: {
     paddingHorizontal: Spacing.two + 4,
     gap: Spacing.two,
@@ -595,28 +696,4 @@ const styles = StyleSheet.create({
   readerControlButtonText: { fontSize: 13, fontWeight: '600' },
   autoScrollToggle: { backgroundColor: '#C01918' },
   speedLabel: { width: 28, textAlign: 'center', opacity: 0.7 },
-  lockBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: Spacing.four,
-  },
-  lockSheet: {
-    borderRadius: 16,
-    padding: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.two,
-    maxWidth: 320,
-  },
-  lockTitle: { textAlign: 'center' },
-  lockBody: { textAlign: 'center', opacity: 0.7 },
-  lockButton: {
-    marginTop: Spacing.two,
-    backgroundColor: '#700a0a',
-    borderRadius: 10,
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.four,
-  },
-  lockButtonText: { color: '#fff', fontWeight: '600' },
 });
