@@ -7,17 +7,12 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useCategories } from '@/context/categories-context';
 import type { Story } from '@/lib/database.types';
+import { estimateReadMinutes } from '@/lib/read-time';
 
 // Landscape, not the 2:3 poster StoryCard uses everywhere else -- a promo-style
 // carousel card needs room for a bigger title and reads better wide than tall.
 export const FEATURED_CARD_WIDTH = 300;
 const FEATURED_CARD_HEIGHT = 170;
-
-// Matches story/[id]/index.tsx's own read-time estimate.
-function estimateReadMinutes(body: string) {
-  const wordCount = body.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.ceil(wordCount / 160));
-}
 
 export function FeaturedCard({ story }: { story: Story }) {
   const { labels: categoryLabels } = useCategories();

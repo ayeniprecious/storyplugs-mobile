@@ -1,75 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useState } from 'react';
-import { Image } from 'expo-image';
-import { Link, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Skeleton } from '@/components/skeleton';
+import { StoryRowCard } from '@/components/story-row-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { useCategories } from '@/context/categories-context';
 import { useCompletedStories } from '@/hooks/use-completed-stories';
 import { useContinueReading } from '@/hooks/use-continue-reading';
 import { useDownloads } from '@/hooks/use-downloads';
 import { useFavoritesList } from '@/hooks/use-favorites-list';
-import type { Story } from '@/lib/database.types';
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
-
-function LibraryRow({
-  story,
-  subtitle,
-  progressPercent,
-  onRemove,
-  removeLabel,
-}: {
-  story: Story;
-  subtitle?: string;
-  progressPercent?: number;
-  onRemove: () => void;
-  removeLabel: string;
-}) {
-  const { labels: categoryLabels } = useCategories();
-  return (
-    <ThemedView type="backgroundElement" style={styles.row}>
-      <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
-        <Pressable style={styles.rowPressable}>
-          {story.image_url && (
-            <Image source={{ uri: story.image_url }} style={styles.thumb} contentFit="cover" />
-          )}
-          <ThemedView style={styles.rowBody}>
-            <ThemedText type="smallBold" numberOfLines={1}>
-              {story.title}
-            </ThemedText>
-            <ThemedText type="small" style={styles.categoryLabel}>
-              {categoryLabels[story.category] ?? story.category}
-            </ThemedText>
-            {progressPercent !== undefined ? (
-              <>
-                <ThemedView style={styles.progressTrack}>
-                  <ThemedView style={[styles.progressFill, { width: `${progressPercent}%` }]} />
-                </ThemedView>
-                <ThemedText type="small" style={styles.progressLabel}>
-                  {progressPercent}% read
-                </ThemedText>
-              </>
-            ) : subtitle ? (
-              <ThemedText type="small" style={styles.progressLabel}>
-                {subtitle}
-              </ThemedText>
-            ) : null}
-          </ThemedView>
-        </Pressable>
-      </Link>
-      <Pressable style={styles.removeButton} onPress={onRemove} accessibilityLabel={removeLabel}>
-        <Ionicons name="close" size={18} color="#8a8a8e" />
-      </Pressable>
-    </ThemedView>
-  );
 }
 
 function LibraryRowSkeleton({ withThirdLine = true }: { withThirdLine?: boolean }) {
@@ -166,7 +112,7 @@ export default function Library() {
                 </ThemedText>
               ) : (
                 downloads.map((story) => (
-                  <LibraryRow
+                  <StoryRowCard
                     key={story.id}
                     story={story}
                     subtitle="Downloaded"
@@ -231,7 +177,7 @@ export default function Library() {
                 </ThemedText>
               ) : (
                 continueItems.map(({ story, progressPercent }) => (
-                  <LibraryRow
+                  <StoryRowCard
                     key={story.id}
                     story={story}
                     progressPercent={progressPercent}
@@ -250,7 +196,7 @@ export default function Library() {
                 </ThemedText>
               ) : (
                 savedStories.map((story) => (
-                  <LibraryRow
+                  <StoryRowCard
                     key={story.id}
                     story={story}
                     onRemove={() => removeFromSaved(story.id)}
@@ -287,7 +233,7 @@ export default function Library() {
               ) : (
                 (completedExpanded ? completedItems : completedItems.slice(0, COMPLETED_COLLAPSED_LIMIT)).map(
                   ({ story, completedAt }) => (
-                    <LibraryRow
+                    <StoryRowCard
                       key={story.id}
                       story={story}
                       subtitle={`Completed ${formatDate(completedAt)}`}
@@ -362,9 +308,4 @@ const styles = StyleSheet.create({
   rowPressable: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two, padding: Spacing.two },
   thumb: { width: 64, height: 64, borderRadius: 8 },
   rowBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
-  categoryLabel: { opacity: 0.5 },
-  progressTrack: { height: 4, backgroundColor: 'rgba(128,128,128,0.3)', borderRadius: 2, overflow: 'hidden' },
-  progressFill: { height: 4, backgroundColor: '#C01918' },
-  progressLabel: { opacity: 0.6 },
-  removeButton: { paddingHorizontal: Spacing.three, alignSelf: 'stretch', justifyContent: 'center' },
 });

@@ -20,6 +20,7 @@ import { useFavorite } from '@/hooks/use-favorite';
 import { useStoryChapters } from '@/hooks/use-story-chapters';
 import { useTheme } from '@/hooks/use-theme';
 import type { Story, StoryChapter } from '@/lib/database.types';
+import { estimateReadMinutes } from '@/lib/read-time';
 import { supabase } from '@/lib/supabase';
 
 interface PreviewProgress {
@@ -221,10 +222,7 @@ export default function StoryPreview() {
   if (completed) ctaLabel = 'Read Again';
   else if (started) ctaLabel = 'Continue Reading';
 
-  // 160 wpm reads as a comfortable, attentive pace for these stories -- fast enough that a
-  // short story isn't overestimated, slow enough that a longer one doesn't feel rushed.
-  const wordCount = story.body.trim().split(/\s+/).filter(Boolean).length;
-  const readMinutes = Math.max(1, Math.ceil(wordCount / 160));
+  const readMinutes = estimateReadMinutes(story.body);
 
   return (
     <ThemedView style={styles.container}>

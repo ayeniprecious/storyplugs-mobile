@@ -60,6 +60,8 @@ export interface Story {
   status: ContentStatus;
   is_featured: boolean;
   is_pinned: boolean;
+  // 20260728000000_story_mature_flag.sql -- admin-editable, drives the "18+" badge.
+  is_mature: boolean;
   published_at: string | null;
   created_at: string;
   updated_at: string;
