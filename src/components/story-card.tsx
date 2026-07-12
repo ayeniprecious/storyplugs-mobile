@@ -20,9 +20,9 @@ function truncateTitle(title: string) {
   return `${trimmed.slice(0, MAX_TITLE_LENGTH).trimEnd()}…`;
 }
 
-const NEW_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+export const NEW_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
-function isNewStory(story: Story) {
+export function isNewStory(story: Story) {
   if (!story.published_at) return false;
   return Date.now() - new Date(story.published_at).getTime() < NEW_WINDOW_MS;
 }
