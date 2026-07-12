@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useState } from 'react';
 import { Image } from 'expo-image';
 import { Link, useFocusEffect } from 'expo-router';
-import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Skeleton } from '@/components/skeleton';
@@ -227,27 +227,23 @@ export default function Library() {
                 ))
               )}
 
-              {Platform.OS !== 'web' && (
-                <>
-                  <ThemedText type="smallBold" style={styles.sectionHeading}>
-                    Downloads
-                  </ThemedText>
-                  {downloads.length === 0 ? (
-                    <ThemedText type="small" style={styles.emptyHint}>
-                      Stories you download for offline reading (Premium) will show up here.
-                    </ThemedText>
-                  ) : (
-                    downloads.map((story) => (
-                      <LibraryRow
-                        key={story.id}
-                        story={story}
-                        subtitle="Downloaded"
-                        onRemove={() => removeDownload(story.id)}
-                        removeLabel="Remove download"
-                      />
-                    ))
-                  )}
-                </>
+              <ThemedText type="smallBold" style={styles.sectionHeading}>
+                Downloads
+              </ThemedText>
+              {downloads.length === 0 ? (
+                <ThemedText type="small" style={styles.emptyHint}>
+                  Stories you download for offline reading (Premium) will show up here.
+                </ThemedText>
+              ) : (
+                downloads.map((story) => (
+                  <LibraryRow
+                    key={story.id}
+                    story={story}
+                    subtitle="Downloaded"
+                    onRemove={() => removeDownload(story.id)}
+                    removeLabel="Remove download"
+                  />
+                ))
               )}
 
               <Pressable

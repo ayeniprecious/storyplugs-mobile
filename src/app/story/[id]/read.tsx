@@ -8,7 +8,6 @@ import {
   LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -102,7 +101,7 @@ export default function StoryRead() {
     async function load() {
       setLoading(true);
 
-      if (id && isDownloaded(id)) {
+      if (id && (await isDownloaded(id))) {
         const offline = await readDownloadedContent(id);
         if (!cancelled && offline) {
           setStory(offline.story);
@@ -382,19 +381,17 @@ export default function StoryRead() {
                 color={readerColors ? readerColors.text : '#C01918'}
               />
             </Pressable>
-            {Platform.OS !== 'web' && (
-              <Pressable onPress={handleDownloadToggle} hitSlop={8} disabled={downloadBusy}>
-                {downloadBusy ? (
-                  <ActivityIndicator size="small" color={readerColors ? readerColors.text : '#C01918'} />
-                ) : (
-                  <Ionicons
-                    name={isStoryDownloaded ? 'cloud-done' : 'cloud-download-outline'}
-                    size={20}
-                    color={readerColors ? readerColors.text : '#C01918'}
-                  />
-                )}
-              </Pressable>
-            )}
+            <Pressable onPress={handleDownloadToggle} hitSlop={8} disabled={downloadBusy}>
+              {downloadBusy ? (
+                <ActivityIndicator size="small" color={readerColors ? readerColors.text : '#C01918'} />
+              ) : (
+                <Ionicons
+                  name={isStoryDownloaded ? 'cloud-done' : 'cloud-download-outline'}
+                  size={20}
+                  color={readerColors ? readerColors.text : '#C01918'}
+                />
+              )}
+            </Pressable>
             <Pressable onPress={() => setReportingStory(true)} hitSlop={8}>
               <Ionicons name="flag-outline" size={18} color={readerColors ? readerColors.textSecondary : '#8a8a8e'} />
             </Pressable>
