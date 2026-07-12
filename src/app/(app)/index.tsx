@@ -97,7 +97,9 @@ export default function Home() {
 
   const lengthPref = profile?.story_length_pref;
   const recommended = useMemo(
-    () => buildRecommendations(byCategory, interests, lengthPref, story?.id),
+    // Rendered as a ranked vertical list now, not a horizontal carousel --
+    // capped to 5 so it doesn't push the rest of the page too far down.
+    () => buildRecommendations(byCategory, interests, lengthPref, story?.id, 5),
     [byCategory, interests, lengthPref, story?.id],
   );
 

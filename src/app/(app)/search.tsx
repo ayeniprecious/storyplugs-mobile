@@ -58,7 +58,8 @@ export default function Search() {
   // than duplicated so the two stay consistent with each other. Capped --
   // rendered as a vertical numbered list now, not a horizontal carousel, so
   // an uncapped week's worth of stories would dominate the whole browse page.
-  const newThisWeek = useMemo(() => allStories.filter(isNewStory).slice(0, 10), [allStories]);
+  // RankedStoryList caps itself to 5 rows, so no need to slice here too.
+  const newThisWeek = useMemo(() => allStories.filter(isNewStory), [allStories]);
 
   function runSearch(text: string) {
     setQuery(text);
