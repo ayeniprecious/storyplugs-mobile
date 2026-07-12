@@ -12,12 +12,14 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useProfile } from '@/context/profile-context';
+import { useReadingStreak } from '@/hooks/use-reading-streak';
 import { useTheme } from '@/hooks/use-theme';
 import { supabase } from '@/lib/supabase';
 
 export default function Profile() {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
+  const { currentStreak, longestStreak, loading: streakLoading } = useReadingStreak();
   const theme = useTheme();
   const [signingOut, setSigningOut] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -25,6 +27,9 @@ export default function Profile() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const initial = (profile?.display_name?.[0] ?? user?.email?.[0] ?? 'U').toUpperCase();
+  const memberSince = profile?.created_at
+    ? new Date(profile.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+    : '–';
 
   async function handleSignOut() {
     setSigningOut(true);
@@ -68,6 +73,57 @@ export default function Profile() {
               </ThemedView>
             </Pressable>
           </Link>
+
+          <ThemedView type="backgroundElement" style={styles.statsCard}>
+            <ThemedView style={styles.statTile}>
+              <Ionicons name="flame" size={20} color="#C01918" />
+              <ThemedText type="smallBold" style={styles.statValue}>
+                {streakLoading ? '–' : currentStreak}
+              </ThemedText>
+              <ThemedText type="small" style={styles.statLabel}>
+                Day Streak
+              </ThemedText>
+            </ThemedView>
+            <ThemedView style={styles.statDivider} />
+            <ThemedView style={styles.statTile}>
+              <Ionicons name="trophy" size={20} color="#C01918" />
+              <ThemedText type="smallBold" style={styles.statValue}>
+                {streakLoading ? '–' : longestStreak}
+              </ThemedText>
+              <ThemedText type="small" style={styles.statLabel}>
+                Best Streak
+              </ThemedText>
+            </ThemedView>
+            <ThemedView style={styles.statDivider} />
+            <ThemedView style={styles.statTile}>
+              <Ionicons name="calendar-outline" size={20} color={theme.placeholder} />
+              <ThemedText type="smallBold" style={styles.statValue}>
+                {memberSince}
+              </ThemedText>
+              <ThemedText type="small" style={styles.statLabel}>
+                Member Since
+              </ThemedText>
+            </ThemedView>
+          </ThemedView>
+
+          <SettingsGroup>
+            <SettingsRow
+              label="Subscription"
+              href="/manage-subscription"
+              showChevron
+              isLast
+              right={
+                <ThemedView style={[styles.planBadge, profile?.is_premium && styles.planBadgePremium]}>
+                  <ThemedText
+                    type="small"
+                    style={profile?.is_premium ? styles.planBadgeTextPremium : styles.planBadgeText}
+                  >
+                    {profile?.is_premium ? 'Premium' : 'Free'}
+                  </ThemedText>
+                </ThemedView>
+              }
+            />
+          </SettingsGroup>
 
           <SettingsGroup>
             <SettingsRow label="Preferences" href="/preferences" showChevron />
@@ -162,6 +218,26 @@ const styles = StyleSheet.create({
   },
   bannerTextGroup: { flex: 1, gap: 2, backgroundColor: 'transparent' },
   bannerEmail: { opacity: 0.6 },
+  statsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingVertical: Spacing.three,
+    marginBottom: Spacing.three,
+  },
+  statTile: { flex: 1, alignItems: 'center', gap: 2, backgroundColor: 'transparent' },
+  statDivider: { width: StyleSheet.hairlineWidth, alignSelf: 'stretch', backgroundColor: 'rgba(128,128,128,0.3)' },
+  statValue: { fontSize: 16 },
+  statLabel: { opacity: 0.6 },
+  planBadge: {
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: 'rgba(128,128,128,0.14)',
+  },
+  planBadgePremium: { backgroundColor: '#C01918' },
+  planBadgeText: { opacity: 0.7 },
+  planBadgeTextPremium: { color: '#fff', fontWeight: '700' },
   deleteButton: { alignItems: 'center', paddingVertical: Spacing.two },
   deleteButtonText: { color: '#ff453a', fontWeight: '500', opacity: 0.85 },
   deleteErrorText: { color: '#ff453a', textAlign: 'center' },
