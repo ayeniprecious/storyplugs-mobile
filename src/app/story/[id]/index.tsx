@@ -15,10 +15,11 @@ import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useCategories } from '@/context/categories-context';
 import { useAppSettings } from '@/hooks/use-app-settings';
+import { isDownloaded, readDownloadedContent } from '@/hooks/use-downloads';
 import { useFavorite } from '@/hooks/use-favorite';
 import { useStoryChapters } from '@/hooks/use-story-chapters';
 import { useTheme } from '@/hooks/use-theme';
-import type { Story } from '@/lib/database.types';
+import type { Story, StoryChapter } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 
 interface PreviewProgress {
@@ -47,12 +48,42 @@ export default function StoryPreview() {
 
   const { isFavorited, toggle: toggleFavorite } = useFavorite(id ?? '');
   const { labels: categoryLabels } = useCategories();
-  const { chapters, loading: chaptersLoading } = useStoryChapters(id ?? '');
+  // Set only when this story is being read from its on-disk download rather
+  // than the network -- mirrors read.tsx's exact pattern, including the
+  // downloadChecked gate: an empty offlineChapters array (non-chaptered
+  // stories) is still truthy, and both this effect and useStoryChapters' own
+  // effect fire on the same mount, so gating on offlineChapters alone would
+  // let a redundant network fetch slip through before the async
+  // isDownloaded() check below resolves.
+  const [offlineChapters, setOfflineChapters] = useState<StoryChapter[] | null>(null);
+  const [downloadChecked, setDownloadChecked] = useState(false);
+  const { chapters: networkChapters, loading: networkChaptersLoading } = useStoryChapters(
+    offlineChapters || !downloadChecked ? '' : id ?? ''
+  );
+  const chapters = offlineChapters ?? networkChapters;
+  const chaptersLoading = offlineChapters ? false : !downloadChecked || networkChaptersLoading;
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
+      setDownloadChecked(false);
+
+      if (id && (await isDownloaded(id))) {
+        const offline = await readDownloadedContent(id);
+        if (!cancelled && offline) {
+          setStory(offline.story);
+          setOfflineChapters(offline.chapters);
+          setSimilar([]);
+          setDownloadChecked(true);
+          setLoading(false);
+          return;
+        }
+      }
+
+      if (!cancelled) setDownloadChecked(true);
+      setOfflineChapters(null);
+
       const { data, error } = await supabase
         .from('stories')
         .select('*')

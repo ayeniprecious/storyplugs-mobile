@@ -131,7 +131,11 @@ export default function Library() {
     setRefreshing(false);
   }
 
-  const loading = continueLoading || completedLoading || savedLoading || downloadsLoading;
+  // Downloads is local-only (AsyncStorage), so it's deliberately excluded from
+  // this combined flag and rendered on its own below -- gating it behind the
+  // other three network-dependent hooks would mean offline downloads stay
+  // hidden behind a full-screen skeleton until those network calls time out.
+  const loading = continueLoading || completedLoading || savedLoading;
 
   return (
     <ThemedView style={styles.container}>
@@ -145,6 +149,34 @@ export default function Library() {
           <ThemedText type="title" style={styles.title}>
             My Library
           </ThemedText>
+
+          {downloadsLoading ? (
+            <>
+              <Skeleton style={styles.sectionHeadingSkeleton} />
+              <LibraryRowSkeleton withThirdLine={false} />
+            </>
+          ) : (
+            <>
+              <ThemedText type="smallBold" style={styles.sectionHeading}>
+                Downloads
+              </ThemedText>
+              {downloads.length === 0 ? (
+                <ThemedText type="small" style={styles.emptyHint}>
+                  Stories you download for offline reading (Premium) will show up here.
+                </ThemedText>
+              ) : (
+                downloads.map((story) => (
+                  <LibraryRow
+                    key={story.id}
+                    story={story}
+                    subtitle="Downloaded"
+                    onRemove={() => removeDownload(story.id)}
+                    removeLabel="Remove download"
+                  />
+                ))
+              )}
+            </>
+          )}
 
           {loading ? (
             <>
@@ -223,25 +255,6 @@ export default function Library() {
                     story={story}
                     onRemove={() => removeFromSaved(story.id)}
                     removeLabel="Remove from Saved"
-                  />
-                ))
-              )}
-
-              <ThemedText type="smallBold" style={styles.sectionHeading}>
-                Downloads
-              </ThemedText>
-              {downloads.length === 0 ? (
-                <ThemedText type="small" style={styles.emptyHint}>
-                  Stories you download for offline reading (Premium) will show up here.
-                </ThemedText>
-              ) : (
-                downloads.map((story) => (
-                  <LibraryRow
-                    key={story.id}
-                    story={story}
-                    subtitle="Downloaded"
-                    onRemove={() => removeDownload(story.id)}
-                    removeLabel="Remove download"
                   />
                 ))
               )}
