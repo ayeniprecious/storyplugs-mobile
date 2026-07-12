@@ -59,6 +59,13 @@ export default function StoryRead() {
   // Set only when this story is being read from its on-disk download rather
   // than the network -- see the load() effect below.
   const [offlineChapters, setOfflineChapters] = useState<StoryChapter[] | null>(null);
+  // True once load() has determined whether this story is downloaded. Gating
+  // the network chapters fetch on this (rather than just `offlineChapters`)
+  // matters because an empty offlineChapters array (non-chaptered stories) is
+  // still truthy in JS, and because both effects otherwise start on the same
+  // render -- without this flag, useStoryChapters could fire its network
+  // fetch before the async isDownloaded() check below has resolved.
+  const [downloadChecked, setDownloadChecked] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const scrollDimsRef = useRef({ contentHeight: 0, viewportHeight: 0 });
   const autoScrollYRef = useRef(0);
@@ -74,10 +81,10 @@ export default function StoryRead() {
   const isArchiveLocked =
     !!story?.published_at && !profile?.is_premium && isOutsideFreeArchiveWindow(story.published_at);
   const { chapters: networkChapters, loading: networkChaptersLoading } = useStoryChapters(
-    isArchiveLocked || offlineChapters ? '' : id ?? ''
+    isArchiveLocked || offlineChapters || !downloadChecked ? '' : id ?? ''
   );
   const chapters = offlineChapters ?? networkChapters;
-  const chaptersLoading = offlineChapters ? false : networkChaptersLoading;
+  const chaptersLoading = offlineChapters ? false : !downloadChecked || networkChaptersLoading;
   const { progress, markComplete, updateProgressPercent } = useStoryProgress(id ?? '');
   const { labels: categoryLabels } = useCategories();
   const { resolvedScheme } = useThemePrefs();
@@ -100,16 +107,23 @@ export default function StoryRead() {
     let cancelled = false;
     async function load() {
       setLoading(true);
+      setDownloadChecked(false);
 
       if (id && (await isDownloaded(id))) {
         const offline = await readDownloadedContent(id);
         if (!cancelled && offline) {
           setStory(offline.story);
           setOfflineChapters(offline.chapters);
+          setDownloadChecked(true);
           setLoading(false);
           return;
         }
       }
+
+      // Known not-downloaded (or the local copy was unreadable) -- let
+      // useStoryChapters' network fetch start now, in parallel with the
+      // story fetch below, rather than waiting on it.
+      if (!cancelled) setDownloadChecked(true);
 
       const { data, error } = await supabase
         .from('stories')
