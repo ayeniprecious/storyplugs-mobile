@@ -152,5 +152,8 @@ const styles = StyleSheet.create({
   },
   primaryButtonDisabled: { opacity: 0.4 },
   primaryButtonText: { color: '#fff', fontWeight: '600' },
-  dismissText: { textAlign: 'center', opacity: 0.6, marginTop: Spacing.two, marginBottom: Spacing.one },
+  // No opacity fade here, unlike primaryButtonDisabled -- "Not now" is always
+  // tappable, so it shouldn't read as a disabled control the way a faded
+  // Show My Picks does when no mood is picked yet.
+  dismissText: { textAlign: 'center', fontWeight: '600', marginTop: Spacing.two, marginBottom: Spacing.one },
 });

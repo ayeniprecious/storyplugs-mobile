@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { FEATURED_CARD_WIDTH, FeaturedCard } from '@/components/featured-card';
+import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import type { Story } from '@/lib/database.types';
@@ -72,6 +73,9 @@ export function FeaturedCarousel({ stories }: { stories: Story[] }) {
 
   return (
     <ThemedView style={styles.section}>
+      <ThemedText type="smallBold" style={styles.heading}>
+        Featured
+      </ThemedText>
       <Animated.FlatList
         ref={listRef}
         data={stories}
@@ -103,6 +107,7 @@ export function FeaturedCarousel({ stories }: { stories: Story[] }) {
 
 const styles = StyleSheet.create({
   section: { gap: Spacing.two, marginBottom: Spacing.two },
+  heading: { opacity: 0.85 },
   listContent: { gap: CARD_GAP, paddingRight: CARD_GAP },
   dotRow: { flexDirection: 'row', justifyContent: 'center', gap: 6, backgroundColor: 'transparent' },
   dot: { height: 6, borderRadius: 3, backgroundColor: '#C01918' },

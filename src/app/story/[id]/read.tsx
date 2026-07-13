@@ -435,7 +435,10 @@ export default function StoryRead() {
             style={[
               styles.title,
               readerColors && { color: readerColors.text },
-              readerModeActive && { fontSize: TITLE_FONT_SIZE * readerFontScale },
+              readerModeActive && {
+                fontSize: TITLE_FONT_SIZE * readerFontScale,
+                lineHeight: 31 * readerFontScale,
+              },
             ]}
           >
             {story.title}
@@ -445,7 +448,10 @@ export default function StoryRead() {
             style={[
               styles.body,
               readerColors && { color: readerColors.text, opacity: 1 },
-              readerModeActive && { fontSize: BODY_FONT_SIZE * readerFontScale },
+              readerModeActive && {
+                fontSize: BODY_FONT_SIZE * readerFontScale,
+                lineHeight: 24 * readerFontScale,
+              },
             ]}
           >
             {hasRecordedAudio

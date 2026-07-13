@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { useFocusEffect, useIsFocused } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -32,6 +33,7 @@ import { useDailyContent } from "@/hooks/use-daily-content";
 import { useMoodCheckin } from "@/hooks/use-mood-checkin";
 import { useReadingStreak } from "@/hooks/use-reading-streak";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
+import { useShake } from "@/hooks/use-shake";
 import { buildMoodPicks } from "@/lib/mood-recommendations";
 import { buildRecommendations } from "@/lib/recommendations";
 
@@ -93,6 +95,7 @@ export default function Home() {
     hasAnsweredToday,
     loading: moodLoading,
     saveMoodCheckin,
+    clearMoodCheckin,
   } = useMoodCheckin();
   const [showMoodModal, setShowMoodModal] = useState(false);
   const [showMoodLock, setShowMoodLock] = useState(false);
@@ -134,23 +137,7 @@ export default function Home() {
       .slice(0, 5);
   }, [allStories]);
 
-  // Auto-pops the mood check-in once per day for premium users only, after a
-  // 30s delay so it never interrupts the moment Home appears. Gated on
-  // isFocused so the timer is cancelled the instant the user navigates away
-  // (e.g. into a story to read) -- Home stays mounted behind pushed routes
-  // in this navigator, so without this guard a timer started before leaving
-  // would still fire and the Modal would appear on top of the reading
-  // screen. Leaving and returning to Home restarts the 30s wait. Once
-  // answered, hasAnsweredToday flips true for the rest of the day (see
-  // use-mood-checkin.ts) so this effect has nothing left to trigger.
   const isFocused = useIsFocused();
-  useEffect(() => {
-    if (!isFocused || !profile?.is_premium || moodLoading || hasAnsweredToday) {
-      return;
-    }
-    const timer = setTimeout(() => setShowMoodModal(true), 30000);
-    return () => clearTimeout(timer);
-  }, [isFocused, profile?.is_premium, moodLoading, hasAnsweredToday]);
 
   const moodOption = useMemo(
     () => MOOD_OPTIONS.find((option) => option.value === todaysMood) ?? null,
@@ -186,6 +173,23 @@ export default function Home() {
     if (profile?.is_premium) setShowMoodModal(true);
     else setShowMoodLock(true);
   }
+
+  function handleMoodDismiss() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    clearMoodCheckin();
+  }
+
+  // Shake replaces the old timed auto-popup entirely -- the mood check-in
+  // only ever appears because the user asked for it, either by shaking or by
+  // tapping the "Feeling X / Change" row or the free-tier banner (both still
+  // go through this same handler). Enabled whenever Home is focused so
+  // shaking mid-story-read (a different, pushed screen) does nothing, same
+  // guarantee the old timer had. Not gated on hasAnsweredToday, so shaking
+  // again later in the day reopens it to change today's answer.
+  useShake(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    handleMoodRowPress();
+  }, isFocused && !moodLoading);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -349,16 +353,38 @@ export default function Home() {
 
           {profile?.is_premium ? (
             hasAnsweredToday && moodOption ? (
-              <Pressable onPress={handleMoodRowPress} style={styles.moodRow}>
-                <Ionicons name={moodOption.icon} size={16} color="#C01918" />
-                <ThemedText type="small" style={styles.moodRowText}>
-                  Feeling {moodOption.label.toLowerCase()}
-                </ThemedText>
-                <ThemedText type="small" style={styles.moodChangeText}>
-                  Change
+              <ThemedView style={styles.moodRowWrap}>
+                <Pressable onPress={handleMoodRowPress} style={styles.moodRow}>
+                  <Ionicons name={moodOption.icon} size={16} color="#C01918" />
+                  <ThemedText type="small" style={styles.moodRowText}>
+                    Feeling {moodOption.label.toLowerCase()}
+                  </ThemedText>
+                  <ThemedText type="small" style={styles.moodChangeText}>
+                    Change
+                  </ThemedText>
+                </Pressable>
+                <Pressable
+                  onPress={handleMoodDismiss}
+                  hitSlop={8}
+                  style={styles.moodDismiss}
+                  accessibilityLabel="Dismiss mood picks"
+                >
+                  <Ionicons name="close" size={16} color="#8a8a8e" />
+                </Pressable>
+              </ThemedView>
+            ) : (
+              // Shake is the fun way in, but it only works on a native build
+              // (expo-sensors has no working Accelerometer on web at all, not
+              // even mobile Safari) -- this stays as the one way in on web,
+              // and doubles as a discoverable hint that shaking does
+              // something once there's a native app to shake.
+              <Pressable onPress={handleMoodRowPress} style={styles.moodBanner}>
+                <Ionicons name="happy-outline" size={16} color="#C01918" />
+                <ThemedText type="small" style={styles.moodBannerText}>
+                  How are you feeling today? Tap to check in
                 </ThemedText>
               </Pressable>
-            ) : null
+            )
           ) : (
             <Pressable onPress={handleMoodRowPress} style={styles.moodBanner}>
               <Ionicons name="sparkles-outline" size={16} color="#C01918" />
@@ -482,14 +508,19 @@ const styles = StyleSheet.create({
   streakText: { opacity: 0.85 },
   streakSkeleton: { width: 110, height: 20, borderRadius: 6 },
   longestStreakText: { opacity: 0.5, marginTop: -Spacing.two },
+  moodRowWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
   moodRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    alignSelf: "flex-start",
   },
   moodRowText: { opacity: 0.85 },
   moodChangeText: { color: "#C01918", fontWeight: "600" },
+  moodDismiss: { padding: 4 },
   moodBanner: {
     flexDirection: "row",
     alignItems: "center",
