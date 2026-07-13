@@ -5,6 +5,7 @@ import { Animated, Pressable, ScrollView, StyleSheet, TextInput, View } from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CategoryRow } from '@/components/category-row';
+import { CuratedSection } from '@/components/curated-section';
 import { FeaturedCarousel } from '@/components/featured-carousel';
 import { RankedStoryList } from '@/components/ranked-story-list';
 import { Skeleton } from '@/components/skeleton';
@@ -15,6 +16,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useCategories } from '@/context/categories-context';
 import { useAllStories } from '@/hooks/use-all-stories';
+import { useCuratedSections } from '@/hooks/use-curated-sections';
 import { useRecentSearches } from '@/hooks/use-recent-searches';
 import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 import { useTheme } from '@/hooks/use-theme';
@@ -28,6 +30,7 @@ export default function Search() {
   const [query, setQuery] = useState('');
   const theme = useTheme();
   const { registerContainer, registerRow, handleScroll } = useScrollReveal();
+  const { byAnchor: curatedByAnchor } = useCuratedSections('search');
 
   const allStories = useMemo(() => Object.values(byCategory).flat(), [byCategory]);
   const isSearching = query.trim() !== '';
@@ -133,6 +136,10 @@ export default function Search() {
             <ThemedView {...registerContainer(BROWSE_CONTAINER_ID)}>
               <FeaturedCarousel stories={featuredStories} />
 
+              {curatedByAnchor.search_after_featured?.map((section) => (
+                <CuratedSection key={section.id} section={section} />
+              ))}
+
               <ThemedView style={styles.suggestions}>
                 {recent.length > 0 && (
                   <Animated.View {...registerRow('recent-searches', BROWSE_CONTAINER_ID)}>
@@ -183,11 +190,19 @@ export default function Search() {
                 </Animated.View>
               </ThemedView>
 
+              {curatedByAnchor.search_after_suggestions?.map((section) => (
+                <CuratedSection key={section.id} section={section} />
+              ))}
+
               {newThisWeek.length > 0 && (
                 <Animated.View {...registerRow('new-this-week', BROWSE_CONTAINER_ID)}>
                   <RankedStoryList label="New This Week" stories={newThisWeek} />
                 </Animated.View>
               )}
+
+              {curatedByAnchor.search_after_new_this_week?.map((section) => (
+                <CuratedSection key={section.id} section={section} />
+              ))}
 
               {categoryOrder.map((category) => (
                 <Animated.View key={category} {...registerRow(`category-${category}`, BROWSE_CONTAINER_ID)}>
@@ -196,6 +211,10 @@ export default function Search() {
                     stories={byCategory[category] ?? []}
                   />
                 </Animated.View>
+              ))}
+
+              {curatedByAnchor.search_end?.map((section) => (
+                <CuratedSection key={section.id} section={section} />
               ))}
             </ThemedView>
           </ScrollView>

@@ -10,6 +10,7 @@ import {
 
 import { CategoryRow } from "@/components/category-row";
 import { ContinueReadingRow } from "@/components/continue-reading-row";
+import { CuratedSection } from "@/components/curated-section";
 import { HeroBanner } from "@/components/hero-banner";
 import { RankedStoryList } from "@/components/ranked-story-list";
 import { Skeleton } from "@/components/skeleton";
@@ -22,6 +23,7 @@ import { useCategories } from "@/context/categories-context";
 import { useProfile } from "@/context/profile-context";
 import { useAllStories } from "@/hooks/use-all-stories";
 import { useContinueReading } from "@/hooks/use-continue-reading";
+import { useCuratedSections } from "@/hooks/use-curated-sections";
 import { useDailyContent } from "@/hooks/use-daily-content";
 import { useReadingStreak } from "@/hooks/use-reading-streak";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
@@ -78,6 +80,7 @@ export default function Home() {
   } = useReadingStreak();
   const [refreshing, setRefreshing] = useState(false);
   const { registerContainer, registerRow, handleScroll } = useScrollReveal();
+  const { byAnchor: curatedByAnchor } = useCuratedSections("home");
 
   const displayName = (
     profile?.display_name?.trim() ||
@@ -253,11 +256,23 @@ export default function Home() {
             </Animated.View>
           )}
 
+          {curatedByAnchor.home_after_continue_reading?.map((section) => (
+            <CuratedSection key={section.id} section={section} />
+          ))}
+
           {recommended.length > 0 && (
             <Animated.View {...registerRow("recommended", "body")}>
               <RankedStoryList label="Recommended for You" stories={recommended} />
             </Animated.View>
           )}
+
+          {curatedByAnchor.home_after_recommended?.map((section) => (
+            <CuratedSection key={section.id} section={section} />
+          ))}
+
+          {curatedByAnchor.home_before_browse_by_category?.map((section) => (
+            <CuratedSection key={section.id} section={section} />
+          ))}
 
           <ThemedText type="subtitle" style={styles.browseHeading}>
             Browse by Category
@@ -279,6 +294,10 @@ export default function Home() {
               </Animated.View>
             ))
           )}
+
+          {curatedByAnchor.home_end?.map((section) => (
+            <CuratedSection key={section.id} section={section} />
+          ))}
         </ThemedView>
       </Animated.ScrollView>
     </ThemedView>
