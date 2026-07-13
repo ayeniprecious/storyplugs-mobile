@@ -65,6 +65,10 @@ export interface Story {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+  // 20260730000000_story_tags.sql -- only populated when fetched from the
+  // `stories_with_tags` view (currently just useAllStories); plain `stories`
+  // table/embed fetches elsewhere in the app leave this undefined.
+  tags?: string[];
 }
 
 export interface Quote {

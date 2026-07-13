@@ -8,6 +8,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useCategories } from '@/context/categories-context';
+import { useFavorite } from '@/hooks/use-favorite';
 import { useTheme } from '@/hooks/use-theme';
 import type { Story } from '@/lib/database.types';
 import { estimateReadMinutes } from '@/lib/read-time';
@@ -26,69 +27,90 @@ interface RankedStoryRowProps {
 // the byline/view-count Wattpad shows are replaced with what real data
 // supports: a read-time estimate, and tag pills built from category plus the
 // New/18+ indicators that already exist elsewhere in the app.
+//
+// The save (bookmark) button sits as a sibling of the <Link asChild> block,
+// not nested inside it -- same fix as StoryRowCard's remove button, since a
+// Pressable nested inside a Link's Pressable also fires the outer navigation
+// on tap in RNW.
 export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
   const { labels: categoryLabels } = useCategories();
   const theme = useTheme();
+  const { isFavorited, toggle: toggleFavorite } = useFavorite(story.id);
 
   return (
-    <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
-      <Pressable
-        style={StyleSheet.flatten([
-          styles.row,
-          !isLast && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.border },
-        ])}
-      >
-        <ThemedText style={styles.rank}>{rank}</ThemedText>
-        {story.image_url && <Image source={{ uri: story.image_url }} style={styles.thumb} contentFit="cover" />}
-        <ThemedView style={styles.body}>
-          <ThemedText type="smallBold" numberOfLines={2} style={styles.title}>
-            {story.title}
-          </ThemedText>
-          <ThemedView style={styles.statsRow}>
-            <Ionicons name="time-outline" size={12} color={theme.placeholder} />
-            <ThemedText type="small" style={styles.statText}>
-              {estimateReadMinutes(story.body)} min read
+    <View
+      style={StyleSheet.flatten([
+        styles.row,
+        !isLast && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.border },
+      ])}
+    >
+      <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
+        <Pressable style={styles.rowPressable}>
+          <ThemedText style={styles.rank}>{rank}</ThemedText>
+          {story.image_url && <Image source={{ uri: story.image_url }} style={styles.thumb} contentFit="cover" />}
+          <ThemedView style={styles.body}>
+            <ThemedText type="smallBold" numberOfLines={2} style={styles.title}>
+              {story.title}
             </ThemedText>
-          </ThemedView>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.tagScroll}
-            contentContainerStyle={styles.tagRow}
-          >
-            <View style={styles.tag}>
-              <ThemedText type="small" style={styles.tagText}>
-                {categoryLabels[story.category] ?? story.category}
+            <ThemedView style={styles.statsRow}>
+              <Ionicons name="time-outline" size={12} color={theme.placeholder} />
+              <ThemedText type="small" style={styles.statText}>
+                {estimateReadMinutes(story.body)} min read
               </ThemedText>
-            </View>
-            {isNewStory(story) && (
+            </ThemedView>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.tagScroll}
+              contentContainerStyle={styles.tagRow}
+            >
               <View style={styles.tag}>
                 <ThemedText type="small" style={styles.tagText}>
-                  New
+                  {categoryLabels[story.category] ?? story.category}
                 </ThemedText>
               </View>
-            )}
-            {story.is_mature && (
-              <View style={[styles.tag, styles.matureTag]}>
-                <ThemedText type="small" style={styles.matureTagText}>
-                  18+
-                </ThemedText>
-              </View>
-            )}
-          </ScrollView>
-        </ThemedView>
+              {isNewStory(story) && (
+                <View style={styles.tag}>
+                  <ThemedText type="small" style={styles.tagText}>
+                    New
+                  </ThemedText>
+                </View>
+              )}
+              {story.is_mature && (
+                <View style={[styles.tag, styles.matureTag]}>
+                  <ThemedText type="small" style={styles.matureTagText}>
+                    18+
+                  </ThemedText>
+                </View>
+              )}
+            </ScrollView>
+          </ThemedView>
+        </Pressable>
+      </Link>
+      <Pressable
+        style={styles.saveButton}
+        onPress={toggleFavorite}
+        hitSlop={8}
+        accessibilityLabel={isFavorited ? 'Remove from My List' : 'Save to My List'}
+      >
+        <Ionicons
+          name={isFavorited ? 'bookmark' : 'bookmark-outline'}
+          size={19}
+          color={isFavorited ? '#C01918' : theme.placeholder}
+        />
       </Pressable>
-    </Link>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing.two,
+    alignItems: 'center',
     paddingVertical: Spacing.two + 4,
   },
+  rowPressable: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two },
+  saveButton: { padding: 6 },
   rank: { fontSize: 22, fontWeight: '700', width: 26, textAlign: 'center' },
   thumb: { width: 64, height: 92, borderRadius: 6 },
   body: { flex: 1, gap: 4, backgroundColor: 'transparent' },

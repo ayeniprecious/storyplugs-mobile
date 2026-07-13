@@ -6,7 +6,13 @@ function scoreStory(story: Story, mood: MoodOption, selectedCategories: string[]
   if (selectedCategories.includes(story.category)) score += 3;
   if (mood.categoryBoost.includes(story.category)) score += 2;
 
-  const haystack = `${story.title} ${story.daily_lesson ?? ""} ${story.reflection_question ?? ""}`.toLowerCase();
+  // Admin-entered tags (e.g. a Kindness story tagged "gifting, mercy, loyalty")
+  // are a sharper signal than category alone. An exact tag match on one of the
+  // mood's keywords counts more than the same word merely appearing in prose.
+  const tags = (story.tags ?? []).map((tag) => tag.toLowerCase());
+  if (mood.keywords.some((keyword) => tags.includes(keyword.toLowerCase()))) score += 2;
+
+  const haystack = `${story.title} ${story.daily_lesson ?? ""} ${story.reflection_question ?? ""} ${tags.join(" ")}`.toLowerCase();
   if (mood.keywords.some((keyword) => haystack.includes(keyword))) score += 1;
 
   return score;

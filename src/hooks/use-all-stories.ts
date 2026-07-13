@@ -10,8 +10,12 @@ export function useAllStories() {
 
   const refresh = useCallback(async () => {
     setLoading(true);
+    // stories_with_tags is a security_invoker view over stories (same RLS,
+    // published-only for this query) that also aggregates each story's tags
+    // into a text[] -- lets buildMoodPicks score against tags without every
+    // other stories fetch in the app needing to learn the story_tags join.
     const { data, error: fetchError } = await supabase
-      .from("stories")
+      .from("stories_with_tags")
       .select("*")
       .eq("status", "published")
       .order("published_at", { ascending: false });
