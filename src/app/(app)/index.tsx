@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "rgba(192,25,24,0.12)",
   },
-  moodBannerText: { color: "#C01918", fontWeight: "600" },
+  moodBannerText: { color: "#C01918", fontWeight: "500" },
   centerBlock: { marginTop: Spacing.five },
   quoteCard: { borderRadius: 16, padding: Spacing.three, gap: Spacing.two },
   sectionLabel: { opacity: 0.6, fontSize: 11, textTransform: "uppercase" },
