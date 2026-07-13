@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Animated,
   Pressable,
@@ -12,11 +12,14 @@ import { CategoryRow } from "@/components/category-row";
 import { ContinueReadingRow } from "@/components/continue-reading-row";
 import { CuratedSection } from "@/components/curated-section";
 import { HeroBanner } from "@/components/hero-banner";
+import { MoodCheckinModal } from "@/components/mood-checkin-modal";
+import { PremiumLockModal } from "@/components/premium-lock-modal";
 import { RankedStoryList } from "@/components/ranked-story-list";
 import { Skeleton } from "@/components/skeleton";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { TopNav } from "@/components/top-nav";
+import { MOOD_OPTIONS } from "@/constants/mood-options";
 import { Spacing } from "@/constants/theme";
 import { useAuth } from "@/context/auth-context";
 import { useCategories } from "@/context/categories-context";
@@ -25,8 +28,10 @@ import { useAllStories } from "@/hooks/use-all-stories";
 import { useContinueReading } from "@/hooks/use-continue-reading";
 import { useCuratedSections } from "@/hooks/use-curated-sections";
 import { useDailyContent } from "@/hooks/use-daily-content";
+import { useMoodCheckin } from "@/hooks/use-mood-checkin";
 import { useReadingStreak } from "@/hooks/use-reading-streak";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
+import { buildMoodPicks } from "@/lib/mood-recommendations";
 import { buildRecommendations } from "@/lib/recommendations";
 
 function getTimeOfDayGreeting() {
@@ -81,6 +86,15 @@ export default function Home() {
   const [refreshing, setRefreshing] = useState(false);
   const { registerContainer, registerRow, handleScroll } = useScrollReveal();
   const { byAnchor: curatedByAnchor } = useCuratedSections("home");
+  const {
+    todaysMood,
+    todaysCategories,
+    hasAnsweredToday,
+    loading: moodLoading,
+    saveMoodCheckin,
+  } = useMoodCheckin();
+  const [showMoodModal, setShowMoodModal] = useState(false);
+  const [showMoodLock, setShowMoodLock] = useState(false);
 
   const displayName = (
     profile?.display_name?.trim() ||
@@ -105,6 +119,36 @@ export default function Home() {
     () => buildRecommendations(byCategory, interests, lengthPref, story?.id, 5),
     [byCategory, interests, lengthPref, story?.id],
   );
+
+  // Auto-pops the mood check-in once per day for premium users only -- fires
+  // once when Home first mounts after hasAnsweredToday resolves to false;
+  // once answered, hasAnsweredToday flips true for the rest of the day (see
+  // use-mood-checkin.ts) so this effect has nothing left to trigger.
+  useEffect(() => {
+    if (profile?.is_premium && !moodLoading && !hasAnsweredToday) {
+      setShowMoodModal(true);
+    }
+  }, [profile?.is_premium, moodLoading, hasAnsweredToday]);
+
+  const moodOption = useMemo(
+    () => MOOD_OPTIONS.find((option) => option.value === todaysMood) ?? null,
+    [todaysMood],
+  );
+  const moodPicks = useMemo(() => {
+    if (!moodOption) return [];
+    const allStories = Object.values(byCategory).flat();
+    return buildMoodPicks(allStories, moodOption, todaysCategories, story?.id ? [story.id] : [], 5);
+  }, [moodOption, todaysCategories, byCategory, story?.id]);
+
+  function handleMoodSubmit(mood: string, categories: string[]) {
+    saveMoodCheckin(mood, categories);
+    setShowMoodModal(false);
+  }
+
+  function handleMoodRowPress() {
+    if (profile?.is_premium) setShowMoodModal(true);
+    else setShowMoodLock(true);
+  }
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -217,6 +261,36 @@ export default function Home() {
             </ThemedText>
           )}
 
+          {profile?.is_premium ? (
+            hasAnsweredToday && moodOption ? (
+              <Pressable onPress={handleMoodRowPress} style={styles.moodRow}>
+                <Ionicons name={moodOption.icon} size={16} color="#C01918" />
+                <ThemedText type="small" style={styles.moodRowText}>
+                  Feeling {moodOption.label.toLowerCase()}
+                </ThemedText>
+                <ThemedText type="small" style={styles.moodChangeText}>
+                  Change
+                </ThemedText>
+              </Pressable>
+            ) : null
+          ) : (
+            <Pressable onPress={handleMoodRowPress} style={styles.moodBanner}>
+              <Ionicons name="sparkles-outline" size={16} color="#C01918" />
+              <ThemedText type="small" style={styles.moodBannerText}>
+                Get picks matched to your mood — Premium
+              </ThemedText>
+            </Pressable>
+          )}
+
+          {moodOption && moodPicks.length > 0 && (
+            <Animated.View {...registerRow("mood-picks", "body")}>
+              <RankedStoryList
+                label={`Picked for feeling ${moodOption.label.toLowerCase()}`}
+                stories={moodPicks}
+              />
+            </Animated.View>
+          )}
+
           {quote && (
             <Animated.View {...registerRow("quote", "body")}>
               <ThemedView type="backgroundElement" style={styles.quoteCard}>
@@ -300,6 +374,18 @@ export default function Home() {
           ))}
         </ThemedView>
       </Animated.ScrollView>
+
+      <MoodCheckinModal
+        visible={showMoodModal}
+        onClose={() => setShowMoodModal(false)}
+        onSubmit={handleMoodSubmit}
+      />
+      <PremiumLockModal
+        visible={showMoodLock}
+        onClose={() => setShowMoodLock(false)}
+        title="Mood picks are a premium feature"
+        body="Tell us how you're feeling and we'll match stories to it, with room for a few surprises too. Upgrade to unlock it."
+      />
     </ThemedView>
   );
 }
@@ -352,6 +438,25 @@ const styles = StyleSheet.create({
   streakText: { opacity: 0.85 },
   streakSkeleton: { width: 110, height: 20, borderRadius: 6 },
   longestStreakText: { opacity: 0.5, marginTop: -Spacing.two },
+  moodRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    alignSelf: "flex-start",
+  },
+  moodRowText: { opacity: 0.85 },
+  moodChangeText: { color: "#C01918", fontWeight: "600" },
+  moodBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    alignSelf: "flex-start",
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two - 2,
+    borderRadius: 20,
+    backgroundColor: "rgba(192,25,24,0.12)",
+  },
+  moodBannerText: { color: "#C01918", fontWeight: "600" },
   centerBlock: { marginTop: Spacing.five },
   quoteCard: { borderRadius: 16, padding: Spacing.three, gap: Spacing.two },
   sectionLabel: { opacity: 0.6, fontSize: 11, textTransform: "uppercase" },
