@@ -41,9 +41,13 @@ export function buildMoodPicks(
   excludeIds: string[] = [],
   limit = 12
 ): Story[] {
-  const pool = allStories.filter((story) => !excludeIds.includes(story.id));
+  const pool = shuffle(allStories.filter((story) => !excludeIds.includes(story.id)));
   if (pool.length === 0) return [];
 
+  // Shuffling before the (stable) sort means equally-scored stories land in
+  // random relative order -- without this, ties would resolve the same way
+  // every call and a "show different picks" reshuffle would only ever change
+  // the last slice reserved for variety, not the top-ranked ones.
   const scored = pool
     .map((story) => ({ story, score: scoreStory(story, mood, selectedCategories) }))
     .sort((a, b) => b.score - a.score);

@@ -11,6 +11,7 @@ import {
 import { CategoryRow } from "@/components/category-row";
 import { ContinueReadingRow } from "@/components/continue-reading-row";
 import { CuratedSection } from "@/components/curated-section";
+import { FeaturedCarousel } from "@/components/featured-carousel";
 import { HeroBanner } from "@/components/hero-banner";
 import { MoodCheckinModal } from "@/components/mood-checkin-modal";
 import { PremiumLockModal } from "@/components/premium-lock-modal";
@@ -118,6 +119,21 @@ export default function Home() {
     [byCategory, interests, lengthPref, story?.id],
   );
 
+  const allStories = useMemo(() => Object.values(byCategory).flat(), [byCategory]);
+
+  // Same is_featured -> is_pinned -> most-recent fallback as Search's
+  // FeaturedCarousel, so the carousel is never empty before an admin curates
+  // anything and both screens agree on what "Featured" means.
+  const featuredStories = useMemo(() => {
+    const featured = allStories.filter((s) => s.is_featured);
+    if (featured.length > 0) return featured;
+    const pinned = allStories.filter((s) => s.is_pinned);
+    if (pinned.length > 0) return pinned;
+    return [...allStories]
+      .sort((a, b) => new Date(b.published_at ?? 0).getTime() - new Date(a.published_at ?? 0).getTime())
+      .slice(0, 5);
+  }, [allStories]);
+
   // Auto-pops the mood check-in once per day for premium users only, after a
   // 30s delay so it never interrupts the moment Home appears. Gated on
   // isFocused so the timer is cancelled the instant the user navigates away
@@ -140,15 +156,30 @@ export default function Home() {
     () => MOOD_OPTIONS.find((option) => option.value === todaysMood) ?? null,
     [todaysMood],
   );
-  const moodPicks = useMemo(() => {
-    if (!moodOption) return [];
-    const allStories = Object.values(byCategory).flat();
-    return buildMoodPicks(allStories, moodOption, todaysCategories, story?.id ? [story.id] : [], 5);
-  }, [moodOption, todaysCategories, byCategory, story?.id]);
+
+  // State (not useMemo) because buildMoodPicks is randomized internally --
+  // reshuffleCount is a dependency with no other purpose than forcing this
+  // effect to recompute (and thus re-roll) when the user asks for different
+  // picks via RankedStoryList's onReshuffle.
+  const [moodPicks, setMoodPicks] = useState<typeof allStories>([]);
+  const [reshuffleCount, setReshuffleCount] = useState(0);
+  useEffect(() => {
+    if (!moodOption) {
+      setMoodPicks([]);
+      return;
+    }
+    setMoodPicks(
+      buildMoodPicks(allStories, moodOption, todaysCategories, story?.id ? [story.id] : [], 5),
+    );
+  }, [moodOption, todaysCategories, allStories, story?.id, reshuffleCount]);
 
   function handleMoodSubmit(mood: string, categories: string[]) {
     saveMoodCheckin(mood, categories);
     setShowMoodModal(false);
+  }
+
+  function handleMoodReshuffle() {
+    setReshuffleCount((count) => count + 1);
   }
 
   function handleMoodRowPress() {
@@ -342,7 +373,14 @@ export default function Home() {
               <RankedStoryList
                 label={`Picked for feeling ${moodOption.label.toLowerCase()}`}
                 stories={moodPicks}
+                onReshuffle={handleMoodReshuffle}
               />
+            </Animated.View>
+          )}
+
+          {featuredStories.length > 0 && (
+            <Animated.View {...registerRow("featured", "body")}>
+              <FeaturedCarousel stories={featuredStories} />
             </Animated.View>
           )}
 

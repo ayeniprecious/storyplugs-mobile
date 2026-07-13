@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -25,8 +26,9 @@ interface RankedStoryRowProps {
 // rows sit directly on the screen background and are separated by a hairline
 // divider instead. StoryPlugs has no author field or view-count aggregate, so
 // the byline/view-count Wattpad shows are replaced with what real data
-// supports: a read-time estimate, and tag pills built from category plus the
-// New/18+ indicators that already exist elsewhere in the app.
+// supports: a read-time estimate, a category/18+ tag row, and a New badge on
+// the cover thumbnail itself -- same treatment as StoryCard's poster badge,
+// rather than one more tag pill.
 //
 // The save (bookmark) button sits as a sibling of the <Link asChild> block,
 // not nested inside it -- same fix as StoryRowCard's remove button, since a
@@ -36,6 +38,11 @@ export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
   const { labels: categoryLabels } = useCategories();
   const theme = useTheme();
   const { isFavorited, toggle: toggleFavorite } = useFavorite(story.id);
+
+  function handleSavePress() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    toggleFavorite();
+  }
 
   return (
     <View
@@ -47,7 +54,14 @@ export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
       <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
         <Pressable style={styles.rowPressable}>
           <ThemedText style={styles.rank}>{rank}</ThemedText>
-          {story.image_url && <Image source={{ uri: story.image_url }} style={styles.thumb} contentFit="cover" />}
+          <View style={styles.thumbWrap}>
+            {story.image_url && <Image source={{ uri: story.image_url }} style={styles.thumb} contentFit="cover" />}
+            {isNewStory(story) && (
+              <ThemedView style={styles.newBadge}>
+                <ThemedText style={styles.newBadgeText}>New</ThemedText>
+              </ThemedView>
+            )}
+          </View>
           <ThemedView style={styles.body}>
             <ThemedText type="smallBold" numberOfLines={2} style={styles.title}>
               {story.title}
@@ -69,13 +83,6 @@ export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
                   {categoryLabels[story.category] ?? story.category}
                 </ThemedText>
               </View>
-              {isNewStory(story) && (
-                <View style={styles.tag}>
-                  <ThemedText type="small" style={styles.tagText}>
-                    New
-                  </ThemedText>
-                </View>
-              )}
               {story.is_mature && (
                 <View style={[styles.tag, styles.matureTag]}>
                   <ThemedText type="small" style={styles.matureTagText}>
@@ -89,7 +96,7 @@ export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
       </Link>
       <Pressable
         style={styles.saveButton}
-        onPress={toggleFavorite}
+        onPress={handleSavePress}
         hitSlop={8}
         accessibilityLabel={isFavorited ? 'Remove from My List' : 'Save to My List'}
       >
@@ -112,7 +119,18 @@ const styles = StyleSheet.create({
   rowPressable: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two },
   saveButton: { padding: 6 },
   rank: { fontSize: 22, fontWeight: '700', width: 26, textAlign: 'center' },
-  thumb: { width: 64, height: 92, borderRadius: 6 },
+  thumbWrap: { width: 64, height: 92, borderRadius: 6, overflow: 'hidden' },
+  thumb: { width: '100%', height: '100%' },
+  newBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: '#C01918',
+    borderBottomLeftRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+  },
+  newBadgeText: { color: '#fff', fontSize: 9, lineHeight: 11, fontWeight: '700' },
   body: { flex: 1, gap: 4, backgroundColor: 'transparent' },
   title: { fontSize: 15, lineHeight: 20 },
   statsRow: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent' },

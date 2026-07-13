@@ -154,7 +154,12 @@ export default function Search() {
                           </ThemedText>
                         </Pressable>
                       </ThemedView>
-                      <ThemedView style={styles.chipRow}>
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={styles.chipScroll}
+                        contentContainerStyle={styles.chipRow}
+                      >
                         {recent.map((term) => (
                           <ThemedView key={term} style={styles.chip}>
                             <Pressable onPress={() => setQuery(term)}>
@@ -165,7 +170,7 @@ export default function Search() {
                             </Pressable>
                           </ThemedView>
                         ))}
-                      </ThemedView>
+                      </ScrollView>
                     </ThemedView>
                   </Animated.View>
                 )}
@@ -175,7 +180,12 @@ export default function Search() {
                     <ThemedText type="smallBold" style={styles.suggestionHeading}>
                       Popular Searches
                     </ThemedText>
-                    <ThemedView style={styles.chipRow}>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      style={styles.chipScroll}
+                      contentContainerStyle={styles.chipRow}
+                    >
                       {categoryOrder.map((category) => (
                         <Pressable
                           key={category}
@@ -185,7 +195,7 @@ export default function Search() {
                           <ThemedText type="small">{categoryLabels[category] ?? category}</ThemedText>
                         </Pressable>
                       ))}
-                    </ThemedView>
+                    </ScrollView>
                   </ThemedView>
                 </Animated.View>
               </ThemedView>
@@ -266,7 +276,10 @@ const styles = StyleSheet.create({
   suggestionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   suggestionHeading: { opacity: 0.85 },
   clearAll: { color: '#C01918' },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  // Same flexGrow/flexShrink opt-out as the category tab row above -- cheap
+  // insurance against RNW's horizontal-ScrollView layout bug either way.
+  chipScroll: { flexGrow: 0, flexShrink: 0 },
+  chipRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
