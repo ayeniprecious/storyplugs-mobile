@@ -151,6 +151,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(128,128,128,0.14)',
   },
   tagText: { fontSize: 11 },
-  matureTag: { backgroundColor: '#C01918' },
+  matureTag: { backgroundColor: '#C01918', paddingHorizontal: 5, paddingVertical: 1 },
   matureTagText: { color: '#fff', fontWeight: '700', fontSize: 11 },
 });

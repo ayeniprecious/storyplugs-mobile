@@ -533,10 +533,10 @@ const styles = StyleSheet.create({
   },
   moodBannerText: { color: "#C01918", fontWeight: "500" },
   centerBlock: { marginTop: Spacing.five },
-  quoteCard: { borderRadius: 16, padding: Spacing.three, gap: Spacing.two },
+  quoteCard: { borderRadius: 14, padding: Spacing.two + 4, gap: 6 },
   sectionLabel: { opacity: 0.6, fontSize: 11, textTransform: "uppercase" },
-  quoteText: { fontSize: 18, lineHeight: 26, fontStyle: "italic" },
-  quoteAuthor: { opacity: 0.6, textAlign: "right" },
+  quoteText: { fontSize: 15, lineHeight: 21, fontStyle: "italic" },
+  quoteAuthor: { opacity: 0.6, textAlign: "right", fontSize: 12 },
   emptyCard: {
     borderRadius: 16,
     padding: Spacing.three,
