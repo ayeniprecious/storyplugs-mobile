@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useIsFocused } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Animated,
@@ -114,21 +114,27 @@ export default function Home() {
 
   const lengthPref = profile?.story_length_pref;
   const recommended = useMemo(
-    // Rendered as a ranked vertical list now, not a horizontal carousel --
-    // capped to 5 so it doesn't push the rest of the page too far down.
     () => buildRecommendations(byCategory, interests, lengthPref, story?.id, 5),
     [byCategory, interests, lengthPref, story?.id],
   );
 
-  // Auto-pops the mood check-in once per day for premium users only -- fires
-  // once when Home first mounts after hasAnsweredToday resolves to false;
-  // once answered, hasAnsweredToday flips true for the rest of the day (see
+  // Auto-pops the mood check-in once per day for premium users only, after a
+  // 30s delay so it never interrupts the moment Home appears. Gated on
+  // isFocused so the timer is cancelled the instant the user navigates away
+  // (e.g. into a story to read) -- Home stays mounted behind pushed routes
+  // in this navigator, so without this guard a timer started before leaving
+  // would still fire and the Modal would appear on top of the reading
+  // screen. Leaving and returning to Home restarts the 30s wait. Once
+  // answered, hasAnsweredToday flips true for the rest of the day (see
   // use-mood-checkin.ts) so this effect has nothing left to trigger.
+  const isFocused = useIsFocused();
   useEffect(() => {
-    if (profile?.is_premium && !moodLoading && !hasAnsweredToday) {
-      setShowMoodModal(true);
+    if (!isFocused || !profile?.is_premium || moodLoading || hasAnsweredToday) {
+      return;
     }
-  }, [profile?.is_premium, moodLoading, hasAnsweredToday]);
+    const timer = setTimeout(() => setShowMoodModal(true), 30000);
+    return () => clearTimeout(timer);
+  }, [isFocused, profile?.is_premium, moodLoading, hasAnsweredToday]);
 
   const moodOption = useMemo(
     () => MOOD_OPTIONS.find((option) => option.value === todaysMood) ?? null,
@@ -261,36 +267,6 @@ export default function Home() {
             </ThemedText>
           )}
 
-          {profile?.is_premium ? (
-            hasAnsweredToday && moodOption ? (
-              <Pressable onPress={handleMoodRowPress} style={styles.moodRow}>
-                <Ionicons name={moodOption.icon} size={16} color="#C01918" />
-                <ThemedText type="small" style={styles.moodRowText}>
-                  Feeling {moodOption.label.toLowerCase()}
-                </ThemedText>
-                <ThemedText type="small" style={styles.moodChangeText}>
-                  Change
-                </ThemedText>
-              </Pressable>
-            ) : null
-          ) : (
-            <Pressable onPress={handleMoodRowPress} style={styles.moodBanner}>
-              <Ionicons name="sparkles-outline" size={16} color="#C01918" />
-              <ThemedText type="small" style={styles.moodBannerText}>
-                Get picks matched to your mood — Premium
-              </ThemedText>
-            </Pressable>
-          )}
-
-          {moodOption && moodPicks.length > 0 && (
-            <Animated.View {...registerRow("mood-picks", "body")}>
-              <RankedStoryList
-                label={`Picked for feeling ${moodOption.label.toLowerCase()}`}
-                stories={moodPicks}
-              />
-            </Animated.View>
-          )}
-
           {quote && (
             <Animated.View {...registerRow("quote", "body")}>
               <ThemedView type="backgroundElement" style={styles.quoteCard}>
@@ -336,7 +312,37 @@ export default function Home() {
 
           {recommended.length > 0 && (
             <Animated.View {...registerRow("recommended", "body")}>
-              <RankedStoryList label="Recommended for You" stories={recommended} />
+              <CategoryRow label="Recommended for You" stories={recommended} />
+            </Animated.View>
+          )}
+
+          {profile?.is_premium ? (
+            hasAnsweredToday && moodOption ? (
+              <Pressable onPress={handleMoodRowPress} style={styles.moodRow}>
+                <Ionicons name={moodOption.icon} size={16} color="#C01918" />
+                <ThemedText type="small" style={styles.moodRowText}>
+                  Feeling {moodOption.label.toLowerCase()}
+                </ThemedText>
+                <ThemedText type="small" style={styles.moodChangeText}>
+                  Change
+                </ThemedText>
+              </Pressable>
+            ) : null
+          ) : (
+            <Pressable onPress={handleMoodRowPress} style={styles.moodBanner}>
+              <Ionicons name="sparkles-outline" size={16} color="#C01918" />
+              <ThemedText type="small" style={styles.moodBannerText}>
+                Get picks matched to your mood — Premium
+              </ThemedText>
+            </Pressable>
+          )}
+
+          {moodOption && moodPicks.length > 0 && (
+            <Animated.View {...registerRow("mood-picks", "body")}>
+              <RankedStoryList
+                label={`Picked for feeling ${moodOption.label.toLowerCase()}`}
+                stories={moodPicks}
+              />
             </Animated.View>
           )}
 
