@@ -1,18 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CategoryRow } from '@/components/category-row';
 import { Skeleton } from '@/components/skeleton';
 import { StoryRowCard } from '@/components/story-row-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useProfile } from '@/context/profile-context';
+import { useAllStories } from '@/hooks/use-all-stories';
 import { useCompletedStories } from '@/hooks/use-completed-stories';
 import { useContinueReading } from '@/hooks/use-continue-reading';
 import { useDownloads } from '@/hooks/use-downloads';
 import { useFavoritesList } from '@/hooks/use-favorites-list';
+import { buildRecommendations } from '@/lib/recommendations';
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -33,11 +37,61 @@ function LibraryRowSkeleton({ withThirdLine = true }: { withThirdLine?: boolean 
   );
 }
 
-const COMPLETED_COLLAPSED_LIMIT = 5;
+// A section header that turns into a "Show all (N) / Show less" toggle once
+// a list grows past the collapsed limit -- every list section on this page
+// uses this, so a long history (lots of completed stories, a big saved list,
+// etc.) never balloons the page's scroll height by default.
+function SectionHeading({
+  title,
+  count,
+  expanded,
+  onToggle,
+}: {
+  title: string;
+  count: number;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const needsToggle = count > COLLAPSED_LIMIT;
+  return (
+    <Pressable style={styles.collapsibleHeading} onPress={onToggle} disabled={!needsToggle}>
+      <ThemedText type="smallBold" style={styles.sectionHeadingText}>
+        {title}
+      </ThemedText>
+      {needsToggle && (
+        <ThemedView style={styles.collapsibleToggleRow}>
+          <ThemedText type="small" style={styles.collapsibleToggle}>
+            {expanded ? 'Show less' : `Show all (${count})`}
+          </ThemedText>
+          <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={14} color="#C01918" />
+        </ThemedView>
+      )}
+    </Pressable>
+  );
+}
+
+const COLLAPSED_LIMIT = 5;
+
+interface ExpandedSections {
+  continueReading: boolean;
+  downloads: boolean;
+  saved: boolean;
+  completed: boolean;
+}
 
 export default function Library() {
   const [refreshing, setRefreshing] = useState(false);
-  const [completedExpanded, setCompletedExpanded] = useState(false);
+  const [expanded, setExpanded] = useState<ExpandedSections>({
+    continueReading: false,
+    downloads: false,
+    saved: false,
+    completed: false,
+  });
+
+  function toggleSection(key: keyof ExpandedSections) {
+    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
+
   const {
     items: continueItems,
     loading: continueLoading,
@@ -57,10 +111,17 @@ export default function Library() {
     removeStory: removeFromSaved,
   } = useFavoritesList();
   const { downloads, loading: downloadsLoading, refresh: refreshDownloads, removeDownload } = useDownloads();
+  const { profile } = useProfile();
+  const { byCategory, refresh: refreshAllStories } = useAllStories();
+
+  const recommended = useMemo(
+    () => buildRecommendations(byCategory, profile?.interests, profile?.story_length_pref, undefined, 5),
+    [byCategory, profile?.interests, profile?.story_length_pref]
+  );
 
   const refreshAll = useCallback(async () => {
-    await Promise.all([refreshContinue(), refreshCompleted(), refreshSaved(), refreshDownloads()]);
-  }, [refreshContinue, refreshCompleted, refreshSaved, refreshDownloads]);
+    await Promise.all([refreshContinue(), refreshCompleted(), refreshSaved(), refreshDownloads(), refreshAllStories()]);
+  }, [refreshContinue, refreshCompleted, refreshSaved, refreshDownloads, refreshAllStories]);
 
   // Story progress can change on a pushed screen (mark complete, save/unsave)
   // while this tab stays mounted behind it — refetch whenever we regain focus
@@ -77,11 +138,13 @@ export default function Library() {
     setRefreshing(false);
   }
 
-  // Downloads is local-only (AsyncStorage), so it's deliberately excluded from
-  // this combined flag and rendered on its own below -- gating it behind the
-  // other three network-dependent hooks would mean offline downloads stay
-  // hidden behind a full-screen skeleton until those network calls time out.
-  const loading = continueLoading || completedLoading || savedLoading;
+  // Each section tracks its own hook's loading state independently now
+  // (rather than one shared flag for all of them) so, e.g., a slow Saved
+  // fetch doesn't hold Continue Reading behind a skeleton too -- it also
+  // happens to be what makes interleaving Downloads (a separate,
+  // local-only/AsyncStorage loading state) between other network-backed
+  // sections work cleanly.
+  const statsLoading = continueLoading || completedLoading || savedLoading;
 
   return (
     <ThemedView style={styles.container}>
@@ -96,154 +159,147 @@ export default function Library() {
             My Library
           </ThemedText>
 
-          {downloadsLoading ? (
-            <>
-              <Skeleton style={styles.sectionHeadingSkeleton} />
-              <LibraryRowSkeleton withThirdLine={false} />
-            </>
+          {statsLoading ? (
+            <ThemedView style={styles.statsRow}>
+              <Skeleton style={styles.statCardSkeleton} />
+              <Skeleton style={styles.statCardSkeleton} />
+              <Skeleton style={styles.statCardSkeleton} />
+            </ThemedView>
           ) : (
-            <>
-              <ThemedText type="smallBold" style={styles.sectionHeading}>
-                Downloads
-              </ThemedText>
-              {downloads.length === 0 ? (
-                <ThemedText type="small" style={styles.emptyHint}>
-                  Stories you download for offline reading (Premium) will show up here.
+            <ThemedView style={styles.statsRow}>
+              <ThemedView style={styles.statCard}>
+                <ThemedText type="smallBold" style={styles.statNumber}>
+                  {continueItems.length}
                 </ThemedText>
-              ) : (
-                downloads.map((story) => (
-                  <StoryRowCard
-                    key={story.id}
-                    story={story}
-                    subtitle="Downloaded"
-                    onRemove={() => removeDownload(story.id)}
-                    removeLabel="Remove download"
-                  />
-                ))
-              )}
-            </>
-          )}
-
-          {loading ? (
-            <>
-              <ThemedView style={styles.statsRow}>
-                <Skeleton style={styles.statCardSkeleton} />
-                <Skeleton style={styles.statCardSkeleton} />
-                <Skeleton style={styles.statCardSkeleton} />
+                <ThemedText type="small" style={styles.statLabel}>
+                  In Progress
+                </ThemedText>
               </ThemedView>
-              <Skeleton style={styles.sectionHeadingSkeleton} />
-              <LibraryRowSkeleton />
-              <LibraryRowSkeleton />
-              <Skeleton style={styles.sectionHeadingSkeleton} />
-              <LibraryRowSkeleton withThirdLine={false} />
-              <Skeleton style={styles.sectionHeadingSkeleton} />
-              <LibraryRowSkeleton />
-            </>
-          ) : (
-            <>
-              <ThemedView style={styles.statsRow}>
-                <ThemedView style={styles.statCard}>
-                  <ThemedText type="smallBold" style={styles.statNumber}>
-                    {continueItems.length}
-                  </ThemedText>
-                  <ThemedText type="small" style={styles.statLabel}>
-                    In Progress
-                  </ThemedText>
-                </ThemedView>
-                <ThemedView style={styles.statCard}>
-                  <ThemedText type="smallBold" style={styles.statNumber}>
-                    {completedItems.length}
-                  </ThemedText>
-                  <ThemedText type="small" style={styles.statLabel}>
-                    Completed
-                  </ThemedText>
-                </ThemedView>
-                <ThemedView style={styles.statCard}>
-                  <ThemedText type="smallBold" style={styles.statNumber}>
-                    {savedStories.length}
-                  </ThemedText>
-                  <ThemedText type="small" style={styles.statLabel}>
-                    Saved
-                  </ThemedText>
-                </ThemedView>
-              </ThemedView>
-
-              <ThemedText type="smallBold" style={styles.sectionHeading}>
-                Continue Reading
-              </ThemedText>
-              {continueItems.length === 0 ? (
-                <ThemedText type="small" style={styles.emptyHint}>
-                  Stories you open but haven&apos;t finished will show up here.
+              <ThemedView style={styles.statCard}>
+                <ThemedText type="smallBold" style={styles.statNumber}>
+                  {completedItems.length}
                 </ThemedText>
-              ) : (
-                continueItems.map(({ story, progressPercent }) => (
-                  <StoryRowCard
-                    key={story.id}
-                    story={story}
-                    progressPercent={progressPercent}
-                    onRemove={() => removeFromContinueReading(story.id)}
-                    removeLabel="Remove from Continue Reading"
-                  />
-                ))
-              )}
-
-              <ThemedText type="smallBold" style={styles.sectionHeading}>
-                Saved
-              </ThemedText>
-              {savedStories.length === 0 ? (
-                <ThemedText type="small" style={styles.emptyHint}>
-                  Stories you save will show up here.
-                </ThemedText>
-              ) : (
-                savedStories.map((story) => (
-                  <StoryRowCard
-                    key={story.id}
-                    story={story}
-                    onRemove={() => removeFromSaved(story.id)}
-                    removeLabel="Remove from Saved"
-                  />
-                ))
-              )}
-
-              <Pressable
-                style={styles.collapsibleHeading}
-                onPress={() => setCompletedExpanded((prev) => !prev)}
-                disabled={completedItems.length <= COMPLETED_COLLAPSED_LIMIT}
-              >
-                <ThemedText type="smallBold" style={styles.sectionHeadingText}>
+                <ThemedText type="small" style={styles.statLabel}>
                   Completed
                 </ThemedText>
-                {completedItems.length > COMPLETED_COLLAPSED_LIMIT && (
-                  <ThemedView style={styles.collapsibleToggleRow}>
-                    <ThemedText type="small" style={styles.collapsibleToggle}>
-                      {completedExpanded ? 'Show less' : `Show all (${completedItems.length})`}
-                    </ThemedText>
-                    <Ionicons
-                      name={completedExpanded ? 'chevron-up' : 'chevron-down'}
-                      size={14}
-                      color="#C01918"
-                    />
-                  </ThemedView>
-                )}
-              </Pressable>
-              {completedItems.length === 0 ? (
-                <ThemedText type="small" style={styles.emptyHint}>
-                  Stories you finish will show up here.
+              </ThemedView>
+              <ThemedView style={styles.statCard}>
+                <ThemedText type="smallBold" style={styles.statNumber}>
+                  {savedStories.length}
                 </ThemedText>
-              ) : (
-                (completedExpanded ? completedItems : completedItems.slice(0, COMPLETED_COLLAPSED_LIMIT)).map(
-                  ({ story, completedAt }) => (
-                    <StoryRowCard
-                      key={story.id}
-                      story={story}
-                      subtitle={`Completed ${formatDate(completedAt)}`}
-                      onRemove={() => removeFromCompleted(story.id)}
-                      removeLabel="Remove from Completed"
-                    />
-                  )
-                )
-              )}
+                <ThemedText type="small" style={styles.statLabel}>
+                  Saved
+                </ThemedText>
+              </ThemedView>
+            </ThemedView>
+          )}
+
+          <SectionHeading
+            title="Continue Reading"
+            count={continueItems.length}
+            expanded={expanded.continueReading}
+            onToggle={() => toggleSection('continueReading')}
+          />
+          {continueLoading ? (
+            <>
+              <LibraryRowSkeleton />
+              <LibraryRowSkeleton />
             </>
+          ) : continueItems.length === 0 ? (
+            <ThemedText type="small" style={styles.emptyHint}>
+              Stories you open but haven&apos;t finished will show up here.
+            </ThemedText>
+          ) : (
+            (expanded.continueReading ? continueItems : continueItems.slice(0, COLLAPSED_LIMIT)).map(
+              ({ story, progressPercent }) => (
+                <StoryRowCard
+                  key={story.id}
+                  story={story}
+                  progressPercent={progressPercent}
+                  onRemove={() => removeFromContinueReading(story.id)}
+                  removeLabel="Remove from Continue Reading"
+                />
+              )
+            )
+          )}
+
+          <SectionHeading
+            title="Downloads"
+            count={downloads.length}
+            expanded={expanded.downloads}
+            onToggle={() => toggleSection('downloads')}
+          />
+          {downloadsLoading ? (
+            <LibraryRowSkeleton withThirdLine={false} />
+          ) : downloads.length === 0 ? (
+            <ThemedText type="small" style={styles.emptyHint}>
+              Stories you download for offline reading (Premium) will show up here.
+            </ThemedText>
+          ) : (
+            (expanded.downloads ? downloads : downloads.slice(0, COLLAPSED_LIMIT)).map((story) => (
+              <StoryRowCard
+                key={story.id}
+                story={story}
+                subtitle="Downloaded"
+                onRemove={() => removeDownload(story.id)}
+                removeLabel="Remove download"
+              />
+            ))
+          )}
+
+          {recommended.length > 0 && (
+            <ThemedView style={styles.recommendedSection}>
+              <CategoryRow label="Recommended for You" stories={recommended} />
+            </ThemedView>
+          )}
+
+          <SectionHeading
+            title="Saved"
+            count={savedStories.length}
+            expanded={expanded.saved}
+            onToggle={() => toggleSection('saved')}
+          />
+          {savedLoading ? (
+            <LibraryRowSkeleton />
+          ) : savedStories.length === 0 ? (
+            <ThemedText type="small" style={styles.emptyHint}>
+              Stories you save will show up here.
+            </ThemedText>
+          ) : (
+            (expanded.saved ? savedStories : savedStories.slice(0, COLLAPSED_LIMIT)).map((story) => (
+              <StoryRowCard
+                key={story.id}
+                story={story}
+                onRemove={() => removeFromSaved(story.id)}
+                removeLabel="Remove from Saved"
+              />
+            ))
+          )}
+
+          <SectionHeading
+            title="Completed"
+            count={completedItems.length}
+            expanded={expanded.completed}
+            onToggle={() => toggleSection('completed')}
+          />
+          {completedLoading ? (
+            <LibraryRowSkeleton />
+          ) : completedItems.length === 0 ? (
+            <ThemedText type="small" style={styles.emptyHint}>
+              Stories you finish will show up here.
+            </ThemedText>
+          ) : (
+            (expanded.completed ? completedItems : completedItems.slice(0, COLLAPSED_LIMIT)).map(
+              ({ story, completedAt }) => (
+                <StoryRowCard
+                  key={story.id}
+                  story={story}
+                  subtitle={`Completed ${formatDate(completedAt)}`}
+                  onRemove={() => removeFromCompleted(story.id)}
+                  removeLabel="Remove from Completed"
+                />
+              )
+            )
           )}
         </ScrollView>
       </SafeAreaView>
@@ -262,11 +318,10 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.two },
   statCardSkeleton: { flex: 1, height: 74, borderRadius: 12 },
-  sectionHeadingSkeleton: { width: 140, height: 20, borderRadius: 4, marginTop: Spacing.three, marginBottom: Spacing.two },
   skeletonLineTitle: { width: '70%', height: 20, borderRadius: 4 },
   skeletonLineSubtitle: { width: '40%', height: 20, borderRadius: 4 },
   skeletonLineThird: { width: '55%', height: 20, borderRadius: 4 },
-  sectionHeading: { marginTop: Spacing.three, marginBottom: Spacing.two, opacity: 0.85 },
+  recommendedSection: { marginTop: Spacing.three, marginBottom: Spacing.two },
   collapsibleHeading: {
     flexDirection: 'row',
     alignItems: 'center',
