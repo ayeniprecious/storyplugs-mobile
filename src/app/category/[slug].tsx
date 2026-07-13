@@ -101,7 +101,7 @@ export default function CategoryStories() {
         ) : (
           <ScrollView showsVerticalScrollIndicator={false}>
             {results.map((story, i) => (
-              <RankedStoryRow key={story.id} story={story} rank={i + 1} isLast={i === results.length - 1} />
+              <RankedStoryRow key={story.id} story={story} isLast={i === results.length - 1} />
             ))}
           </ScrollView>
         )}

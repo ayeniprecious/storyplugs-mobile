@@ -16,7 +16,10 @@ import { estimateReadMinutes } from '@/lib/read-time';
 
 interface RankedStoryRowProps {
   story: Story;
-  rank: number;
+  // Omit when the list isn't actually a ranking (e.g. a category's full
+  // story list) -- the position number implies an ordering by some score,
+  // which doesn't apply to "everything in this category."
+  rank?: number;
   isLast?: boolean;
 }
 
@@ -53,7 +56,7 @@ export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
     >
       <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
         <Pressable style={styles.rowPressable}>
-          <ThemedText style={styles.rank}>{rank}</ThemedText>
+          {rank !== undefined && <ThemedText style={styles.rank}>{rank}</ThemedText>}
           <View style={styles.thumbWrap}>
             {story.image_url && <Image source={{ uri: story.image_url }} style={styles.thumb} contentFit="cover" />}
             {isNewStory(story) && (

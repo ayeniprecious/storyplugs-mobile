@@ -17,9 +17,23 @@ import {
   ThemePrefsProvider,
   useThemePrefs,
 } from "@/context/theme-prefs-context";
+import { prefetchDailyContent } from "@/hooks/use-daily-content";
+import { prefetchAllStories } from "@/hooks/use-all-stories";
 import type { Profile } from "@/lib/database.types";
 
 SplashScreen.preventAutoHideAsync();
+
+// Both queries are publicly readable (status='published' has no auth
+// requirement in RLS), so there's no reason to wait for session/profile to
+// resolve before starting them. Firing them here, at module load, means they
+// run in parallel with the entire branded splash sequence below instead of
+// only starting once Home mounts (which today requires auth AND profile AND
+// routing to settle first) -- by the time Home actually mounts, this is
+// usually already resolved and it renders real content instead of a
+// skeleton. See the matching prefetch*/useDailyContent/useAllStories pairing
+// in each hook for how the result gets reused instead of double-fetched.
+prefetchDailyContent();
+prefetchAllStories();
 
 // How long the branded splash page stays up on cold start, minimum.
 const BRAND_SPLASH_MIN_MS = 4000;
