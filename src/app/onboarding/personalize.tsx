@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -49,9 +50,20 @@ export default function Personalize() {
     setSubmitting(true);
     const { error: saveError } = await savePersonalization(interests, goals, storyLength);
     setSubmitting(false);
-    if (saveError) setError(saveError);
-    // On success the profile refreshes and the root layout re-routes: to the
-    // notification-preferences step for new users, or straight into the app.
+    if (saveError) {
+      setError(saveError);
+      return;
+    }
+    // The profile refresh alone isn't enough to move a brand-new user forward:
+    // clearing needsPersonalization while needsNotificationPrefs is still true
+    // (the normal case for every real signup) doesn't change the root layout's
+    // needsOnboarding guard, so the "onboarding" stack stays mounted with this
+    // same screen still active -- nothing ever pushes to the next step. Routing
+    // back through /onboarding re-runs its redirect against the now-refreshed
+    // profile, landing on notification-preferences, or (if this was a
+    // pre-existing user who only needed this step) letting the guard flip
+    // straight to the app.
+    router.replace('/onboarding');
   }
 
   return (
