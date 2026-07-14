@@ -27,7 +27,7 @@ export function HeroBanner({ story }: { story: Story }) {
         style={StyleSheet.absoluteFill}
       />
 
-      <TopNav overlay />
+      <TopNav overlay title="Home" />
 
       <ThemedView style={styles.content}>
         <ThemedText type="small" style={styles.tag}>

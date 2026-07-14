@@ -228,7 +228,7 @@ export default function Home() {
       >
         {loading ? (
           <ThemedView style={styles.loadingHero}>
-            <TopNav />
+            <TopNav title="Home" />
             <ThemedView style={styles.heroSkeletonContent}>
               <Skeleton style={styles.heroSkeletonTag} />
               <Skeleton style={styles.heroSkeletonTitle} />
@@ -243,7 +243,7 @@ export default function Home() {
           <HeroBanner story={story} />
         ) : (
           <ThemedView>
-            <TopNav />
+            <TopNav title="Home" />
             <ThemedView
               type="backgroundElement"
               style={[styles.emptyCard, styles.bodyPadding]}

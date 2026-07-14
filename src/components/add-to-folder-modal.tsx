@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FolderCoverStack } from '@/components/folder-cover-stack';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CardAsh, Spacing } from '@/constants/theme';
@@ -144,11 +144,12 @@ export function AddToFolderModal({ visible, onClose, storyId }: AddToFolderModal
                   ) : (
                     filteredFolders.map((folder) => {
                       const inFolder = folderIds.has(folder.id);
-                      const coverUrl = folder.coverStories[0]?.image_url;
                       return (
                         <Pressable key={folder.id} style={styles.row} onPress={() => toggleFolder(folder.id)}>
-                          {coverUrl ? (
-                            <Image source={{ uri: coverUrl }} style={styles.rowThumb} contentFit="cover" />
+                          {folder.coverStories.length > 0 ? (
+                            <ThemedView style={styles.rowThumbStack}>
+                              <FolderCoverStack coverStories={folder.coverStories} size={36} />
+                            </ThemedView>
                           ) : (
                             <ThemedView style={styles.rowThumbPlaceholder}>
                               <Ionicons name="folder" size={20} color={theme.placeholder} />
@@ -160,6 +161,7 @@ export function AddToFolderModal({ visible, onClose, storyId }: AddToFolderModal
                             </ThemedText>
                             <ThemedText type="small" style={styles.rowSubtext}>
                               {folder.itemCount} {folder.itemCount === 1 ? 'story' : 'stories'}
+                              {folder.itemCount > 0 && ` · ${folder.totalReadMinutes} min read`}
                             </ThemedText>
                           </ThemedView>
                           <ThemedView style={[styles.checkCircle, inFolder && styles.checkCircleActive]}>
@@ -220,7 +222,10 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.three,
     backgroundColor: 'transparent',
   },
-  searchInput: { flex: 1, paddingVertical: Spacing.two + 2, fontSize: 15 },
+  // 16px is the iOS Safari/mobile-web zoom threshold -- any TextInput below
+  // it makes the whole page auto-zoom in on focus. Every input in this app
+  // stays at 16+ for exactly this reason.
+  searchInput: { flex: 1, paddingVertical: Spacing.two + 2, fontSize: 16 },
   loading: { marginVertical: Spacing.four },
   list: { flex: 1 },
   listContent: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.six, gap: Spacing.one },
@@ -231,7 +236,13 @@ const styles = StyleSheet.create({
     gap: Spacing.two + 2,
     paddingVertical: Spacing.two,
   },
-  rowThumb: { width: 48, height: 48, borderRadius: 8 },
+  rowThumbStack: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
   rowThumbPlaceholder: {
     width: 48,
     height: 48,

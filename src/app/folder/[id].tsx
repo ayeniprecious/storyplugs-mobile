@@ -14,6 +14,7 @@ import { useAllStories } from '@/hooks/use-all-stories';
 import { useFolderStories } from '@/hooks/use-folder-stories';
 import { useStoryFolders } from '@/hooks/use-story-folders';
 import { useTheme } from '@/hooks/use-theme';
+import { estimateReadMinutes } from '@/lib/read-time';
 
 // A folder's contents, plus a full-screen "Add Stories" picker (search +
 // tap-to-toggle across every published story) -- the "room for adding
@@ -39,6 +40,10 @@ export default function FolderDetail() {
   );
 
   const inFolderIds = useMemo(() => new Set(stories.map((item) => item.storyId)), [stories]);
+  const totalReadMinutes = useMemo(
+    () => stories.reduce((sum, item) => sum + estimateReadMinutes(item.story.body), 0),
+    [stories]
+  );
 
   const pickerResults = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -67,6 +72,7 @@ export default function FolderDetail() {
           </ThemedView>
           <ThemedText type="small" style={styles.count}>
             {stories.length} {stories.length === 1 ? 'story' : 'stories'}
+            {stories.length > 0 && ` · ${totalReadMinutes} min read`}
           </ThemedText>
         </ThemedView>
 

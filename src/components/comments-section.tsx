@@ -8,7 +8,7 @@ import { ReportModal } from '@/components/report-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { OFFICIAL_ACCOUNT_EMAIL } from '@/constants/official-account';
-import { Spacing } from '@/constants/theme';
+import { CardAsh, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useProfile } from '@/context/profile-context';
 import { useComments, type CommentWithAuthor } from '@/hooks/use-comments';
@@ -202,7 +202,14 @@ export function CommentsSection({ storyId }: { storyId: string }) {
 const styles = StyleSheet.create({
   container: { gap: Spacing.two, marginTop: Spacing.three },
   heading: { fontSize: 17 },
-  inputRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-end', backgroundColor: 'transparent' },
+  inputRow: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    alignItems: 'flex-end',
+    backgroundColor: CardAsh,
+    borderRadius: 14,
+    padding: Spacing.two,
+  },
   input: {
     flex: 1,
     borderWidth: 1,
@@ -222,7 +229,16 @@ const styles = StyleSheet.create({
   },
   error: { color: '#ff453a', fontSize: 13 },
   emptyHint: { opacity: 0.6, marginTop: Spacing.two },
-  commentThread: { marginTop: Spacing.three, gap: Spacing.two, backgroundColor: 'transparent' },
+  // Each top-level comment (plus its replies) sits in its own ash-toned
+  // card, matching the rest of the app's card language rather than a bare
+  // borderless list.
+  commentThread: {
+    marginTop: Spacing.two,
+    gap: Spacing.two,
+    backgroundColor: CardAsh,
+    borderRadius: 14,
+    padding: Spacing.three,
+  },
   commentRow: {
     flexDirection: 'row',
     gap: Spacing.two,
@@ -237,6 +253,7 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.five,
     paddingLeft: Spacing.two,
     borderLeftWidth: 2,
+    borderLeftColor: 'rgba(128,128,128,0.25)',
   },
   replyInputRow: { marginLeft: Spacing.five },
   commentBody: { flex: 1, gap: 2, backgroundColor: 'transparent' },

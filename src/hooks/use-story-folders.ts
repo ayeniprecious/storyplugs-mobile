@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "@/context/auth-context";
 import type { Story, StoryFolder } from "@/lib/database.types";
+import { estimateReadMinutes } from "@/lib/read-time";
 import { supabase } from "@/lib/supabase";
 
 export interface FolderSummary {
@@ -11,6 +12,10 @@ export interface FolderSummary {
   // Up to 3 most-recently-added stories, newest first -- drives the folder
   // tile's stacked cover peek.
   coverStories: Story[];
+  // Sum of estimateReadMinutes across every story in the folder, not just
+  // the 3 covers -- the item-rows query already fetches every story's full
+  // body for this folder, so this comes free without an extra fetch.
+  totalReadMinutes: number;
 }
 
 interface FolderItemRow {
@@ -73,6 +78,7 @@ export function useStoryFolders() {
           name: folder.name,
           itemCount: stories.length,
           coverStories: stories.slice(0, 3),
+          totalReadMinutes: stories.reduce((sum, story) => sum + estimateReadMinutes(story.body), 0),
         };
       })
     );

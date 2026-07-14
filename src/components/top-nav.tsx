@@ -3,25 +3,25 @@ import { Link } from 'expo-router';
 import { Image, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Avatar } from '@/components/avatar';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { useAuth } from '@/context/auth-context';
-import { useProfile } from '@/context/profile-context';
 import { useAppSettings } from '@/hooks/use-app-settings';
 import { useTheme } from '@/hooks/use-theme';
 import { useNotifications } from '@/hooks/use-notifications';
 
-export function TopNav({ overlay = false }: { overlay?: boolean }) {
-  const { user } = useAuth();
-  const { profile } = useProfile();
+// Home-only top bar (its only call sites are index.tsx and HeroBanner,
+// both Home). No profile avatar anymore -- Profile has its own bottom tab
+// now, so a second entry point up here was redundant. `title` shows Home's
+// own page name at the same weight every other screen gives its title;
+// left optional so this stays reusable if another screen ever wants a bare
+// icon bar without one.
+export function TopNav({ overlay = false, title }: { overlay?: boolean; title?: string }) {
   const { unreadCount } = useNotifications();
   const { settings } = useAppSettings();
   const appName = settings.app_name || 'StoryPlugs';
   const insets = useSafeAreaInsets();
   const theme = useTheme();
-  const initial = (profile?.display_name?.[0] ?? user?.email?.[0] ?? 'U').toUpperCase();
   const iconColor = overlay ? '#fff' : theme.text;
 
   return (
@@ -31,21 +31,28 @@ export function TopNav({ overlay = false }: { overlay?: boolean }) {
         overlay && { paddingTop: insets.top + Spacing.two, backgroundColor: 'transparent' },
       ]}
     >
-      <Image
-        source={require('@/assets/images/logo-mark.png')}
-        style={styles.logo}
-        resizeMode="contain"
-        accessibilityLabel={appName}
-      />
+      <ThemedView style={[styles.brandGroup, overlay && styles.transparentBg]}>
+        <Image
+          source={require('@/assets/images/logo-mark.png')}
+          style={styles.logo}
+          resizeMode="contain"
+          accessibilityLabel={appName}
+        />
+        {title && (
+          <ThemedText type="title" style={[styles.title, { color: iconColor }]}>
+            {title}
+          </ThemedText>
+        )}
+      </ThemedView>
       <ThemedView style={[styles.actions, overlay && styles.transparentBg]}>
         <Link href="/search" asChild>
           <Pressable style={styles.iconButton} accessibilityLabel="Search">
-            <Ionicons name="search-outline" size={20} color={iconColor} />
+            <Ionicons name="search-outline" size={26} color={iconColor} style={styles.iconShadow} />
           </Pressable>
         </Link>
         <Link href="/notifications" asChild>
           <Pressable style={styles.iconButton} accessibilityLabel="Notifications">
-            <Ionicons name="notifications-outline" size={20} color={iconColor} />
+            <Ionicons name="notifications-outline" size={26} color={iconColor} style={styles.iconShadow} />
             {unreadCount > 0 && (
               <ThemedView style={styles.badge}>
                 <ThemedText style={styles.badgeText}>
@@ -53,11 +60,6 @@ export function TopNav({ overlay = false }: { overlay?: boolean }) {
                 </ThemedText>
               </ThemedView>
             )}
-          </Pressable>
-        </Link>
-        <Link href="/profile" asChild>
-          <Pressable accessibilityLabel="Profile">
-            <Avatar url={profile?.avatar_url} fallbackLetter={initial} size={30} />
           </Pressable>
         </Link>
       </ThemedView>
@@ -74,10 +76,20 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.two,
     paddingBottom: Spacing.two,
   },
+  brandGroup: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   logo: { width: 44, height: 44 },
+  title: { fontSize: 20, lineHeight: 24 },
   transparentBg: { backgroundColor: 'transparent' },
   actions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   iconButton: { padding: 4 },
+  // A soft shadow behind the glyph itself (Ionicons renders as a text glyph,
+  // so textShadow -- not the View-only shadow/elevation props -- is what
+  // actually follows its silhouette and works the same on iOS/Android/web).
+  iconShadow: {
+    textShadowColor: 'rgba(0,0,0,0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
   badge: {
     position: 'absolute',
     top: -2,
