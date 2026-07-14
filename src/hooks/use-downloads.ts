@@ -85,6 +85,42 @@ async function downloadCoverIfPossible(story: Story): Promise<string | null> {
   }
 }
 
+// Standalone, hook-independent mutators for callers that don't want to mount
+// the full reactive useDownloads() list (which reconciles every entry in the
+// index against disk on every mount -- fine once per screen, wasteful if
+// mounted per row across a long list like StoryRowCard is). The hook below
+// wraps these and additionally refreshes its own list state.
+export async function downloadStoryContent(story: Story, chapters: StoryChapter[]) {
+  const payload = JSON.stringify({ story, chapters });
+  if (IS_WEB) {
+    await AsyncStorage.setItem(webContentKey(story.id), payload);
+  } else {
+    const file = contentFile(story.id);
+    file.create({ intermediates: true, overwrite: true });
+    file.write(payload);
+  }
+  const localCoverUri = await downloadCoverIfPossible(story);
+
+  const current = await readIndex();
+  const withoutExisting = current.filter((item) => item.id !== story.id);
+  await writeIndex([
+    ...withoutExisting,
+    { ...story, image_url: localCoverUri ?? story.image_url, downloadedAt: new Date().toISOString() },
+  ]);
+}
+
+export async function removeDownloadedStory(storyId: string) {
+  if (IS_WEB) {
+    await AsyncStorage.removeItem(webContentKey(storyId));
+  } else {
+    for (const entry of downloadsDir().list()) {
+      if (entry.name.startsWith(storyId)) entry.delete();
+    }
+  }
+  const current = await readIndex();
+  await writeIndex(current.filter((item) => item.id !== storyId));
+}
+
 export function useDownloads() {
   const [downloads, setDownloads] = useState<DownloadedStory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,22 +143,7 @@ export function useDownloads() {
 
   const downloadStory = useCallback(
     async (story: Story, chapters: StoryChapter[]) => {
-      const payload = JSON.stringify({ story, chapters });
-      if (IS_WEB) {
-        await AsyncStorage.setItem(webContentKey(story.id), payload);
-      } else {
-        const file = contentFile(story.id);
-        file.create({ intermediates: true, overwrite: true });
-        file.write(payload);
-      }
-      const localCoverUri = await downloadCoverIfPossible(story);
-
-      const current = await readIndex();
-      const withoutExisting = current.filter((item) => item.id !== story.id);
-      await writeIndex([
-        ...withoutExisting,
-        { ...story, image_url: localCoverUri ?? story.image_url, downloadedAt: new Date().toISOString() },
-      ]);
+      await downloadStoryContent(story, chapters);
       await refresh();
     },
     [refresh]
@@ -130,15 +151,7 @@ export function useDownloads() {
 
   const removeDownload = useCallback(
     async (storyId: string) => {
-      if (IS_WEB) {
-        await AsyncStorage.removeItem(webContentKey(storyId));
-      } else {
-        for (const entry of downloadsDir().list()) {
-          if (entry.name.startsWith(storyId)) entry.delete();
-        }
-      }
-      const current = await readIndex();
-      await writeIndex(current.filter((item) => item.id !== storyId));
+      await removeDownloadedStory(storyId);
       await refresh();
     },
     [refresh]

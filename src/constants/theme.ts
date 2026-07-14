@@ -16,6 +16,12 @@ export const Colors = {
     textSecondary: '#60646C',
     border: '#D1D1D6',
     placeholder: '#8a8a8a',
+    // Opaque equivalent of CardAsh (below) composited over this theme's own
+    // background -- for surfaces that need the same "ash" tone but can't be
+    // translucent themselves, namely modals floating over a backdrop (a
+    // translucent fill there lets the backdrop show through, reading as a
+    // washed-out overlay instead of a solid dialog).
+    cardAshSolid: '#EFEFEF',
   },
   dark: {
     text: '#ffffff',
@@ -25,6 +31,7 @@ export const Colors = {
     textSecondary: '#B0B4BA',
     border: '#3a3a3c',
     placeholder: '#8a8a8a',
+    cardAshSolid: '#141414',
   },
 } as const;
 

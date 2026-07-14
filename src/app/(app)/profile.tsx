@@ -9,7 +9,7 @@ import { SettingsGroup } from '@/components/settings-group';
 import { SettingsRow } from '@/components/settings-row';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { CardAsh, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useProfile } from '@/context/profile-context';
 import { useReadingStreak } from '@/hooks/use-reading-streak';
@@ -64,7 +64,7 @@ export default function Profile() {
 
           <Link href="/edit-profile" asChild>
             <Pressable>
-              <ThemedView type="backgroundElement" style={styles.banner}>
+              <ThemedView style={styles.banner}>
                 <Avatar url={profile?.avatar_url} fallbackLetter={initial} size={56} />
                 <ThemedView style={styles.bannerTextGroup}>
                   <ThemedText type="smallBold">{profile?.display_name || 'Add your name'}</ThemedText>
@@ -78,7 +78,7 @@ export default function Profile() {
           </Link>
 
           {canSaveStreak && (
-            <ThemedView type="backgroundElement" style={styles.freezeBanner}>
+            <ThemedView style={styles.freezeBanner}>
               <Ionicons name="snow" size={18} color="#3c87f7" />
               <ThemedView style={styles.freezeBannerTextGroup}>
                 <ThemedText type="smallBold">Save your streak?</ThemedText>
@@ -101,7 +101,7 @@ export default function Profile() {
             </ThemedView>
           )}
 
-          <ThemedView type="backgroundElement" style={styles.statsCard}>
+          <ThemedView style={styles.statsCard}>
             <ThemedView style={styles.statTile}>
               <Ionicons name="flame" size={20} color="#C01918" />
               <ThemedText type="smallBold" style={styles.statValue}>
@@ -248,6 +248,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: Spacing.three,
     marginBottom: Spacing.three,
+    backgroundColor: CardAsh,
   },
   bannerTextGroup: { flex: 1, gap: 2, backgroundColor: 'transparent' },
   bannerEmail: { opacity: 0.6 },
@@ -258,6 +259,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: Spacing.three,
     marginBottom: Spacing.three,
+    backgroundColor: CardAsh,
   },
   freezeBannerTextGroup: { flex: 1, gap: 2, backgroundColor: 'transparent' },
   freezeBannerBody: { opacity: 0.7 },
@@ -276,6 +278,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: Spacing.three,
     marginBottom: Spacing.three,
+    backgroundColor: CardAsh,
   },
   statTile: { flex: 1, alignItems: 'center', gap: 2, backgroundColor: 'transparent' },
   statDivider: { width: StyleSheet.hairlineWidth, alignSelf: 'stretch', backgroundColor: 'rgba(128,128,128,0.3)' },

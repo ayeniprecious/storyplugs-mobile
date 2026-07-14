@@ -6,8 +6,10 @@ import { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, Share, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AddToFolderModal } from '@/components/add-to-folder-modal';
 import { BackButton } from '@/components/back-button';
 import { CategoryRow } from '@/components/category-row';
+import { CommentsSection } from '@/components/comments-section';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -45,6 +47,7 @@ export default function StoryPreview() {
   const [progressLoading, setProgressLoading] = useState(true);
   const [excerptExpanded, setExcerptExpanded] = useState(false);
   const [excerptOverflows, setExcerptOverflows] = useState(false);
+  const [addingToFolder, setAddingToFolder] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   const { isFavorited, toggle: toggleFavorite } = useFavorite(id ?? '');
@@ -227,9 +230,10 @@ export default function StoryPreview() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent}>
+        <ThemedView style={styles.header}>
           <BackButton href="/(app)" />
-
+        </ThemedView>
+        <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent}>
           {story.image_url && (
             <Image source={{ uri: story.image_url }} style={styles.heroImage} contentFit="cover" />
           )}
@@ -317,6 +321,10 @@ export default function StoryPreview() {
               <Ionicons name={isFavorited ? 'checkmark' : 'bookmark-outline'} size={16} color="#C01918" />
               <ThemedText style={styles.actionButtonText}>{isFavorited ? 'Saved' : 'Save'}</ThemedText>
             </Pressable>
+            <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={() => setAddingToFolder(true)}>
+              <Ionicons name="folder-outline" size={16} color="#C01918" />
+              <ThemedText style={styles.actionButtonText}>Folder</ThemedText>
+            </Pressable>
             <Pressable style={[styles.actionButton, styles.actionButtonRow]} onPress={handleShare}>
               <Ionicons name="share-outline" size={16} color="#C01918" />
               <ThemedText style={styles.actionButtonText}>Share</ThemedText>
@@ -348,12 +356,16 @@ export default function StoryPreview() {
             </ThemedView>
           )}
 
+          <CommentsSection storyId={id ?? ''} />
+
           <CategoryRow
             label={`More ${categoryLabels[story.category] ?? story.category} stories`}
             stories={similar}
           />
         </ScrollView>
       </SafeAreaView>
+
+      <AddToFolderModal visible={addingToFolder} onClose={() => setAddingToFolder(false)} storyId={id ?? ''} />
     </ThemedView>
   );
 }
@@ -362,9 +374,18 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   centerFill: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two },
-  scrollContent: {
+  // A fixed header (sibling of the ScrollView, not inside it) -- same
+  // pattern read.tsx already uses for its own topRow -- so Back stays
+  // reachable without scrolling all the way up, now that comments can make
+  // this page considerably longer.
+  header: {
     paddingHorizontal: Spacing.two + 4,
     paddingTop: Spacing.three,
+    paddingBottom: Spacing.one,
+    backgroundColor: 'transparent',
+  },
+  scrollContent: {
+    paddingHorizontal: Spacing.two + 4,
     gap: Spacing.two,
     paddingBottom: Spacing.six,
   },

@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput } from 'react-native';
 
 import { Avatar } from '@/components/avatar';
+import { PremiumLockModal } from '@/components/premium-lock-modal';
 import { ReportModal } from '@/components/report-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { OFFICIAL_ACCOUNT_EMAIL } from '@/constants/official-account';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
+import { useProfile } from '@/context/profile-context';
 import { useComments, type CommentWithAuthor } from '@/hooks/use-comments';
 import { useAppSettings } from '@/hooks/use-app-settings';
 import { useTheme } from '@/hooks/use-theme';
@@ -26,6 +28,7 @@ function timeAgo(iso: string) {
 
 export function CommentsSection({ storyId }: { storyId: string }) {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const theme = useTheme();
   const { settings } = useAppSettings();
   const appName = settings.app_name || 'StoryPlugs';
@@ -34,12 +37,24 @@ export function CommentsSection({ storyId }: { storyId: string }) {
   const [reportCommentId, setReportCommentId] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyDraft, setReplyDraft] = useState('');
+  const [showReplyLock, setShowReplyLock] = useState(false);
 
-  const canReply = user?.email === OFFICIAL_ACCOUNT_EMAIL;
+  // Posting a top-level comment is free for everyone; replying is the
+  // premium part (the official/support account keeps its existing free
+  // access on top of that, unrelated to premium status).
+  const canReply = profile?.is_premium || user?.email === OFFICIAL_ACCOUNT_EMAIL;
 
   async function handlePost() {
     const { error: postError } = await addComment(draft);
     if (!postError) setDraft('');
+  }
+
+  function handleReplyPress(commentId: string) {
+    if (!canReply) {
+      setShowReplyLock(true);
+      return;
+    }
+    setReplyingTo(commentId);
   }
 
   async function handleReplySubmit(parentId: string) {
@@ -121,13 +136,12 @@ export function CommentsSection({ storyId }: { storyId: string }) {
                   </ThemedText>
                 </ThemedView>
                 <ThemedText style={styles.commentText}>{comment.body}</ThemedText>
-                {canReply && (
-                  <Pressable onPress={() => setReplyingTo(comment.id)} hitSlop={8}>
-                    <ThemedText type="small" style={styles.replyLink}>
-                      Reply
-                    </ThemedText>
-                  </Pressable>
-                )}
+                <Pressable onPress={() => handleReplyPress(comment.id)} hitSlop={8} style={styles.replyLinkRow}>
+                  <ThemedText type="small" style={styles.replyLink}>
+                    Reply
+                  </ThemedText>
+                  {!canReply && <Ionicons name="lock-closed" size={10} color={theme.placeholder} />}
+                </Pressable>
               </ThemedView>
               {comment.user_id === user?.id ? (
                 <Pressable onPress={() => removeComment(comment.id)} hitSlop={8}>
@@ -174,6 +188,12 @@ export function CommentsSection({ storyId }: { storyId: string }) {
         onClose={() => setReportCommentId(null)}
         targetType="comment"
         targetId={reportCommentId ?? ''}
+      />
+      <PremiumLockModal
+        visible={showReplyLock}
+        onClose={() => setShowReplyLock(false)}
+        title="Replying is a premium feature"
+        body="Commenting is free for everyone — upgrade to reply and join the conversation with other readers."
       />
     </ThemedView>
   );
@@ -228,7 +248,8 @@ const styles = StyleSheet.create({
   },
   commentTime: { opacity: 0.5 },
   commentText: { fontSize: 14, lineHeight: 20, opacity: 0.9 },
-  replyLink: { color: '#C01918', fontWeight: '600', marginTop: 2 },
+  replyLinkRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2, backgroundColor: 'transparent' },
+  replyLink: { color: '#C01918', fontWeight: '600' },
   officialBadge: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -202,3 +202,21 @@ export interface CuratedSectionStory {
   story_id: string;
   sort_order: number;
 }
+
+// 20260801000000_story_folders.sql — user-created collections, plain
+// auth.uid() = user_id ownership (no admin involvement, unlike curated
+// sections). story_folder_items has no id/primary key column of its own --
+// (folder_id, story_id) is the primary key.
+export interface StoryFolder {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StoryFolderItem {
+  folder_id: string;
+  story_id: string;
+  added_at: string;
+}

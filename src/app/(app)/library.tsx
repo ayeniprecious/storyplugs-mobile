@@ -1,11 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CategoryRow } from '@/components/category-row';
+import { CreateFolderModal } from '@/components/create-folder-modal';
+import { FolderCard } from '@/components/folder-card';
 import { Skeleton } from '@/components/skeleton';
+import { SettingsGroup } from '@/components/settings-group';
+import { SettingsRow } from '@/components/settings-row';
 import { StoryRowCard } from '@/components/story-row-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -16,13 +20,10 @@ import { useCompletedStories } from '@/hooks/use-completed-stories';
 import { useContinueReading } from '@/hooks/use-continue-reading';
 import { useDownloads } from '@/hooks/use-downloads';
 import { useFavoritesList } from '@/hooks/use-favorites-list';
+import { useStoryFolders } from '@/hooks/use-story-folders';
 import { buildRecommendations } from '@/lib/recommendations';
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
-
-function LibraryRowSkeleton({ withThirdLine = true }: { withThirdLine?: boolean }) {
+function LibraryRowSkeleton() {
   return (
     <ThemedView type="backgroundElement" style={styles.row}>
       <ThemedView style={styles.rowPressable}>
@@ -30,67 +31,18 @@ function LibraryRowSkeleton({ withThirdLine = true }: { withThirdLine?: boolean 
         <ThemedView style={styles.rowBody}>
           <Skeleton style={styles.skeletonLineTitle} />
           <Skeleton style={styles.skeletonLineSubtitle} />
-          {withThirdLine && <Skeleton style={styles.skeletonLineThird} />}
+          <Skeleton style={styles.skeletonLineThird} />
         </ThemedView>
       </ThemedView>
     </ThemedView>
   );
 }
 
-// A section header that turns into a "Show all (N) / Show less" toggle once
-// a list grows past the collapsed limit -- every list section on this page
-// uses this, so a long history (lots of completed stories, a big saved list,
-// etc.) never balloons the page's scroll height by default.
-function SectionHeading({
-  title,
-  count,
-  expanded,
-  onToggle,
-}: {
-  title: string;
-  count: number;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
-  const needsToggle = count > COLLAPSED_LIMIT;
-  return (
-    <Pressable style={styles.collapsibleHeading} onPress={onToggle} disabled={!needsToggle}>
-      <ThemedText type="smallBold" style={styles.sectionHeadingText}>
-        {title}
-      </ThemedText>
-      {needsToggle && (
-        <ThemedView style={styles.collapsibleToggleRow}>
-          <ThemedText type="small" style={styles.collapsibleToggle}>
-            {expanded ? 'Show less' : `Show all (${count})`}
-          </ThemedText>
-          <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={14} color="#C01918" />
-        </ThemedView>
-      )}
-    </Pressable>
-  );
-}
-
-const COLLAPSED_LIMIT = 5;
-
-interface ExpandedSections {
-  continueReading: boolean;
-  downloads: boolean;
-  saved: boolean;
-  completed: boolean;
-}
+const CONTINUE_CARD_WIDTH = 270;
 
 export default function Library() {
   const [refreshing, setRefreshing] = useState(false);
-  const [expanded, setExpanded] = useState<ExpandedSections>({
-    continueReading: false,
-    downloads: false,
-    saved: false,
-    completed: false,
-  });
-
-  function toggleSection(key: keyof ExpandedSections) {
-    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
-  }
+  const [creatingFolder, setCreatingFolder] = useState(false);
 
   const {
     items: continueItems,
@@ -98,30 +50,41 @@ export default function Library() {
     refresh: refreshContinue,
     removeItem: removeFromContinueReading,
   } = useContinueReading();
-  const {
-    items: completedItems,
-    loading: completedLoading,
-    refresh: refreshCompleted,
-    removeItem: removeFromCompleted,
-  } = useCompletedStories();
-  const {
-    stories: savedStories,
-    loading: savedLoading,
-    refresh: refreshSaved,
-    removeStory: removeFromSaved,
-  } = useFavoritesList();
-  const { downloads, loading: downloadsLoading, refresh: refreshDownloads, removeDownload } = useDownloads();
+  const { items: completedItems, loading: completedLoading, refresh: refreshCompleted } = useCompletedStories();
+  const { stories: savedStories, loading: savedLoading, refresh: refreshSaved } = useFavoritesList();
+  const { downloads, loading: downloadsLoading, refresh: refreshDownloads } = useDownloads();
   const { profile } = useProfile();
   const { byCategory, refresh: refreshAllStories } = useAllStories();
+  const { folders, loading: foldersLoading, refresh: refreshFolders, createFolder } = useStoryFolders();
 
   const recommended = useMemo(
     () => buildRecommendations(byCategory, profile?.interests, profile?.story_length_pref, undefined, 5),
     [byCategory, profile?.interests, profile?.story_length_pref]
   );
 
+  // Chunked into pairs (a column of up to 2) rather than relying on
+  // flexWrap on the ScrollView's contentContainerStyle -- react-native-web's
+  // ScrollView doesn't reliably honor flexWrap for building a multi-row
+  // horizontal grid the way native RN does, so this groups the data instead
+  // and lets each pair-column size itself naturally.
+  const continuePairs = useMemo(() => {
+    const pairs: (typeof continueItems)[] = [];
+    for (let i = 0; i < continueItems.length; i += 2) {
+      pairs.push(continueItems.slice(i, i + 2));
+    }
+    return pairs;
+  }, [continueItems]);
+
   const refreshAll = useCallback(async () => {
-    await Promise.all([refreshContinue(), refreshCompleted(), refreshSaved(), refreshDownloads(), refreshAllStories()]);
-  }, [refreshContinue, refreshCompleted, refreshSaved, refreshDownloads, refreshAllStories]);
+    await Promise.all([
+      refreshContinue(),
+      refreshCompleted(),
+      refreshSaved(),
+      refreshDownloads(),
+      refreshAllStories(),
+      refreshFolders(),
+    ]);
+  }, [refreshContinue, refreshCompleted, refreshSaved, refreshDownloads, refreshAllStories, refreshFolders]);
 
   // Story progress can change on a pushed screen (mark complete, save/unsave)
   // while this tab stays mounted behind it — refetch whenever we regain focus
@@ -138,12 +101,6 @@ export default function Library() {
     setRefreshing(false);
   }
 
-  // Each section tracks its own hook's loading state independently now
-  // (rather than one shared flag for all of them) so, e.g., a slow Saved
-  // fetch doesn't hold Continue Reading behind a skeleton too -- it also
-  // happens to be what makes interleaving Downloads (a separate,
-  // local-only/AsyncStorage loading state) between other network-backed
-  // sections work cleanly.
   const statsLoading = continueLoading || completedLoading || savedLoading;
 
   return (
@@ -194,115 +151,106 @@ export default function Library() {
             </ThemedView>
           )}
 
-          <SectionHeading
-            title="Continue Reading"
-            count={continueItems.length}
-            expanded={expanded.continueReading}
-            onToggle={() => toggleSection('continueReading')}
-          />
+          <ThemedText type="smallBold" style={styles.plainHeading}>
+            Continue Reading
+          </ThemedText>
           {continueLoading ? (
-            <>
-              <LibraryRowSkeleton />
-              <LibraryRowSkeleton />
-            </>
+            <ThemedView style={styles.continueLoadingRow}>
+              <View style={styles.continueColumn}>
+                <LibraryRowSkeleton />
+              </View>
+              <View style={styles.continueColumn}>
+                <LibraryRowSkeleton />
+              </View>
+            </ThemedView>
           ) : continueItems.length === 0 ? (
             <ThemedText type="small" style={styles.emptyHint}>
               Stories you open but haven&apos;t finished will show up here.
             </ThemedText>
           ) : (
-            (expanded.continueReading ? continueItems : continueItems.slice(0, COLLAPSED_LIMIT)).map(
-              ({ story, progressPercent }) => (
-                <StoryRowCard
-                  key={story.id}
-                  story={story}
-                  progressPercent={progressPercent}
-                  onRemove={() => removeFromContinueReading(story.id)}
-                  removeLabel="Remove from Continue Reading"
-                />
-              )
-            )
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.continueGrid}
+            >
+              {continuePairs.map((pair, i) => (
+                <View key={i} style={styles.continueColumn}>
+                  {pair.map(({ story, progressPercent }) => (
+                    <StoryRowCard
+                      key={story.id}
+                      story={story}
+                      progressPercent={progressPercent}
+                      onRemove={() => removeFromContinueReading(story.id)}
+                      removeLabel="Remove from Continue Reading"
+                    />
+                  ))}
+                </View>
+              ))}
+            </ScrollView>
           )}
 
-          <SectionHeading
-            title="Downloads"
-            count={downloads.length}
-            expanded={expanded.downloads}
-            onToggle={() => toggleSection('downloads')}
-          />
-          {downloadsLoading ? (
-            <LibraryRowSkeleton withThirdLine={false} />
-          ) : downloads.length === 0 ? (
-            <ThemedText type="small" style={styles.emptyHint}>
-              Stories you download for offline reading (Premium) will show up here.
-            </ThemedText>
-          ) : (
-            (expanded.downloads ? downloads : downloads.slice(0, COLLAPSED_LIMIT)).map((story) => (
-              <StoryRowCard
-                key={story.id}
-                story={story}
-                subtitle="Downloaded"
-                onRemove={() => removeDownload(story.id)}
-                removeLabel="Remove download"
-              />
-            ))
-          )}
+          <ThemedText type="smallBold" style={styles.plainHeading}>
+            My Folders
+          </ThemedText>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.foldersRow}>
+            {foldersLoading ? (
+              <>
+                <Skeleton style={styles.folderSkeleton} />
+                <Skeleton style={styles.folderSkeleton} />
+              </>
+            ) : (
+              folders.map((folder) => (
+                <FolderCard
+                  key={folder.id}
+                  folder={folder}
+                  onPress={() =>
+                    router.push({ pathname: '/folder/[id]', params: { id: folder.id, name: folder.name } })
+                  }
+                />
+              ))
+            )}
+            <Pressable style={styles.newFolderTile} onPress={() => setCreatingFolder(true)}>
+              <Ionicons name="add" size={26} color="#C01918" />
+              <ThemedText type="small" style={styles.newFolderLabel}>
+                New Folder
+              </ThemedText>
+            </Pressable>
+          </ScrollView>
+
+          {/* Downloads/Saved/Completed are full lists of their own now (see
+              src/app/library/*.tsx) -- these are just entry points, not
+              inline lists, so a long history in any of them no longer
+              balloons this page's scroll height. Saved/Completed skip a
+              counter since the stat cards above already show those counts;
+              Downloads doesn't have a stat card, so it gets one here. */}
+          <SettingsGroup>
+            <SettingsRow
+              label="Downloads"
+              href="/library/downloads"
+              showChevron
+              right={
+                <ThemedText type="small" style={styles.navCount}>
+                  {downloadsLoading ? '' : downloads.length}
+                </ThemedText>
+              }
+            />
+            <SettingsRow label="Saved" href="/library/saved" showChevron />
+            <SettingsRow label="Completed" href="/library/completed" showChevron isLast />
+          </SettingsGroup>
 
           {recommended.length > 0 && (
             <ThemedView style={styles.recommendedSection}>
               <CategoryRow label="Recommended for You" stories={recommended} />
             </ThemedView>
           )}
-
-          <SectionHeading
-            title="Saved"
-            count={savedStories.length}
-            expanded={expanded.saved}
-            onToggle={() => toggleSection('saved')}
-          />
-          {savedLoading ? (
-            <LibraryRowSkeleton />
-          ) : savedStories.length === 0 ? (
-            <ThemedText type="small" style={styles.emptyHint}>
-              Stories you save will show up here.
-            </ThemedText>
-          ) : (
-            (expanded.saved ? savedStories : savedStories.slice(0, COLLAPSED_LIMIT)).map((story) => (
-              <StoryRowCard
-                key={story.id}
-                story={story}
-                onRemove={() => removeFromSaved(story.id)}
-                removeLabel="Remove from Saved"
-              />
-            ))
-          )}
-
-          <SectionHeading
-            title="Completed"
-            count={completedItems.length}
-            expanded={expanded.completed}
-            onToggle={() => toggleSection('completed')}
-          />
-          {completedLoading ? (
-            <LibraryRowSkeleton />
-          ) : completedItems.length === 0 ? (
-            <ThemedText type="small" style={styles.emptyHint}>
-              Stories you finish will show up here.
-            </ThemedText>
-          ) : (
-            (expanded.completed ? completedItems : completedItems.slice(0, COLLAPSED_LIMIT)).map(
-              ({ story, completedAt }) => (
-                <StoryRowCard
-                  key={story.id}
-                  story={story}
-                  subtitle={`Completed ${formatDate(completedAt)}`}
-                  onRemove={() => removeFromCompleted(story.id)}
-                  removeLabel="Remove from Completed"
-                />
-              )
-            )
-          )}
         </ScrollView>
       </SafeAreaView>
+
+      <CreateFolderModal
+        visible={creatingFolder}
+        onClose={() => setCreatingFolder(false)}
+        onCreate={createFolder}
+      />
     </ThemedView>
   );
 }
@@ -321,22 +269,32 @@ const styles = StyleSheet.create({
   skeletonLineTitle: { width: '70%', height: 20, borderRadius: 4 },
   skeletonLineSubtitle: { width: '40%', height: 20, borderRadius: 4 },
   skeletonLineThird: { width: '55%', height: 20, borderRadius: 4 },
-  recommendedSection: { marginTop: Spacing.three, marginBottom: Spacing.two },
-  collapsibleHeading: {
-    flexDirection: 'row',
+  recommendedSection: { marginTop: Spacing.two, marginBottom: Spacing.two },
+  // Continue Reading and My Folders are both unbounded horizontal scrolls
+  // (no "Show all" toggle), so their headings are plain text.
+  plainHeading: { opacity: 0.85, marginTop: Spacing.three, marginBottom: Spacing.two },
+  // continueItems is chunked into pairs (see continuePairs above); each pair
+  // renders as its own 2-high column, and the columns themselves scroll
+  // horizontally -- the flexWrap-on-ScrollView trick for this doesn't behave
+  // reliably in react-native-web, so this groups the data instead.
+  continueGrid: { flexDirection: 'row', gap: Spacing.two },
+  continueLoadingRow: { flexDirection: 'row', gap: Spacing.two, backgroundColor: 'transparent' },
+  continueColumn: { width: CONTINUE_CARD_WIDTH, gap: Spacing.two, backgroundColor: 'transparent' },
+  foldersRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
+  folderSkeleton: { width: 132, height: 96, borderRadius: 12, marginRight: Spacing.two },
+  newFolderTile: {
+    width: 132,
+    height: 96,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(192,25,24,0.5)',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: Spacing.three,
-    marginBottom: Spacing.two,
-  },
-  sectionHeadingText: { opacity: 0.85 },
-  collapsibleToggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'center',
     gap: 4,
-    backgroundColor: 'transparent',
   },
-  collapsibleToggle: { color: '#C01918', fontWeight: '600' },
+  newFolderLabel: { color: '#C01918', fontWeight: '600' },
+  navCount: { opacity: 0.6 },
   emptyHint: { opacity: 0.6, marginBottom: Spacing.two },
   statsRow: {
     flexDirection: 'row',

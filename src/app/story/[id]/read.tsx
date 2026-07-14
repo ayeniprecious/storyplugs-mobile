@@ -527,10 +527,13 @@ export default function StoryRead() {
                   <ThemedText style={styles.completeButtonText}>Mark as Complete</ThemedText>
                 </Pressable>
               )}
-
-              <CommentsSection storyId={id ?? ''} />
             </>
           )}
+
+          {/* Every chapter gets the same shared, story-wide comment thread at
+              its bottom -- not just the last one -- so readers can join the
+              conversation without having to finish the whole story first. */}
+          <CommentsSection storyId={id ?? ''} />
         </ScrollView>
 
         {readerModeActive && (

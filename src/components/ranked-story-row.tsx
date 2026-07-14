@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
@@ -87,10 +87,8 @@ export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
                 </ThemedText>
               </View>
               {story.is_mature && (
-                <View style={[styles.tag, styles.matureTag]}>
-                  <ThemedText type="small" style={styles.matureTagText}>
-                    18+
-                  </ThemedText>
+                <View style={styles.matureIconWrap}>
+                  <MaterialIcons name="explicit" size={14} color="#C01918" />
                 </View>
               )}
             </ScrollView>
@@ -143,7 +141,7 @@ const styles = StyleSheet.create({
   // (like CategoryRow's own horizontal scroll) rather than a direct sibling of
   // the page's main ScrollView, so it's less likely to hit that exact bug.
   tagScroll: { flexGrow: 0, flexShrink: 0 },
-  tagRow: { flexDirection: 'row', gap: 6, alignItems: 'flex-start' },
+  tagRow: { flexDirection: 'row', gap: 6, alignItems: 'center' },
   tag: {
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -151,6 +149,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(128,128,128,0.14)',
   },
   tagText: { fontSize: 11 },
-  matureTag: { backgroundColor: '#C01918', paddingHorizontal: 4, paddingVertical: 0 },
-  matureTagText: { color: '#fff', fontWeight: '700', fontSize: 9 },
+  matureIconWrap: { justifyContent: 'center' },
 });
