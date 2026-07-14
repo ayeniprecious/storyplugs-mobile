@@ -39,10 +39,12 @@ function LibraryRowSkeleton() {
 }
 
 const CONTINUE_CARD_WIDTH = 270;
+const FOLDERS_COLLAPSED_LIMIT = 3;
 
 export default function Library() {
   const [refreshing, setRefreshing] = useState(false);
   const [creatingFolder, setCreatingFolder] = useState(false);
+  const [foldersExpanded, setFoldersExpanded] = useState(false);
 
   const {
     items: continueItems,
@@ -189,17 +191,36 @@ export default function Library() {
             </ScrollView>
           )}
 
-          <ThemedText type="smallBold" style={styles.plainHeading}>
-            My Folders
-          </ThemedText>
+          <ThemedView style={styles.foldersHeadingRow}>
+            <ThemedText type="smallBold" style={styles.sectionHeadingText}>
+              My Folders
+            </ThemedText>
+            {folders.length > FOLDERS_COLLAPSED_LIMIT && (
+              <Pressable
+                style={styles.collapsibleToggleRow}
+                onPress={() => setFoldersExpanded((prev) => !prev)}
+              >
+                <ThemedText type="small" style={styles.collapsibleToggle}>
+                  {foldersExpanded ? 'Show less' : `Show all (${folders.length})`}
+                </ThemedText>
+                <Ionicons name={foldersExpanded ? 'chevron-up' : 'chevron-down'} size={14} color="#C01918" />
+              </Pressable>
+            )}
+          </ThemedView>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.foldersRow}>
+            <Pressable style={styles.newFolderTile} onPress={() => setCreatingFolder(true)}>
+              <Ionicons name="add" size={26} color="#C01918" />
+              <ThemedText type="small" style={styles.newFolderLabel}>
+                New Folder
+              </ThemedText>
+            </Pressable>
             {foldersLoading ? (
               <>
                 <Skeleton style={styles.folderSkeleton} />
                 <Skeleton style={styles.folderSkeleton} />
               </>
             ) : (
-              folders.map((folder) => (
+              (foldersExpanded ? folders : folders.slice(0, FOLDERS_COLLAPSED_LIMIT)).map((folder) => (
                 <FolderCard
                   key={folder.id}
                   folder={folder}
@@ -209,12 +230,6 @@ export default function Library() {
                 />
               ))
             )}
-            <Pressable style={styles.newFolderTile} onPress={() => setCreatingFolder(true)}>
-              <Ionicons name="add" size={26} color="#C01918" />
-              <ThemedText type="small" style={styles.newFolderLabel}>
-                New Folder
-              </ThemedText>
-            </Pressable>
           </ScrollView>
 
           {/* Downloads/Saved/Completed are full lists of their own now (see
@@ -270,9 +285,21 @@ const styles = StyleSheet.create({
   skeletonLineSubtitle: { width: '40%', height: 20, borderRadius: 4 },
   skeletonLineThird: { width: '55%', height: 20, borderRadius: 4 },
   recommendedSection: { marginTop: Spacing.two, marginBottom: Spacing.two },
-  // Continue Reading and My Folders are both unbounded horizontal scrolls
-  // (no "Show all" toggle), so their headings are plain text.
+  // Continue Reading is an unbounded horizontal scroll (no "Show all"
+  // toggle), so its heading is plain text. My Folders gets the toggle
+  // treatment below once there are more than FOLDERS_COLLAPSED_LIMIT.
   plainHeading: { opacity: 0.85, marginTop: Spacing.three, marginBottom: Spacing.two },
+  foldersHeadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: Spacing.three,
+    marginBottom: Spacing.two,
+    backgroundColor: 'transparent',
+  },
+  sectionHeadingText: { opacity: 0.85 },
+  collapsibleToggleRow: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent' },
+  collapsibleToggle: { color: '#C01918', fontWeight: '600' },
   // continueItems is chunked into pairs (see continuePairs above); each pair
   // renders as its own 2-high column, and the columns themselves scroll
   // horizontally -- the flexWrap-on-ScrollView trick for this doesn't behave

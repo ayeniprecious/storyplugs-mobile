@@ -93,7 +93,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#C01918',
+    // A neutral translucent-black badge (matching a common "N of M" pill
+    // convention) rather than a solid red fill -- red is reserved for the
+    // empty-state folder icon and the tile's own accent moments.
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   countBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
   name: { fontWeight: '600', paddingHorizontal: Spacing.one },
