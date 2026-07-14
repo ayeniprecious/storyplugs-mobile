@@ -27,7 +27,18 @@ export function isNewStory(story: Story) {
   return Date.now() - new Date(story.published_at).getTime() < NEW_WINDOW_MS;
 }
 
-export function StoryCard({ story, progressPercent }: { story: Story; progressPercent?: number }) {
+// rank is optional and only used by RankedPosterRow (notifications' "list of
+// stories" display) -- a small numbered chip in the corner opposite the New
+// badge, so a story can be both new and #1 without the two badges colliding.
+export function StoryCard({
+  story,
+  progressPercent,
+  rank,
+}: {
+  story: Story;
+  progressPercent?: number;
+  rank?: number;
+}) {
   const hasProgress = progressPercent !== undefined;
   return (
     <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
@@ -40,6 +51,11 @@ export function StoryCard({ story, progressPercent }: { story: Story; progressPe
           locations={[0.55, 1]}
           style={StyleSheet.absoluteFill}
         />
+        {rank !== undefined && (
+          <ThemedView style={styles.rankBadge}>
+            <ThemedText style={styles.rankBadgeText}>{rank}</ThemedText>
+          </ThemedView>
+        )}
         {isNewStory(story) && (
           <ThemedView style={styles.newBadge}>
             <ThemedText style={styles.newBadgeText}>New</ThemedText>
@@ -79,6 +95,19 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   newBadgeText: { color: '#fff', fontSize: 10, lineHeight: 12, fontWeight: '700' },
+  rankBadge: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    minWidth: 20,
+    height: 20,
+    borderRadius: 10,
+    paddingHorizontal: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.65)',
+  },
+  rankBadgeText: { color: '#fff', fontSize: 12, fontWeight: '700' },
   progressTrack: {
     position: 'absolute',
     left: 0,

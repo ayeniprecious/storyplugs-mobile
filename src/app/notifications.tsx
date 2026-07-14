@@ -4,6 +4,7 @@ import { FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/back-button';
+import { RankedPosterRow } from '@/components/ranked-poster-row';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -77,22 +78,24 @@ export default function Notifications() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.list}
             renderItem={({ item }) => (
-              <Pressable onPress={() => handleOpen(item)}>
-                <ThemedView type="backgroundElement" style={styles.row}>
-                  <ThemedView style={styles.rowBody}>
-                    <ThemedView style={styles.rowHeaderLine}>
-                      <ThemedView style={[styles.unreadDot, item.read && styles.readDot]} />
-                      <ThemedText type={item.read ? 'small' : 'smallBold'} numberOfLines={1}>
-                        {item.notification.title}
+              <ThemedView type="backgroundElement" style={styles.row}>
+                <ThemedView style={styles.rowTop}>
+                  <Pressable onPress={() => handleOpen(item)} style={styles.rowPressable}>
+                    <ThemedView style={styles.rowBody}>
+                      <ThemedView style={styles.rowHeaderLine}>
+                        <ThemedView style={[styles.unreadDot, item.read && styles.readDot]} />
+                        <ThemedText type={item.read ? 'small' : 'smallBold'} numberOfLines={1}>
+                          {item.notification.title}
+                        </ThemedText>
+                      </ThemedView>
+                      <ThemedText type="small" style={styles.rowText}>
+                        {item.notification.body}
+                      </ThemedText>
+                      <ThemedText type="small" style={styles.rowTime}>
+                        {timeAgo(item.createdAt)}
                       </ThemedText>
                     </ThemedView>
-                    <ThemedText type="small" style={styles.rowText} numberOfLines={2}>
-                      {item.notification.body}
-                    </ThemedText>
-                    <ThemedText type="small" style={styles.rowTime}>
-                      {timeAgo(item.createdAt)}
-                    </ThemedText>
-                  </ThemedView>
+                  </Pressable>
                   <Pressable
                     onPress={() => remove(item.id)}
                     hitSlop={8}
@@ -101,7 +104,12 @@ export default function Notifications() {
                     <Ionicons name="close" size={16} color="#8a8a8e" style={styles.removeButton} />
                   </Pressable>
                 </ThemedView>
-              </Pressable>
+                {item.stories.length > 0 && (
+                  <ThemedView style={styles.posterRowWrap}>
+                    <RankedPosterRow stories={item.stories} />
+                  </ThemedView>
+                )}
+              </ThemedView>
             )}
           />
         )}
@@ -125,13 +133,14 @@ const styles = StyleSheet.create({
   skeletonLineTime: { width: '25%', height: 20, borderRadius: 4 },
   list: { paddingBottom: Spacing.six, gap: Spacing.two },
   row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
     borderRadius: 12,
     padding: Spacing.three,
     gap: Spacing.two,
   },
+  rowTop: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two, backgroundColor: 'transparent' },
+  rowPressable: { flex: 1 },
   rowBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
+  posterRowWrap: { marginLeft: 13, backgroundColor: 'transparent' },
   rowHeaderLine: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'transparent' },
   unreadDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#C01918' },
   readDot: { backgroundColor: '#fff' },

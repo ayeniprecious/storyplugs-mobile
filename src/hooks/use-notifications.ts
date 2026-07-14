@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/context/auth-context";
-import type { AppNotification } from "@/lib/database.types";
+import type { AppNotification, Story } from "@/lib/database.types";
 import { supabase } from "@/lib/supabase";
 
 export interface NotificationItem {
@@ -10,6 +10,15 @@ export interface NotificationItem {
   readAt: string | null;
   createdAt: string;
   notification: Pick<AppNotification, "id" | "title" | "body" | "story_id">;
+  // Populated from notification_stories -- independent of the single
+  // story_id above, and ordered by the admin's chosen rank.
+  stories: Story[];
+}
+
+interface NotificationStoryRow {
+  notification_id: string;
+  sort_order: number;
+  stories: Story | null;
 }
 
 export function useNotifications() {
@@ -30,14 +39,35 @@ export function useNotifications() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
+    const rows = (data as unknown as {
+      id: string;
+      read: boolean;
+      read_at: string | null;
+      created_at: string;
+      notifications: AppNotification | null;
+    }[]) ?? [];
+    const notificationIds = rows.map((row) => row.notifications?.id).filter((id): id is string => !!id);
+
+    // Separate query mirroring use-curated-sections.ts's story-list pattern --
+    // most notifications carry no story list at all, so skip it entirely then.
+    const storiesByNotification = new Map<string, Story[]>();
+    if (notificationIds.length > 0) {
+      const { data: links } = await supabase
+        .from("notification_stories")
+        .select("notification_id, sort_order, stories(*)")
+        .in("notification_id", notificationIds)
+        .order("sort_order", { ascending: true });
+
+      for (const link of (links as NotificationStoryRow[] | null) ?? []) {
+        if (!link.stories) continue;
+        const list = storiesByNotification.get(link.notification_id) ?? [];
+        list.push(link.stories);
+        storiesByNotification.set(link.notification_id, list);
+      }
+    }
+
     setItems(
-      ((data as unknown as {
-        id: string;
-        read: boolean;
-        read_at: string | null;
-        created_at: string;
-        notifications: AppNotification | null;
-      }[]) ?? [])
+      rows
         .filter((row) => row.notifications)
         .map((row) => ({
           id: row.id,
@@ -45,6 +75,7 @@ export function useNotifications() {
           readAt: row.read_at,
           createdAt: row.created_at,
           notification: row.notifications as AppNotification,
+          stories: storiesByNotification.get((row.notifications as AppNotification).id) ?? [],
         }))
     );
     setLoading(false);
