@@ -65,6 +65,14 @@ export const Spacing = {
   six: 64,
 } as const;
 
+// The dark "ash" Library's stat cards already used -- a translucent overlay
+// rather than a fixed color per theme, so it composites to "almost black but
+// not black" over the dark theme's pure-black background, and a much
+// lighter, barely-there tint over the light theme's white one. Used for
+// StoryRowCard and notification cards specifically (not every
+// backgroundElement surface).
+export const CardAsh = 'rgba(128,128,128,0.12)';
+
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
 

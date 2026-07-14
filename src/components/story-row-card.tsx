@@ -7,7 +7,7 @@ import { Modal, Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { CardAsh, Spacing } from '@/constants/theme';
 import { useCategories } from '@/context/categories-context';
 import { useTheme } from '@/hooks/use-theme';
 import type { Story } from '@/lib/database.types';
@@ -51,7 +51,7 @@ export function StoryRowCard({ story, subtitle, progressPercent, onRemove, remov
   }
 
   return (
-    <ThemedView type="backgroundElement" style={styles.row}>
+    <ThemedView style={styles.row}>
       <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
         <Pressable style={styles.rowPressable}>
           {story.image_url && (
@@ -134,6 +134,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: Spacing.two,
     overflow: 'hidden',
+    backgroundColor: CardAsh,
   },
   rowPressable: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two, padding: Spacing.two },
   thumb: { width: 64, height: 64, borderRadius: 8 },

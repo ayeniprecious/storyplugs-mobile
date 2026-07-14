@@ -8,7 +8,7 @@ import { RankedPosterRow } from '@/components/ranked-poster-row';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { CardAsh, Spacing } from '@/constants/theme';
 import { useNotifications, type NotificationItem } from '@/hooks/use-notifications';
 
 function timeAgo(iso: string) {
@@ -58,7 +58,7 @@ export default function Notifications() {
         {loading ? (
           <ThemedView style={styles.list}>
             {[0, 1, 2, 3].map((i) => (
-              <ThemedView key={i} type="backgroundElement" style={styles.row}>
+              <ThemedView key={i} style={styles.row}>
                 <ThemedView style={styles.rowBody}>
                   <Skeleton style={styles.skeletonLineTitle} />
                   <Skeleton style={styles.skeletonLineBody} />
@@ -78,7 +78,7 @@ export default function Notifications() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.list}
             renderItem={({ item }) => (
-              <ThemedView type="backgroundElement" style={styles.row}>
+              <ThemedView style={styles.row}>
                 <ThemedView style={styles.rowTop}>
                   <Pressable onPress={() => handleOpen(item)} style={styles.rowPressable}>
                     <ThemedView style={styles.rowBody}>
@@ -136,6 +136,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: Spacing.three,
     gap: Spacing.two,
+    backgroundColor: CardAsh,
   },
   rowTop: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two, backgroundColor: 'transparent' },
   rowPressable: { flex: 1 },

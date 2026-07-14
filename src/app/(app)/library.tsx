@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/skeleton';
 import { StoryRowCard } from '@/components/story-row-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { CardAsh, Spacing } from '@/constants/theme';
 import { useProfile } from '@/context/profile-context';
 import { useAllStories } from '@/hooks/use-all-stories';
 import { useCompletedStories } from '@/hooks/use-completed-stories';
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 12,
     paddingVertical: Spacing.three,
-    backgroundColor: 'rgba(128,128,128,0.12)',
+    backgroundColor: CardAsh,
   },
   statNumber: { fontSize: 20 },
   statLabel: { opacity: 0.6, marginTop: 2 },
