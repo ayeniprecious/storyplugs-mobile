@@ -1,6 +1,7 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
+import * as Linking from 'expo-linking';
 import { Link, router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, Share, StyleSheet } from 'react-native';
@@ -105,9 +106,13 @@ export function StoryRowCard({ story, subtitle, progressPercent, onRemove, remov
     setMenuOpen(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const appName = settings.app_name || 'StoryPlugs';
+    const excerpt =
+      story.body.length > 140 ? `${story.body.slice(0, 140)}...` : story.body;
+    const url = Linking.createURL(`story/${story.id}`);
     try {
       const result = await Share.share({
-        message: `"${story.title}" — a story from ${appName}.\n\n${story.body.slice(0, 140)}...`,
+        message: `"${story.title}" — a story from ${appName}.\n\n${excerpt}\n\n${url}`,
+        url,
         title: story.title,
       });
       if (result.action === Share.sharedAction && user?.id) {
@@ -144,10 +149,10 @@ export function StoryRowCard({ story, subtitle, progressPercent, onRemove, remov
               {story.title}
             </ThemedText>
             <ThemedView style={styles.metaRow}>
-              <ThemedText type="small" style={styles.categoryTag}>
+              <ThemedText type="small" numberOfLines={1} style={styles.categoryTag}>
                 {(categoryLabels[story.category] ?? story.category).toUpperCase()}
               </ThemedText>
-              <ThemedText type="small" style={styles.readTime}>
+              <ThemedText type="small" numberOfLines={1} style={styles.readTime}>
                 · {estimateReadMinutes(story.body)} min read
               </ThemedText>
               {story.is_mature && (
@@ -259,11 +264,16 @@ const styles = StyleSheet.create({
   },
   rowPressable: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two, padding: Spacing.two },
   thumb: { width: 64, height: 64, borderRadius: 8 },
-  rowBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent' },
-  categoryTag: { color: '#C01918', fontWeight: '700', fontSize: 11 },
-  readTime: { opacity: 0.6, fontSize: 11 },
-  matureIcon: { marginLeft: 2 },
+  rowBody: { flex: 1, minWidth: 0, gap: 4, backgroundColor: 'transparent' },
+  // Category + read time must never push each other (or the menu button)
+  // out of place -- categoryTag holds its shape (flexShrink: 0, it's short
+  // and fixed by the admin-controlled category list) while readTime is the
+  // one that shrinks/truncates first if a card gets narrow, and the row
+  // itself clips so nothing ever escapes its own bounds.
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4, overflow: 'hidden', backgroundColor: 'transparent' },
+  categoryTag: { color: '#C01918', fontWeight: '700', fontSize: 11, flexShrink: 0 },
+  readTime: { opacity: 0.6, fontSize: 11, flexShrink: 1 },
+  matureIcon: { marginLeft: 2, flexShrink: 0 },
   progressTrack: { height: 4, backgroundColor: 'rgba(128,128,128,0.3)', borderRadius: 2, overflow: 'hidden' },
   progressFill: { height: 4, backgroundColor: '#C01918' },
   progressLabel: { opacity: 0.6, fontSize: 12 },

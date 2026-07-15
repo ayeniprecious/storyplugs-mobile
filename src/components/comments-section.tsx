@@ -68,7 +68,12 @@ export function CommentsSection({ storyId }: { storyId: string }) {
   function renderReply(reply: CommentWithAuthor) {
     return (
       <ThemedView key={reply.id} style={[styles.replyRow, { borderColor: theme.border }]}>
-        <Avatar url={reply.authorAvatarUrl} fallbackLetter={reply.authorName[0] ?? 'U'} size={22} />
+        <Avatar
+          url={reply.authorAvatarUrl}
+          fallbackLetter={reply.authorName[0] ?? 'U'}
+          size={22}
+          premium={reply.authorIsPremium}
+        />
         <ThemedView style={styles.commentBody}>
           <ThemedView style={styles.commentHeaderRow}>
             <ThemedText type="smallBold">{reply.authorName}</ThemedText>
@@ -127,6 +132,7 @@ export function CommentsSection({ storyId }: { storyId: string }) {
                 fallbackLetter={comment.authorName[0] ?? 'U'}
                 size={30}
                 streakCount={comment.authorStreak}
+                premium={comment.authorIsPremium}
               />
               <ThemedView style={styles.commentBody}>
                 <ThemedView style={styles.commentHeaderRow}>

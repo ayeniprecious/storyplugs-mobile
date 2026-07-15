@@ -8,6 +8,7 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { BrandSplash } from "@/components/brand-splash";
 import { AuthProvider, useAuth } from "@/context/auth-context";
@@ -133,10 +134,12 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <CategoriesProvider>
-      <ThemePrefsProvider>
-        <ThemedRoot />
-      </ThemePrefsProvider>
-    </CategoriesProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <CategoriesProvider>
+        <ThemePrefsProvider>
+          <ThemedRoot />
+        </ThemePrefsProvider>
+      </CategoriesProvider>
+    </GestureHandlerRootView>
   );
 }

@@ -1,6 +1,7 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
+import * as Linking from 'expo-linking';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, Share, StyleSheet } from 'react-native';
@@ -166,9 +167,13 @@ export default function StoryPreview() {
   async function handleShare() {
     if (!story) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const excerpt =
+      story.body.length > 140 ? `${story.body.slice(0, 140)}...` : story.body;
+    const url = Linking.createURL(`story/${story.id}`);
     try {
       const result = await Share.share({
-        message: `"${story.title}" — a story from ${appName}.\n\n${story.body.slice(0, 140)}...`,
+        message: `"${story.title}" — a story from ${appName}.\n\n${excerpt}\n\n${url}`,
+        url, // iOS only -- Android/web ignore this and rely on the message text above
         title: story.title,
       });
       if (result.action === Share.sharedAction && user?.id) {

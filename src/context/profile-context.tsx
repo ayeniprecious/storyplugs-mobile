@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 interface ProfileContextValue {
   profile: Profile | null;
   loading: boolean;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: (options?: { silent?: boolean }) => Promise<void>;
   saveNotificationPreferences: (
     types: NotificationContentType[],
     time: string | null
@@ -55,9 +55,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user?.id, fetchProfile]);
 
-  const refreshProfile = useCallback(async () => {
-    if (user?.id) await fetchProfile(user.id);
-  }, [user?.id, fetchProfile]);
+  const refreshProfile = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (user?.id) await fetchProfile(user.id, options);
+    },
+    [user?.id, fetchProfile]
+  );
 
   const saveNotificationPreferences = useCallback(
     async (types: NotificationContentType[], time: string | null) => {

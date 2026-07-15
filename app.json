@@ -7,7 +7,14 @@
     "icon": "./assets/images/icon.png",
     "scheme": "storyplugsmobile",
     "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.storyplugs.app",
+      "buildNumber": "1",
+      "supportsTablet": false
+    },
     "android": {
+      "package": "com.storyplugs.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

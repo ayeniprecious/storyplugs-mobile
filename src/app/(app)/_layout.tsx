@@ -4,6 +4,7 @@ import { Tabs } from "expo-router";
 import { Colors } from "@/constants/theme";
 import { useThemePrefs } from "@/context/theme-prefs-context";
 import { useNotificationResponseHandler } from "@/hooks/use-notification-response";
+import { usePurchasesInit } from "@/hooks/use-purchases-init";
 import { usePushRegistration } from "@/hooks/use-push-registration";
 
 export default function AppTabsLayout() {
@@ -11,6 +12,7 @@ export default function AppTabsLayout() {
   const colors = Colors[resolvedScheme];
   usePushRegistration();
   useNotificationResponseHandler();
+  usePurchasesInit();
 
   return (
     <Tabs

@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
@@ -25,9 +26,11 @@ export default function Profile() {
     useStreakFreeze();
   const theme = useTheme();
   const [signingOut, setSigningOut] = useState(false);
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deletePassword, setDeletePassword] = useState('');
 
   const initial = (profile?.display_name?.[0] ?? user?.email?.[0] ?? 'U').toUpperCase();
   const memberSince = profile?.created_at
@@ -35,22 +38,39 @@ export default function Profile() {
     : '–';
 
   async function handleSignOut() {
+    setConfirmingSignOut(false);
     setSigningOut(true);
     await signOut();
   }
 
-  // react-native-web has no Alert.alert UI at all -- tapping Delete Account
-  // silently did nothing on web. A real Modal works identically everywhere.
+  // react-native-web has no Alert.alert UI at all -- tapping Sign Out or
+  // Delete Account silently did nothing on web. A real Modal works
+  // identically everywhere.
   async function handleDeleteAccount() {
-    setConfirmingDelete(false);
+    if (!user?.email) return;
     setDeleting(true);
     setDeleteError(null);
+
+    // Re-verify the caller's password before destroying their account --
+    // signInWithPassword either confirms it or fails with an auth error, no
+    // separate check needed.
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: deletePassword,
+    });
+    if (authError) {
+      setDeleting(false);
+      setDeleteError('Incorrect password.');
+      return;
+    }
+
     const { error } = await supabase.functions.invoke('delete-account');
     setDeleting(false);
     if (error) {
       setDeleteError(error.message);
       return;
     }
+    setConfirmingDelete(false);
     await signOut();
   }
 
@@ -138,6 +158,26 @@ export default function Profile() {
             </ThemedView>
           </ThemedView>
 
+          <Link href="/reflection" asChild>
+            <Pressable>
+              <LinearGradient
+                colors={['#FFD86B', '#C01918', '#7A1140']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.reflectionBanner}
+              >
+                <Ionicons name="sparkles" size={22} color="#fff" />
+                <ThemedView style={styles.reflectionTextGroup}>
+                  <ThemedText style={styles.reflectionTitle}>Your Reading, Wrapped</ThemedText>
+                  <ThemedText style={styles.reflectionSubtitle}>
+                    {profile?.is_premium ? 'See your recap' : 'A shareable recap — Premium'}
+                  </ThemedText>
+                </ThemedView>
+                <Ionicons name="chevron-forward" size={18} color="#fff" />
+              </LinearGradient>
+            </Pressable>
+          </Link>
+
           <SettingsGroup>
             <SettingsRow
               label="Subscription"
@@ -178,7 +218,7 @@ export default function Profile() {
           <SettingsGroup>
             <SettingsRow
               label={signingOut ? 'Signing Out…' : 'Sign Out'}
-              onPress={handleSignOut}
+              onPress={() => setConfirmingSignOut(true)}
               disabled={signingOut}
               right={signingOut ? <ActivityIndicator size="small" color={theme.text} /> : undefined}
               isLast
@@ -186,17 +226,8 @@ export default function Profile() {
           </SettingsGroup>
 
           <Pressable onPress={() => setConfirmingDelete(true)} disabled={deleting} style={styles.deleteButton}>
-            {deleting ? (
-              <ActivityIndicator color="#ff453a" />
-            ) : (
-              <ThemedText style={styles.deleteButtonText}>Delete Account</ThemedText>
-            )}
+            <ThemedText style={styles.deleteButtonText}>Delete Account</ThemedText>
           </Pressable>
-          {deleteError && (
-            <ThemedText type="small" style={styles.deleteErrorText}>
-              {deleteError}
-            </ThemedText>
-          )}
         </ScrollView>
       </SafeAreaView>
 
@@ -204,28 +235,98 @@ export default function Profile() {
         visible={confirmingDelete}
         transparent
         animationType="fade"
-        onRequestClose={() => setConfirmingDelete(false)}
+        onRequestClose={() => {
+          setConfirmingDelete(false);
+          setDeletePassword('');
+          setDeleteError(null);
+        }}
       >
-        <Pressable style={styles.modalBackdrop} onPress={() => setConfirmingDelete(false)}>
-          <ThemedView type="backgroundElement" style={styles.modalCard}>
-            <ThemedText type="smallBold" style={styles.modalTitle}>
-              Delete Account
-            </ThemedText>
-            <ThemedText type="small" style={styles.modalBody}>
-              This permanently deletes your account and all your data. This cannot be undone.
-            </ThemedText>
-            <ThemedView style={styles.modalActions}>
-              <Pressable
-                style={[styles.modalButton, { borderColor: theme.border }]}
-                onPress={() => setConfirmingDelete(false)}
-              >
-                <ThemedText style={styles.modalCancelText}>Cancel</ThemedText>
-              </Pressable>
-              <Pressable style={[styles.modalButton, styles.modalDeleteButton]} onPress={handleDeleteAccount}>
-                <ThemedText style={styles.modalDeleteText}>Delete</ThemedText>
-              </Pressable>
+        <Pressable
+          style={styles.modalBackdrop}
+          onPress={() => {
+            setConfirmingDelete(false);
+            setDeletePassword('');
+            setDeleteError(null);
+          }}
+        >
+          <Pressable onPress={(e) => e.stopPropagation()}>
+            <ThemedView type="backgroundElement" style={styles.modalCard}>
+              <ThemedText type="smallBold" style={styles.modalTitle}>
+                Delete Account
+              </ThemedText>
+              <ThemedText type="small" style={styles.modalBody}>
+                This permanently deletes your account and all your data. This cannot be undone.
+              </ThemedText>
+              <TextInput
+                value={deletePassword}
+                onChangeText={setDeletePassword}
+                placeholder="Enter your current password"
+                placeholderTextColor={theme.placeholder}
+                secureTextEntry
+                autoCapitalize="none"
+                style={[styles.modalInput, { borderColor: theme.border, color: theme.text }]}
+              />
+              {deleteError && (
+                <ThemedText type="small" style={styles.deleteErrorText}>
+                  {deleteError}
+                </ThemedText>
+              )}
+              <ThemedView style={styles.modalActions}>
+                <Pressable
+                  style={[styles.modalButton, { borderColor: theme.border }]}
+                  onPress={() => {
+                    setConfirmingDelete(false);
+                    setDeletePassword('');
+                    setDeleteError(null);
+                  }}
+                >
+                  <ThemedText style={styles.modalCancelText}>Cancel</ThemedText>
+                </Pressable>
+                <Pressable
+                  style={[styles.modalButton, styles.modalDeleteButton, (!deletePassword || deleting) && styles.modalButtonDisabled]}
+                  onPress={handleDeleteAccount}
+                  disabled={!deletePassword || deleting}
+                >
+                  {deleting ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <ThemedText style={styles.modalDeleteText}>Delete</ThemedText>
+                  )}
+                </Pressable>
+              </ThemedView>
             </ThemedView>
-          </ThemedView>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        visible={confirmingSignOut}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setConfirmingSignOut(false)}
+      >
+        <Pressable style={styles.modalBackdrop} onPress={() => setConfirmingSignOut(false)}>
+          <Pressable onPress={(e) => e.stopPropagation()}>
+            <ThemedView type="backgroundElement" style={styles.modalCard}>
+              <ThemedText type="smallBold" style={styles.modalTitle}>
+                Sign Out
+              </ThemedText>
+              <ThemedText type="small" style={styles.modalBody}>
+                Are you sure you want to sign out?
+              </ThemedText>
+              <ThemedView style={styles.modalActions}>
+                <Pressable
+                  style={[styles.modalButton, { borderColor: theme.border }]}
+                  onPress={() => setConfirmingSignOut(false)}
+                >
+                  <ThemedText style={styles.modalCancelText}>Cancel</ThemedText>
+                </Pressable>
+                <Pressable style={[styles.modalButton, styles.modalDeleteButton]} onPress={handleSignOut}>
+                  <ThemedText style={styles.modalDeleteText}>Sign Out</ThemedText>
+                </Pressable>
+              </ThemedView>
+            </ThemedView>
+          </Pressable>
         </Pressable>
       </Modal>
     </ThemedView>
@@ -284,6 +385,17 @@ const styles = StyleSheet.create({
   statDivider: { width: StyleSheet.hairlineWidth, alignSelf: 'stretch', backgroundColor: 'rgba(128,128,128,0.3)' },
   statValue: { fontSize: 16 },
   statLabel: { opacity: 0.6 },
+  reflectionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderRadius: 12,
+    padding: Spacing.three,
+    marginBottom: Spacing.three,
+  },
+  reflectionTextGroup: { flex: 1, gap: 2, backgroundColor: 'transparent' },
+  reflectionTitle: { color: '#fff', fontWeight: '700' },
+  reflectionSubtitle: { color: '#fff', opacity: 0.85, fontSize: 12 },
   planBadge: {
     paddingHorizontal: Spacing.two,
     paddingVertical: 2,
@@ -312,6 +424,13 @@ const styles = StyleSheet.create({
   },
   modalTitle: { fontSize: 17 },
   modalBody: { opacity: 0.75, lineHeight: 20 },
+  modalInput: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: Spacing.two + 4,
+    paddingVertical: Spacing.two,
+    fontSize: 16,
+  },
   modalActions: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.two, backgroundColor: 'transparent' },
   modalButton: {
     flex: 1,
@@ -320,6 +439,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
     alignItems: 'center',
   },
+  modalButtonDisabled: { opacity: 0.5 },
   modalCancelText: { fontWeight: '600' },
   modalDeleteButton: { backgroundColor: '#ff453a', borderColor: '#ff453a' },
   modalDeleteText: { color: '#fff', fontWeight: '600' },

@@ -9,6 +9,7 @@ export interface CommentWithAuthor extends Comment {
   authorName: string;
   authorAvatarUrl: string | null;
   authorStreak: number;
+  authorIsPremium: boolean;
 }
 
 export interface ThreadedComment extends CommentWithAuthor {
@@ -40,22 +41,24 @@ export function useComments(storyId: string) {
     const userIds = [...new Set(list.map((c) => c.user_id))];
     const profileById = new Map<
       string,
-      { display_name: string | null; avatar_url: string | null; current_streak: number }
+      { display_name: string | null; avatar_url: string | null; current_streak: number; is_premium: boolean }
     >();
     if (userIds.length > 0) {
       // public_commenter_profiles is a view scoped to users who've posted a
       // public comment (see 20260717000000_public_commenter_profiles.sql) —
       // profiles itself only allows reading your own row. current_streak
-      // comes from the 20260718000000 migration.
+      // comes from the 20260718000000 migration, is_premium from
+      // 20260802000000 (drives the avatar ring).
       const { data: profiles } = await supabase
         .from("public_commenter_profiles")
-        .select("id, display_name, avatar_url, current_streak")
+        .select("id, display_name, avatar_url, current_streak, is_premium")
         .in("id", userIds);
       for (const p of profiles ?? []) {
         profileById.set(p.id, {
           display_name: p.display_name,
           avatar_url: p.avatar_url,
           current_streak: p.current_streak,
+          is_premium: p.is_premium,
         });
       }
     }
@@ -71,6 +74,7 @@ export function useComments(storyId: string) {
           authorName: c.user_id === user?.id ? "You" : "Anonymous",
           authorAvatarUrl: null,
           authorStreak: 0,
+          authorIsPremium: false,
         };
       }
       return {
@@ -78,6 +82,7 @@ export function useComments(storyId: string) {
         authorName: profileById.get(c.user_id)?.display_name || "Anonymous",
         authorAvatarUrl: profileById.get(c.user_id)?.avatar_url ?? null,
         authorStreak: profileById.get(c.user_id)?.current_streak ?? 0,
+        authorIsPremium: profileById.get(c.user_id)?.is_premium ?? false,
       };
     });
 
@@ -132,12 +137,13 @@ export function useComments(storyId: string) {
       }
       const inserted = data as Comment;
       const newComment: CommentWithAuthor = inserted.is_anonymous
-        ? { ...inserted, authorName: "You", authorAvatarUrl: null, authorStreak: 0 }
+        ? { ...inserted, authorName: "You", authorAvatarUrl: null, authorStreak: 0, authorIsPremium: false }
         : {
             ...inserted,
             authorName: profile?.display_name || "You",
             authorAvatarUrl: profile?.avatar_url ?? null,
             authorStreak: 0,
+            authorIsPremium: !!profile?.is_premium,
           };
       if (parentId) {
         setComments((prev) =>
@@ -148,7 +154,7 @@ export function useComments(storyId: string) {
       }
       return { error: null };
     },
-    [storyId, user?.id, profile?.display_name, profile?.avatar_url]
+    [storyId, user?.id, profile?.display_name, profile?.avatar_url, profile?.is_premium]
   );
 
   const removeComment = useCallback(async (commentId: string) => {

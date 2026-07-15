@@ -30,10 +30,10 @@ export function FeaturedCard({ story }: { story: Story }) {
         />
         <ThemedView style={styles.content}>
           <ThemedView style={styles.metaRow}>
-            <ThemedText type="small" style={styles.categoryTag}>
+            <ThemedText type="small" numberOfLines={1} style={styles.categoryTag}>
               {(categoryLabels[story.category] ?? story.category).toUpperCase()}
             </ThemedText>
-            <ThemedText type="small" style={styles.readTime}>
+            <ThemedText type="small" numberOfLines={1} style={styles.readTime}>
               · {estimateReadMinutes(story.body)} min read
             </ThemedText>
           </ThemedView>
@@ -56,8 +56,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   content: { padding: 12, gap: 3, backgroundColor: 'transparent' },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent' },
-  categoryTag: { color: '#C01918', fontWeight: '700', fontSize: 11 },
-  readTime: { color: '#e5e5e5', opacity: 0.8, fontSize: 11 },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4, overflow: 'hidden', backgroundColor: 'transparent' },
+  categoryTag: { color: '#C01918', fontWeight: '700', fontSize: 11, flexShrink: 0 },
+  readTime: { color: '#e5e5e5', opacity: 0.8, fontSize: 11, flexShrink: 1 },
   title: { color: '#fff', fontSize: 17, lineHeight: 21, fontWeight: '700' },
 });
