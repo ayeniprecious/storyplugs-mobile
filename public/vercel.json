@@ -2,6 +2,10 @@
   "trailingSlash": false,
   "routes": [
     { "handle": "filesystem" },
+    { "src": "^/story/([^/]+)/read/?$", "dest": "/story/[id]/read.html" },
+    { "src": "^/story/([^/]+)/?$", "dest": "/story/[id]/index.html" },
+    { "src": "^/category/([^/]+)/?$", "dest": "/category/[slug].html" },
+    { "src": "^/folder/([^/]+)/?$", "dest": "/folder/[id].html" },
     { "src": "^/(.*)$", "dest": "/$1.html" }
   ]
 }
