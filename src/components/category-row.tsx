@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 
 import { StoryCard } from '@/components/story-card';
 import { ThemedText } from '@/components/themed-text';
@@ -14,13 +14,21 @@ export function CategoryRow({ label, stories }: { label: string; stories: Story[
       <ThemedText type="smallBold" style={styles.heading}>
         {label}
       </ThemedText>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-        {stories.map((story) => (
-          <View key={story.id} style={styles.cardWrap}>
-            <StoryCard story={story} />
+      <FlatList
+        data={stories}
+        keyExtractor={(story) => story.id}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}
+        initialNumToRender={4}
+        windowSize={3}
+        removeClippedSubviews
+        renderItem={({ item }) => (
+          <View style={styles.cardWrap}>
+            <StoryCard story={item} />
           </View>
-        ))}
-      </ScrollView>
+        )}
+      />
     </ThemedView>
   );
 }

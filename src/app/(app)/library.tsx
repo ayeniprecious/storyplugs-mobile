@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CategoryRow } from '@/components/category-row';
@@ -170,13 +170,17 @@ export default function Library() {
               Stories you open but haven&apos;t finished will show up here.
             </ThemedText>
           ) : (
-            <ScrollView
+            <FlatList
+              data={continuePairs}
+              keyExtractor={(_, i) => String(i)}
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.continueGrid}
-            >
-              {continuePairs.map((pair, i) => (
-                <View key={i} style={styles.continueColumn}>
+              initialNumToRender={3}
+              windowSize={3}
+              removeClippedSubviews
+              renderItem={({ item: pair }) => (
+                <View style={styles.continueColumn}>
                   {pair.map(({ story, progressPercent }) => (
                     <StoryRowCard
                       key={story.id}
@@ -187,8 +191,8 @@ export default function Library() {
                     />
                   ))}
                 </View>
-              ))}
-            </ScrollView>
+              )}
+            />
           )}
 
           <ThemedView style={styles.foldersHeadingRow}>

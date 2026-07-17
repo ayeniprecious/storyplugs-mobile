@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 
 import { StoryCard } from '@/components/story-card';
 import { HomeCardWidth, Spacing } from '@/constants/theme';
@@ -13,13 +13,21 @@ export function RankedPosterRow({ stories }: { stories: Story[] }) {
   if (stories.length === 0) return null;
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-      {stories.map((story, i) => (
-        <View key={story.id} style={styles.cardWrap}>
-          <StoryCard story={story} rank={i + 1} />
+    <FlatList
+      data={stories}
+      keyExtractor={(story) => story.id}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.row}
+      initialNumToRender={4}
+      windowSize={3}
+      removeClippedSubviews
+      renderItem={({ item, index }) => (
+        <View style={styles.cardWrap}>
+          <StoryCard story={item} rank={index + 1} />
         </View>
-      ))}
-    </ScrollView>
+      )}
+    />
   );
 }
 

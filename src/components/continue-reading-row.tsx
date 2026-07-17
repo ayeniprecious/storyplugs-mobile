@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 
 import { StoryCard } from '@/components/story-card';
 import { ThemedText } from '@/components/themed-text';
@@ -19,13 +19,21 @@ export function ContinueReadingRow({ items }: { items: ContinueReadingItem[] }) 
       <ThemedText type="smallBold" style={styles.heading}>
         Continue Reading
       </ThemedText>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-        {items.map(({ story, progressPercent }) => (
-          <View key={story.id} style={styles.cardWrap}>
-            <StoryCard story={story} progressPercent={progressPercent} />
+      <FlatList
+        data={items}
+        keyExtractor={(item) => item.story.id}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}
+        initialNumToRender={4}
+        windowSize={3}
+        removeClippedSubviews
+        renderItem={({ item }) => (
+          <View style={styles.cardWrap}>
+            <StoryCard story={item.story} progressPercent={item.progressPercent} />
           </View>
-        ))}
-      </ScrollView>
+        )}
+      />
     </ThemedView>
   );
 }
