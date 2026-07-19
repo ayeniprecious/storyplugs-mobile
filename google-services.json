@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "249730135045",
+    "project_id": "storyplugs-main",
+    "storage_bucket": "storyplugs-main.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:249730135045:android:831048d92d2bd96d2bd86c",
+        "android_client_info": {
+          "package_name": "com.storyplugs.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNs9CxYito-e9g9BOwk50YH_uXGMVJwBQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

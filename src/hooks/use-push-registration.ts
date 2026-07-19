@@ -17,14 +17,17 @@ Notifications.setNotificationHandler({
 });
 
 // Registers this device for push and saves the Expo push token to the user's profile.
-// Real remote push (app closed / phone locked) only works on a physical device with a
-// development or production build — Expo Go (SDK 53+) and web cannot receive it, so this
-// silently no-ops there instead of throwing.
+// Real remote push (app closed / phone locked) only works on a physical device or an Android
+// emulator with Google Play services (FCM works there) with a development or production build —
+// Expo Go (SDK 53+), web, and the iOS Simulator (a hard platform limitation, unlike Android's
+// emulator) cannot receive it, so this silently no-ops there instead of throwing.
 export function usePushRegistration() {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!user?.id || Platform.OS === "web" || !Device.isDevice) return;
+    const unsupported =
+      Platform.OS === "web" || (Platform.OS === "ios" && !Device.isDevice);
+    if (!user?.id || unsupported) return;
 
     let cancelled = false;
 
