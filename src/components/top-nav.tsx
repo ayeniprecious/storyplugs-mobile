@@ -12,12 +12,10 @@ import { useNotifications } from '@/hooks/use-notifications';
 
 // Home-only top bar (its only call sites are index.tsx and HeroBanner,
 // both Home). No profile avatar anymore -- Profile has its own bottom tab
-// now, so a second entry point up here was redundant. `title` gets its own
-// full-width line below the icon strip, at the exact fontSize/lineHeight
-// (24/30) every other screen in the app uses for its page title -- it used
-// to be crammed inline next to the 44px logo at a smaller size, which read
-// as an afterthought instead of a page title. Left optional so this stays
-// reusable if another screen ever wants a bare icon bar without one.
+// now, so a second entry point up here was redundant. `title` sits inline
+// beside the logo, bold enough to read as a page title rather than a caption.
+// Left optional so this stays reusable if another screen ever wants a bare
+// icon bar without one.
 export function TopNav({ overlay = false, title }: { overlay?: boolean; title?: string }) {
   const { unreadCount } = useNotifications();
   const { settings } = useAppSettings();
@@ -34,12 +32,21 @@ export function TopNav({ overlay = false, title }: { overlay?: boolean; title?: 
       ]}
     >
       <ThemedView style={[styles.bar, overlay && styles.transparentBg]}>
-        <Image
-          source={require('@/assets/images/logo-mark.png')}
-          style={styles.logo}
-          resizeMode="contain"
-          accessibilityLabel={appName}
-        />
+        <ThemedView style={[styles.brandGroup, overlay && styles.transparentBg]}>
+          <Image
+            source={require('@/assets/images/logo-mark.png')}
+            style={styles.logo}
+            resizeMode="contain"
+            accessibilityLabel={appName}
+          />
+          {title && (
+            <ThemedText
+              style={[styles.pageTitle, overlay && styles.pageTitleOverlay, { color: iconColor }]}
+            >
+              {title}
+            </ThemedText>
+          )}
+        </ThemedView>
         <ThemedView style={[styles.actions, overlay && styles.transparentBg]}>
           <Link href="/search" asChild>
             <Pressable style={styles.iconButton} accessibilityLabel="Search">
@@ -60,14 +67,6 @@ export function TopNav({ overlay = false, title }: { overlay?: boolean; title?: 
           </Link>
         </ThemedView>
       </ThemedView>
-      {title && (
-        <ThemedText
-          type="title"
-          style={[styles.pageTitle, overlay && styles.pageTitleOverlay, { color: iconColor }]}
-        >
-          {title}
-        </ThemedText>
-      )}
     </ThemedView>
   );
 }
@@ -84,8 +83,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  logo: { width: 40, height: 40 },
-  pageTitle: { fontSize: 24, lineHeight: 30 },
+  brandGroup: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  logo: { width: 36, height: 36 },
+  pageTitle: { fontSize: 22, lineHeight: 26, fontWeight: '800' },
   pageTitleOverlay: {
     textShadowColor: 'rgba(0,0,0,0.45)',
     textShadowOffset: { width: 0, height: 1 },

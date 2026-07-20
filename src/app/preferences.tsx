@@ -153,9 +153,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: 'rgba(128,128,128,0.14)',
   },
-  // Deliberately not red -- this page already shows a lot of chips, and an all-red
-  // "active" state on top of the rest of the app's red accent reads as too much.
-  chipSelected: { backgroundColor: '#2f6f76' },
+  chipSelected: { backgroundColor: '#54545a' },
   chipTextSelected: { color: '#fff' },
   saveButton: {
     backgroundColor: '#700a0a',

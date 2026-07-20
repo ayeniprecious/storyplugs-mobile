@@ -2,8 +2,8 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, Share, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -136,33 +136,41 @@ export default function StoryPreview() {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
   }, [id]);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function loadProgress() {
-      if (!user?.id || !id) {
-        setProgressLoading(false);
-        return;
-      }
-      setProgressLoading(true);
-      const { data } = await supabase
-        .from('story_views')
-        .select('completed, progress_percent')
-        .eq('user_id', user.id)
-        .eq('story_id', id)
-        .maybeSingle();
+  // Completing (or making progress in) a story happens on read.tsx, a screen
+  // pushed on top of this one -- going back reuses this same mounted instance
+  // rather than remounting it, so a plain mount-only effect would keep showing
+  // whatever progress existed when the preview was first opened. Refetching on
+  // every focus (not just mount) is what makes "Not Started" flip to
+  // "Completed" the moment the user routes back here, with no manual reload.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      async function loadProgress() {
+        if (!user?.id || !id) {
+          setProgressLoading(false);
+          return;
+        }
+        setProgressLoading(true);
+        const { data } = await supabase
+          .from('story_views')
+          .select('completed, progress_percent')
+          .eq('user_id', user.id)
+          .eq('story_id', id)
+          .maybeSingle();
 
-      if (!cancelled) {
-        setPreviewProgress(
-          data ? { completed: data.completed, progressPercent: data.progress_percent } : null
-        );
-        setProgressLoading(false);
+        if (!cancelled) {
+          setPreviewProgress(
+            data ? { completed: data.completed, progressPercent: data.progress_percent } : null
+          );
+          setProgressLoading(false);
+        }
       }
-    }
-    loadProgress();
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id, id]);
+      loadProgress();
+      return () => {
+        cancelled = true;
+      };
+    }, [user?.id, id])
+  );
 
   async function handleShare() {
     if (!story) return;
@@ -278,7 +286,7 @@ export default function StoryPreview() {
           </Pressable>
           <ThemedView style={styles.headerActions}>
             <Pressable onPress={() => setAddingToFolder(true)} hitSlop={8} accessibilityLabel="Add to folder">
-              <Ionicons name="folder-outline" size={22} color={theme.text} />
+              <MaterialIcons name="create-new-folder" size={23} color={theme.text} />
             </Pressable>
             <Pressable onPress={() => setReporting(true)} hitSlop={8} accessibilityLabel="More options">
               <Ionicons name="ellipsis-horizontal" size={22} color={theme.text} />
@@ -566,14 +574,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: Spacing.two,
+    gap: Spacing.two - 2,
     backgroundColor: '#700a0a',
     borderRadius: 14,
     paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.two,
+    minHeight: 56,
   },
-  primaryButtonTextGroup: { alignItems: 'center', backgroundColor: 'transparent' },
-  primaryButtonText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-  primaryButtonSubtext: { color: 'rgba(255,255,255,0.75)', fontSize: 11, marginTop: 1 },
+  primaryButtonTextGroup: { alignItems: 'center', justifyContent: 'center', gap: 2, backgroundColor: 'transparent' },
+  primaryButtonText: { color: '#fff', fontWeight: '700', fontSize: 15, lineHeight: 18 },
+  primaryButtonSubtext: { color: 'rgba(255,255,255,0.75)', fontSize: 11, lineHeight: 13 },
   infoCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -590,7 +600,7 @@ const styles = StyleSheet.create({
   lessonCard: {
     borderRadius: 12,
     padding: Spacing.three,
-    backgroundColor: 'rgba(192, 25, 24,0.08)',
+    backgroundColor: CardAsh,
     gap: Spacing.one,
   },
   lessonHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },

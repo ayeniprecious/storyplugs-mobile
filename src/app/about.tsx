@@ -45,8 +45,9 @@ export default function About() {
 
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText type="small" style={styles.cardText}>
-            A true story, quote, and reflection every day — real moments of hope, kindness, and faith,
-            delivered gently at the time you choose.
+            {appName} is about plugging stories into the world — into hearts, souls, bodies, and minds.
+            Some are fiction, some are real stories submitted by our own readers, but every one carries a
+            quote and a reflection meant to leave you a little better than it found you.
           </ThemedText>
         </ThemedView>
 

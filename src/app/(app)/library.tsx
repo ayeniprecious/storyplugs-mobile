@@ -254,7 +254,8 @@ export default function Library() {
               }
             />
             <SettingsRow label="Saved" href="/library/saved" showChevron />
-            <SettingsRow label="Completed" href="/library/completed" showChevron isLast />
+            <SettingsRow label="Completed" href="/library/completed" showChevron />
+            <SettingsRow label="Community Stories" href="/community-stories" showChevron isLast />
           </SettingsGroup>
 
           {recommended.length > 0 && (

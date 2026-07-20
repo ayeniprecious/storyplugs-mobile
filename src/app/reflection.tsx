@@ -3,10 +3,11 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Share, StyleSheet } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/back-button';
+import { RecapShareModal } from '@/components/recap-share-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CardAsh, Spacing } from '@/constants/theme';
@@ -24,6 +25,7 @@ export default function Reflection() {
   const { settings } = useAppSettings();
   const appName = settings.app_name || 'StoryPlugs';
   const [period, setPeriod] = useState<RecapPeriod>('month');
+  const [shareModalVisible, setShareModalVisible] = useState(false);
   const isPremium = !!profile?.is_premium;
   const { data, loading } = useReadingRecap(period);
 
@@ -33,26 +35,9 @@ export default function Reflection() {
     setPeriod(next);
   }
 
-  async function handleShare() {
-    if (!data) return;
+  function handleOpenShareImage() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const lines = [
-      `My ${data.periodLabel} in Reflection — ${appName}`,
-      `${data.storiesRead} stories read`,
-      `${data.minutesRead} minutes of reading`,
-      `${data.daysActive} days active, longest streak ${data.longestStreak} day${data.longestStreak === 1 ? '' : 's'}`,
-    ];
-    if (data.topCategory) {
-      lines.push(`Mostly reading ${categoryLabels[data.topCategory.slug] ?? data.topCategory.slug}`);
-    }
-    if (data.journalCount > 0) {
-      lines.push(`${data.journalCount} reflection${data.journalCount === 1 ? '' : 's'} written`);
-    }
-    try {
-      await Share.share({ message: lines.join('\n') });
-    } catch {
-      // user cancelled or share sheet unavailable on this platform
-    }
+    setShareModalVisible(true);
   }
 
   const isEmpty = !data || (data.storiesRead === 0 && data.daysActive === 0 && data.journalCount === 0);
@@ -186,13 +171,23 @@ export default function Reflection() {
               </ThemedText>
             )}
 
-            <Pressable style={styles.shareButton} onPress={handleShare}>
-              <Ionicons name="share-outline" size={18} color="#fff" />
+            <Pressable style={styles.shareButton} onPress={handleOpenShareImage}>
+              <Ionicons name="image-outline" size={18} color="#fff" />
               <ThemedText style={styles.shareButtonText}>Share My Recap</ThemedText>
             </Pressable>
           </ScrollView>
         )}
       </SafeAreaView>
+
+      {data && (
+        <RecapShareModal
+          visible={shareModalVisible}
+          onClose={() => setShareModalVisible(false)}
+          data={data}
+          appName={appName}
+          topCategoryLabel={data.topCategory ? categoryLabels[data.topCategory.slug] ?? data.topCategory.slug : null}
+        />
+      )}
     </ThemedView>
   );
 }
@@ -222,8 +217,8 @@ const styles = StyleSheet.create({
     marginTop: Spacing.three,
     backgroundColor: CardAsh,
   },
-  messageTitle: { fontSize: 17, textAlign: 'center' },
-  messageBody: { opacity: 0.7, textAlign: 'center', lineHeight: 20 },
+  messageTitle: { fontSize: 15, textAlign: 'center' },
+  messageBody: { opacity: 0.7, textAlign: 'center', lineHeight: 19, fontSize: 13 },
   messageButton: {
     marginTop: Spacing.two,
     backgroundColor: '#C01918',
@@ -239,8 +234,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.one,
   },
-  coverPeriod: { color: '#fff', opacity: 0.85, fontWeight: '600', letterSpacing: 1 },
-  coverTitle: { color: '#fff', fontSize: 22, fontWeight: '700' },
+  coverPeriod: { color: '#fff', opacity: 0.85, fontWeight: '600', letterSpacing: 1, fontSize: 13 },
+  coverTitle: { color: '#fff', fontSize: 19, fontWeight: '700' },
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   statTile: {
     flexBasis: '47%',
@@ -250,19 +245,19 @@ const styles = StyleSheet.create({
     gap: 2,
     backgroundColor: CardAsh,
   },
-  statValue: { fontSize: 28, fontWeight: '700', color: '#C01918' },
-  statLabel: { opacity: 0.7 },
+  statValue: { fontSize: 22, fontWeight: '700', color: '#C01918' },
+  statLabel: { opacity: 0.7, fontSize: 12 },
   card: {
     borderRadius: 14,
     padding: Spacing.three,
     gap: 4,
     backgroundColor: CardAsh,
   },
-  cardEyebrow: { color: '#C01918', fontWeight: '700', letterSpacing: 0.5 },
-  cardHeading: { fontSize: 17 },
-  cardSub: { opacity: 0.6 },
-  highlightText: { fontStyle: 'italic', lineHeight: 22, marginVertical: 2 },
-  journalHint: { opacity: 0.7, textAlign: 'center' },
+  cardEyebrow: { color: '#C01918', fontWeight: '700', letterSpacing: 0.5, fontSize: 11 },
+  cardHeading: { fontSize: 15 },
+  cardSub: { opacity: 0.6, fontSize: 13 },
+  highlightText: { fontStyle: 'italic', lineHeight: 20, marginVertical: 2, fontSize: 14 },
+  journalHint: { opacity: 0.7, textAlign: 'center', fontSize: 13 },
   shareButton: {
     flexDirection: 'row',
     alignItems: 'center',

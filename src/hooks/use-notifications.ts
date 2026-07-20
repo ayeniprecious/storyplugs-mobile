@@ -26,13 +26,17 @@ export function useNotifications() {
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const refresh = useCallback(async () => {
+  // silent=true skips the loading flag -- used for realtime-triggered refetches
+  // so a mutation this same client already applied optimistically (mark read,
+  // delete, ...) doesn't also flash the skeleton loading state back in when
+  // its own postgres_changes event echoes back a moment later.
+  const refresh = useCallback(async (silent = false) => {
     if (!user?.id) {
       setItems([]);
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (!silent) setLoading(true);
     const { data } = await supabase
       .from("notification_recipients")
       .select("id, read, read_at, created_at, notifications(id, title, body, story_id)")
@@ -96,7 +100,7 @@ export function useNotifications() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notification_recipients", filter: `user_id=eq.${user.id}` },
-        () => refresh()
+        () => refresh(true)
       )
       .subscribe();
 
@@ -105,7 +109,7 @@ export function useNotifications() {
     // row instead, which has no user_id to filter on, so this listens unfiltered.
     const contentChannel = supabase
       .channel(`notifications:${user.id}:${suffix}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, () => refresh())
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, () => refresh(true))
       .subscribe();
 
     return () => {

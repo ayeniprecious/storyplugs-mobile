@@ -149,7 +149,7 @@ export default function Profile() {
             <ThemedView style={styles.statDivider} />
             <ThemedView style={styles.statTile}>
               <Ionicons name="calendar-outline" size={20} color={theme.placeholder} />
-              <ThemedText type="smallBold" style={styles.statValue}>
+              <ThemedText type="smallBold" style={styles.statValueDate}>
                 {memberSince}
               </ThemedText>
               <ThemedText type="small" style={styles.statLabel}>
@@ -384,6 +384,7 @@ const styles = StyleSheet.create({
   statTile: { flex: 1, alignItems: 'center', gap: 2, backgroundColor: 'transparent' },
   statDivider: { width: StyleSheet.hairlineWidth, alignSelf: 'stretch', backgroundColor: 'rgba(128,128,128,0.3)' },
   statValue: { fontSize: 16 },
+  statValueDate: { fontSize: 13 },
   statLabel: { opacity: 0.6 },
   reflectionBanner: {
     flexDirection: 'row',

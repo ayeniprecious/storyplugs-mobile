@@ -53,7 +53,19 @@
         {
           "photosPermission": "StoryPlugs uses your photo library to let you set a profile picture."
         }
-      ]
+      ],
+      "expo-sharing",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "StoryPlugs uses your photo library to save your reading recap image.",
+          "savePhotosPermission": "StoryPlugs uses your photo library to save your reading recap image.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ],
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

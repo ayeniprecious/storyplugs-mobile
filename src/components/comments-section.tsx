@@ -12,7 +12,6 @@ import { CardAsh, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useProfile } from '@/context/profile-context';
 import { useComments, type CommentWithAuthor } from '@/hooks/use-comments';
-import { useAppSettings } from '@/hooks/use-app-settings';
 import { useTheme } from '@/hooks/use-theme';
 
 function timeAgo(iso: string) {
@@ -30,8 +29,6 @@ export function CommentsSection({ storyId }: { storyId: string }) {
   const { user } = useAuth();
   const { profile } = useProfile();
   const theme = useTheme();
-  const { settings } = useAppSettings();
-  const appName = settings.app_name || 'StoryPlugs';
   const { comments, loading, posting, error, addComment, removeComment } = useComments(storyId);
   const [draft, setDraft] = useState('');
   const [reportCommentId, setReportCommentId] = useState<string | null>(null);
@@ -77,10 +74,12 @@ export function CommentsSection({ storyId }: { storyId: string }) {
         <ThemedView style={styles.commentBody}>
           <ThemedView style={styles.commentHeaderRow}>
             <ThemedText type="smallBold">{reply.authorName}</ThemedText>
-            <ThemedView style={styles.officialBadge}>
-              <Ionicons name="checkmark-circle" size={9} color="#fff" />
-              <ThemedText style={styles.officialBadgeText}>Official Reply</ThemedText>
-            </ThemedView>
+            {reply.authorIsOfficial && (
+              <ThemedView style={styles.officialBadge}>
+                <Ionicons name="checkmark-circle" size={9} color="#fff" />
+                <ThemedText style={styles.officialBadgeText}>Official Reply</ThemedText>
+              </ThemedView>
+            )}
             <ThemedText type="small" style={styles.commentTime}>
               {timeAgo(reply.created_at)}
             </ThemedText>
@@ -103,16 +102,25 @@ export function CommentsSection({ storyId }: { storyId: string }) {
       </ThemedText>
 
       <ThemedView style={styles.inputRow}>
+        <Avatar
+          url={profile?.avatar_url}
+          fallbackLetter={(profile?.display_name?.[0] ?? user?.email?.[0] ?? 'U').toUpperCase()}
+          size={30}
+          premium={profile?.is_premium}
+        />
         <TextInput
           value={draft}
           onChangeText={setDraft}
-          placeholder="Share your thoughts…"
+          placeholder="Write a comment…"
           placeholderTextColor={theme.placeholder}
-          style={[styles.input, { borderColor: theme.border, color: theme.text }]}
-          multiline
+          style={[styles.input, { color: theme.text }]}
         />
-        <Pressable style={styles.postButton} onPress={handlePost} disabled={posting || !draft.trim()}>
-          {posting ? <ActivityIndicator color="#fff" size="small" /> : <Ionicons name="send" size={14} color="#fff" />}
+        <Pressable onPress={handlePost} disabled={posting || !draft.trim()} hitSlop={8}>
+          {posting ? (
+            <ActivityIndicator color="#C01918" size="small" />
+          ) : (
+            <ThemedText style={[styles.postText, !draft.trim() && styles.postTextDisabled]}>Post</ThemedText>
+          )}
         </Pressable>
       </ThemedView>
       {error && <ThemedText style={styles.error}>{error}</ThemedText>}
@@ -167,20 +175,21 @@ export function CommentsSection({ storyId }: { storyId: string }) {
                 <TextInput
                   value={replyDraft}
                   onChangeText={setReplyDraft}
-                  placeholder={`Reply as ${appName}…`}
+                  placeholder="Write a reply…"
                   placeholderTextColor={theme.placeholder}
-                  style={[styles.input, { borderColor: theme.border, color: theme.text }]}
-                  multiline
+                  style={[styles.input, { color: theme.text }]}
                 />
                 <Pressable
-                  style={styles.postButton}
                   onPress={() => handleReplySubmit(comment.id)}
                   disabled={posting || !replyDraft.trim()}
+                  hitSlop={8}
                 >
                   {posting ? (
-                    <ActivityIndicator color="#fff" size="small" />
+                    <ActivityIndicator color="#C01918" size="small" />
                   ) : (
-                    <Ionicons name="send" size={14} color="#fff" />
+                    <ThemedText style={[styles.postText, !replyDraft.trim() && styles.postTextDisabled]}>
+                      Post
+                    </ThemedText>
                   )}
                 </Pressable>
               </ThemedView>
@@ -211,28 +220,18 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     gap: Spacing.two,
-    alignItems: 'flex-end',
-    backgroundColor: CardAsh,
-    borderRadius: 14,
-    padding: Spacing.two,
+    alignItems: 'center',
   },
   input: {
     flex: 1,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: Spacing.two + 2,
-    paddingVertical: Spacing.one + 2,
-    fontSize: 16,
-    maxHeight: 70,
+    borderRadius: 22,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two - 2,
+    fontSize: 15,
+    backgroundColor: CardAsh,
   },
-  postButton: {
-    backgroundColor: '#C01918',
-    borderRadius: 15,
-    width: 30,
-    height: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  postText: { color: '#C01918', fontWeight: '700', fontSize: 15 },
+  postTextDisabled: { opacity: 0.35 },
   error: { color: '#ff453a', fontSize: 13 },
   emptyHint: { opacity: 0.6, marginTop: Spacing.two },
   // Each top-level comment (plus its replies) sits in its own ash-toned

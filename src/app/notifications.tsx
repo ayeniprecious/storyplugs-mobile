@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-import { router } from 'expo-router';
-import { FlatList, Pressable, StyleSheet } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { FlatList, Modal, Pressable, StyleSheet } from 'react-native';
 // The classic (Animated-based) Swipeable from the package root invokes
 // renderLeftActions/renderRightActions outside React's render pass on web,
 // which throws "Invalid hook call" for any child that isn't a completely
@@ -15,8 +15,7 @@ import { RankedPosterRow } from '@/components/ranked-poster-row';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
-import { useThemePrefs } from '@/context/theme-prefs-context';
+import { CardAsh, Spacing } from '@/constants/theme';
 import { useNotifications, type NotificationItem } from '@/hooks/use-notifications';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -35,23 +34,38 @@ function timeAgo(iso: string) {
 // swiping it open by itself must never delete anything.
 function DeleteAction({ onPress }: { onPress: () => void }) {
   return (
-    <Pressable style={styles.deleteAction} onPress={onPress}>
-      <Ionicons name="trash-outline" size={20} color="#fff" />
-    </Pressable>
+    <ThemedView style={styles.deleteActionWrap}>
+      <Pressable style={styles.deleteAction} onPress={onPress}>
+        <Ionicons name="trash-outline" size={18} color="#fff" />
+      </Pressable>
+    </ThemedView>
   );
 }
 
 export default function Notifications() {
-  const { items, loading, unreadCount, markAsRead, markAllAsRead, remove, clearAll } = useNotifications();
+  const { items, loading, markAsRead, markAllAsRead, remove, clearAll } = useNotifications();
   const theme = useTheme();
-  const { resolvedScheme } = useThemePrefs();
-  const blurTint = resolvedScheme === 'dark' ? 'dark' : 'light';
+  const [confirmingClear, setConfirmingClear] = useState(false);
+
+  // Opening the inbox marks everything read, same as most mail/notification
+  // apps -- no separate "mark all read" action needed, and it re-fires each
+  // time this screen regains focus, not just on first mount.
+  useFocusEffect(
+    useCallback(() => {
+      markAllAsRead();
+    }, [markAllAsRead])
+  );
 
   function handleOpen(item: NotificationItem) {
     if (!item.read) markAsRead(item.id);
     if (item.notification.story_id) {
       router.push({ pathname: '/story/[id]', params: { id: item.notification.story_id } });
     }
+  }
+
+  function handleClearAll() {
+    setConfirmingClear(false);
+    clearAll();
   }
 
   return (
@@ -65,12 +79,7 @@ export default function Notifications() {
         </ThemedView>
 
         <ThemedView style={styles.actionsRow}>
-          <Pressable onPress={markAllAsRead} disabled={unreadCount === 0}>
-            <ThemedText type="small" style={unreadCount === 0 ? styles.actionDisabled : styles.action}>
-              Mark all read
-            </ThemedText>
-          </Pressable>
-          <Pressable onPress={clearAll} disabled={items.length === 0}>
+          <Pressable onPress={() => setConfirmingClear(true)} disabled={items.length === 0}>
             <ThemedText type="small" style={items.length === 0 ? styles.actionDisabled : styles.action}>
               Clear all
             </ThemedText>
@@ -110,11 +119,7 @@ export default function Notifications() {
                 overshootLeft={false}
                 overshootRight={false}
               >
-                <BlurView
-                  intensity={40}
-                  tint={blurTint}
-                  style={[styles.row, { borderColor: theme.border }]}
-                >
+                <ThemedView style={[styles.row, { borderColor: theme.border }]}>
                   <Pressable onPress={() => handleOpen(item)}>
                     <ThemedView style={styles.rowBody}>
                       <ThemedView style={styles.rowHeaderLine}>
@@ -138,12 +143,43 @@ export default function Notifications() {
                       <RankedPosterRow stories={item.stories} />
                     </ThemedView>
                   )}
-                </BlurView>
+                </ThemedView>
               </Swipeable>
             )}
           />
         )}
       </SafeAreaView>
+
+      <Modal
+        visible={confirmingClear}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setConfirmingClear(false)}
+      >
+        <Pressable style={styles.modalBackdrop} onPress={() => setConfirmingClear(false)}>
+          <Pressable onPress={(e) => e.stopPropagation()}>
+            <ThemedView type="backgroundElement" style={styles.modalCard}>
+              <ThemedText type="smallBold" style={styles.modalTitle}>
+                Clear all notifications?
+              </ThemedText>
+              <ThemedText type="small" style={styles.modalBody}>
+                This removes every notification from your inbox. This can&apos;t be undone.
+              </ThemedText>
+              <ThemedView style={styles.modalActions}>
+                <Pressable
+                  style={[styles.modalButton, { borderColor: theme.border }]}
+                  onPress={() => setConfirmingClear(false)}
+                >
+                  <ThemedText style={styles.modalCancelText}>Cancel</ThemedText>
+                </Pressable>
+                <Pressable style={[styles.modalButton, styles.modalDeleteButton]} onPress={handleClearAll}>
+                  <ThemedText style={styles.modalDeleteText}>Clear All</ThemedText>
+                </Pressable>
+              </ThemedView>
+            </ThemedView>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ThemedView>
   );
 }
@@ -153,7 +189,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, paddingHorizontal: Spacing.two + 4, paddingTop: Spacing.three },
   header: { gap: Spacing.two, marginBottom: Spacing.two },
   title: { fontSize: 24, lineHeight: 30 },
-  actionsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: Spacing.three },
+  actionsRow: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: Spacing.three },
   action: { color: '#C01918' },
   actionDisabled: { opacity: 0.3 },
   emptyHint: { opacity: 0.6, marginTop: Spacing.four },
@@ -168,6 +204,7 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     gap: Spacing.two,
     overflow: 'hidden',
+    backgroundColor: CardAsh,
   },
   rowBody: { gap: 4, backgroundColor: 'transparent' },
   posterRowWrap: { marginLeft: 13, backgroundColor: 'transparent' },
@@ -176,12 +213,45 @@ const styles = StyleSheet.create({
   // Lines up with the title text, which starts after the 7px dot + 6px gap in rowHeaderLine.
   rowText: { opacity: 0.75, marginLeft: 13 },
   rowTime: { opacity: 0.5, marginLeft: 13 },
-  deleteAction: {
+  deleteActionWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
     width: 80,
+    backgroundColor: 'transparent',
+  },
+  deleteAction: {
+    width: 48,
+    height: 48,
     borderRadius: 12,
-    marginVertical: 2,
     backgroundColor: '#C01918',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.four,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: 14,
+    padding: Spacing.three,
+    gap: Spacing.two,
+  },
+  modalTitle: { fontSize: 17 },
+  modalBody: { opacity: 0.75, lineHeight: 20 },
+  modalActions: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.two, backgroundColor: 'transparent' },
+  modalButton: {
+    flex: 1,
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingVertical: Spacing.two,
+    alignItems: 'center',
+  },
+  modalCancelText: { fontWeight: '600' },
+  modalDeleteButton: { backgroundColor: '#ff453a', borderColor: '#ff453a' },
+  modalDeleteText: { color: '#fff', fontWeight: '600' },
 });

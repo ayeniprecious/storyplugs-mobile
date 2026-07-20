@@ -9,8 +9,8 @@ import { Spacing } from '@/constants/theme';
 const FEATURES: { icon: keyof typeof Ionicons.glyphMap; title: string; blurb: string }[] = [
   {
     icon: 'book-outline',
-    title: 'A true story every day',
-    blurb: 'Real moments of hope, kindness, and faith.',
+    title: 'A story every day',
+    blurb: 'Moments of hope, kindness, and faith.',
   },
   {
     icon: 'sparkles-outline',
@@ -34,7 +34,7 @@ export default function Welcome() {
             style={styles.logoMark}
             resizeMode="contain"
           />
-          <Text style={styles.tagline}>Your daily emotional vitamin</Text>
+          <Text style={styles.tagline}>Stories that prove humanity isn&apos;t lost.</Text>
         </View>
 
         <View style={styles.featureList}>

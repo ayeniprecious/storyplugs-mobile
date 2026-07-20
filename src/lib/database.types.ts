@@ -220,3 +220,22 @@ export interface StoryFolderItem {
   story_id: string;
   added_at: string;
 }
+
+// 20260820000000_story_submissions.sql — premium users' own submitted stories,
+// reviewed by admins independently of the main admin-authored stories table.
+export type StorySubmissionStatus = "pending" | "approved" | "rejected";
+
+export interface StorySubmission {
+  id: string;
+  user_id: string;
+  author_name: string;
+  title: string;
+  body: string;
+  category: string | null;
+  status: StorySubmissionStatus;
+  is_visible: boolean;
+  admin_note: string | null;
+  reviewed_by_admin_id: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+}

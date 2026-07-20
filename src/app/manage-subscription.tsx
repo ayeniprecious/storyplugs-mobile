@@ -22,6 +22,8 @@ const FEATURES = [
   { label: 'Offline Downloads', description: 'Save stories to read anytime, even without a signal.' },
   { label: 'Mood-Matched Picks', description: 'Get story picks matched to how you\'re feeling.' },
   { label: 'Comment Replies', description: 'Reply to other readers in the comments.' },
+  { label: 'Year in Reflection', description: 'A shareable, Wrapped-style recap of your reading year.' },
+  { label: 'Submit Your Own Stories', description: 'Share a real story of your own for our team to review and publish.' },
 ];
 
 const FALLBACK_MANAGEMENT_URL =

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "@/context/auth-context";
 import { useProfile } from "@/context/profile-context";
+import { OFFICIAL_ACCOUNT_EMAIL } from "@/constants/official-account";
 import type { Comment } from "@/lib/database.types";
 import { supabase } from "@/lib/supabase";
 
@@ -10,6 +11,7 @@ export interface CommentWithAuthor extends Comment {
   authorAvatarUrl: string | null;
   authorStreak: number;
   authorIsPremium: boolean;
+  authorIsOfficial: boolean;
 }
 
 export interface ThreadedComment extends CommentWithAuthor {
@@ -41,17 +43,25 @@ export function useComments(storyId: string) {
     const userIds = [...new Set(list.map((c) => c.user_id))];
     const profileById = new Map<
       string,
-      { display_name: string | null; avatar_url: string | null; current_streak: number; is_premium: boolean }
+      {
+        display_name: string | null;
+        avatar_url: string | null;
+        current_streak: number;
+        is_premium: boolean;
+        is_official_account: boolean;
+      }
     >();
     if (userIds.length > 0) {
       // public_commenter_profiles is a view scoped to users who've posted a
       // public comment (see 20260717000000_public_commenter_profiles.sql) —
       // profiles itself only allows reading your own row. current_streak
       // comes from the 20260718000000 migration, is_premium from
-      // 20260802000000 (drives the avatar ring).
+      // 20260802000000 (drives the avatar ring), is_official_account from
+      // 20260821000000 (drives the "Official Reply" badge — only the real
+      // support account gets it, not every premium user who replies).
       const { data: profiles } = await supabase
         .from("public_commenter_profiles")
-        .select("id, display_name, avatar_url, current_streak, is_premium")
+        .select("id, display_name, avatar_url, current_streak, is_premium, is_official_account")
         .in("id", userIds);
       for (const p of profiles ?? []) {
         profileById.set(p.id, {
@@ -59,6 +69,7 @@ export function useComments(storyId: string) {
           avatar_url: p.avatar_url,
           current_streak: p.current_streak,
           is_premium: p.is_premium,
+          is_official_account: p.is_official_account,
         });
       }
     }
@@ -75,6 +86,7 @@ export function useComments(storyId: string) {
           authorAvatarUrl: null,
           authorStreak: 0,
           authorIsPremium: false,
+          authorIsOfficial: false,
         };
       }
       return {
@@ -83,6 +95,7 @@ export function useComments(storyId: string) {
         authorAvatarUrl: profileById.get(c.user_id)?.avatar_url ?? null,
         authorStreak: profileById.get(c.user_id)?.current_streak ?? 0,
         authorIsPremium: profileById.get(c.user_id)?.is_premium ?? false,
+        authorIsOfficial: profileById.get(c.user_id)?.is_official_account ?? false,
       };
     });
 
@@ -137,13 +150,21 @@ export function useComments(storyId: string) {
       }
       const inserted = data as Comment;
       const newComment: CommentWithAuthor = inserted.is_anonymous
-        ? { ...inserted, authorName: "You", authorAvatarUrl: null, authorStreak: 0, authorIsPremium: false }
+        ? {
+            ...inserted,
+            authorName: "You",
+            authorAvatarUrl: null,
+            authorStreak: 0,
+            authorIsPremium: false,
+            authorIsOfficial: false,
+          }
         : {
             ...inserted,
             authorName: profile?.display_name || "You",
             authorAvatarUrl: profile?.avatar_url ?? null,
             authorStreak: 0,
             authorIsPremium: !!profile?.is_premium,
+            authorIsOfficial: user?.email === OFFICIAL_ACCOUNT_EMAIL,
           };
       if (parentId) {
         setComments((prev) =>
@@ -154,7 +175,7 @@ export function useComments(storyId: string) {
       }
       return { error: null };
     },
-    [storyId, user?.id, profile?.display_name, profile?.avatar_url, profile?.is_premium]
+    [storyId, user?.id, user?.email, profile?.display_name, profile?.avatar_url, profile?.is_premium]
   );
 
   const removeComment = useCallback(async (commentId: string) => {

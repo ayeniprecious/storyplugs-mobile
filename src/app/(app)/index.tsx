@@ -229,6 +229,7 @@ export default function Home() {
         {loading ? (
           <ThemedView style={styles.loadingHero}>
             <TopNav title="Home" />
+            <Skeleton style={styles.heroSkeletonImage} />
             <ThemedView style={styles.heroSkeletonContent}>
               <Skeleton style={styles.heroSkeletonTag} />
               <Skeleton style={styles.heroSkeletonTitle} />
@@ -468,25 +469,28 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
     gap: Spacing.three,
   },
-  loadingHero: { height: 480 },
+  loadingHero: { marginBottom: Spacing.three },
+  heroSkeletonImage: {
+    height: 190,
+    borderRadius: 20,
+    marginHorizontal: Spacing.two + 4,
+  },
   heroSkeletonContent: {
-    flex: 1,
-    justifyContent: "flex-end",
     paddingHorizontal: Spacing.two + 4,
-    paddingBottom: Spacing.three,
+    paddingTop: Spacing.two,
     gap: 8,
     backgroundColor: "transparent",
   },
-  heroSkeletonTag: { width: 140, height: 20, borderRadius: 4 },
-  heroSkeletonTitle: { width: "80%", height: 28, borderRadius: 6 },
-  heroSkeletonExcerpt: { width: "95%", height: 16, borderRadius: 4 },
+  heroSkeletonTag: { width: 140, height: 16, borderRadius: 4 },
+  heroSkeletonTitle: { width: "80%", height: 24, borderRadius: 6 },
+  heroSkeletonExcerpt: { width: "95%", height: 15, borderRadius: 4 },
   heroSkeletonButtonRow: {
     flexDirection: "row",
     gap: Spacing.two,
     marginTop: Spacing.two,
     backgroundColor: "transparent",
   },
-  heroSkeletonButton: { width: 140, height: 40, borderRadius: 10 },
+  heroSkeletonButton: { flex: 1, height: 40, borderRadius: 12 },
   greetingRow: {
     flexDirection: "row",
     alignItems: "center",
