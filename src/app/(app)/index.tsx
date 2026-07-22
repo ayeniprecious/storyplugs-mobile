@@ -2,12 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useFocusEffect, useIsFocused } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Animated,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-} from "react-native";
+import { Animated, Pressable, RefreshControl, StyleSheet } from "react-native";
 
 import { CategoryRow } from "@/components/category-row";
 import { ContinueReadingRow } from "@/components/continue-reading-row";
@@ -122,7 +117,10 @@ export default function Home() {
     [byCategory, interests, lengthPref, story?.id],
   );
 
-  const allStories = useMemo(() => Object.values(byCategory).flat(), [byCategory]);
+  const allStories = useMemo(
+    () => Object.values(byCategory).flat(),
+    [byCategory],
+  );
 
   // Same is_featured -> is_pinned -> most-recent fallback as Search's
   // FeaturedCarousel, so the carousel is never empty before an admin curates
@@ -133,7 +131,11 @@ export default function Home() {
     const pinned = allStories.filter((s) => s.is_pinned);
     if (pinned.length > 0) return pinned;
     return [...allStories]
-      .sort((a, b) => new Date(b.published_at ?? 0).getTime() - new Date(a.published_at ?? 0).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.published_at ?? 0).getTime() -
+          new Date(a.published_at ?? 0).getTime(),
+      )
       .slice(0, 5);
   }, [allStories]);
 
@@ -156,7 +158,13 @@ export default function Home() {
       return;
     }
     setMoodPicks(
-      buildMoodPicks(allStories, moodOption, todaysCategories, story?.id ? [story.id] : [], 5),
+      buildMoodPicks(
+        allStories,
+        moodOption,
+        todaysCategories,
+        story?.id ? [story.id] : [],
+        5,
+      ),
     );
   }, [moodOption, todaysCategories, allStories, story?.id, reshuffleCount]);
 
@@ -209,7 +217,7 @@ export default function Home() {
     useCallback(() => {
       refreshContinue();
       refreshStreak();
-    }, [refreshContinue, refreshStreak])
+    }, [refreshContinue, refreshStreak]),
   );
 
   return (
@@ -277,7 +285,7 @@ export default function Home() {
           <ThemedView style={styles.greetingRow}>
             <ThemedText style={styles.greetingTitle}>
               {getTimeOfDayGreeting()}
-              {displayName ? `, ${displayName}` : ""}
+              {displayName ? `, ${displayName}` : ""} 👋
             </ThemedText>
             {streakLoading ? (
               <Skeleton style={styles.streakSkeleton} />
@@ -306,17 +314,20 @@ export default function Home() {
           {quote && (
             <Animated.View {...registerRow("quote", "body")}>
               <ThemedView type="backgroundElement" style={styles.quoteCard}>
-                <ThemedText type="small" style={styles.sectionLabel}>
-                  Quote of the Day
-                </ThemedText>
-                <ThemedText style={styles.quoteText}>
-                  &ldquo;{quote.text}&rdquo;
-                </ThemedText>
-                {quote.author && (
-                  <ThemedText type="small" style={styles.quoteAuthor}>
-                    — {quote.author}
+                <ThemedText style={styles.quoteGlyph}>&ldquo;</ThemedText>
+                <ThemedView style={styles.quoteBody}>
+                  <ThemedText type="small" style={styles.sectionLabel}>
+                    Quote of the Day
                   </ThemedText>
-                )}
+                  <ThemedText style={styles.quoteText}>
+                    &ldquo;{quote.text}&rdquo;
+                  </ThemedText>
+                  {quote.author && (
+                    <ThemedText type="small" style={styles.quoteAuthor}>
+                      — {quote.author}
+                    </ThemedText>
+                  )}
+                </ThemedView>
               </ThemedView>
             </Animated.View>
           )}
@@ -324,12 +335,20 @@ export default function Home() {
           {reflection && (
             <Animated.View {...registerRow("reflection", "body")}>
               <ThemedView type="backgroundElement" style={styles.quoteCard}>
-                <ThemedText type="small" style={styles.sectionLabel}>
-                  Reflection of the Day
-                </ThemedText>
-                <ThemedText style={styles.quoteText}>
-                  {reflection.text}
-                </ThemedText>
+                <Ionicons
+                  name="sparkles-outline"
+                  size={22}
+                  color="#8a8a8e"
+                  style={styles.reflectionGlyph}
+                />
+                <ThemedView style={styles.quoteBody}>
+                  <ThemedText type="small" style={styles.sectionLabel}>
+                    Reflection of the Day
+                  </ThemedText>
+                  <ThemedText style={styles.quoteText}>
+                    {reflection.text}
+                  </ThemedText>
+                </ThemedView>
               </ThemedView>
             </Animated.View>
           )}
@@ -431,7 +450,10 @@ export default function Home() {
             </>
           ) : (
             orderedCategories.map((category) => (
-              <Animated.View key={category} {...registerRow(`category-${category}`, "body")}>
+              <Animated.View
+                key={category}
+                {...registerRow(`category-${category}`, "body")}
+              >
                 <CategoryRow
                   label={categoryLabels[category] ?? category}
                   stories={byCategory[category] ?? []}
@@ -537,8 +559,29 @@ const styles = StyleSheet.create({
   },
   moodBannerText: { color: "#C01918", fontWeight: "500" },
   centerBlock: { marginTop: Spacing.five },
-  quoteCard: { borderRadius: 14, padding: Spacing.two + 4, gap: 6 },
-  sectionLabel: { opacity: 0.6, fontSize: 11, textTransform: "uppercase" },
+  quoteCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: Spacing.two,
+    borderRadius: 14,
+    borderLeftWidth: 4,
+    borderLeftColor: "#C01918",
+    padding: Spacing.two + 4,
+  },
+  quoteGlyph: {
+    fontSize: 32,
+    lineHeight: 32,
+    opacity: 0.35,
+    fontWeight: "800",
+  },
+  reflectionGlyph: { marginTop: 2, opacity: 0.6 },
+  quoteBody: { flex: 1, gap: 6, backgroundColor: "transparent" },
+  sectionLabel: {
+    opacity: 1,
+    fontSize: 11,
+    textTransform: "uppercase",
+    color: "#C01918",
+  },
   quoteText: { fontSize: 15, lineHeight: 21, fontStyle: "italic" },
   quoteAuthor: { opacity: 0.6, textAlign: "right", fontSize: 12 },
   emptyCard: {

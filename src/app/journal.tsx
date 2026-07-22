@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -77,17 +78,20 @@ export default function Journal() {
             renderItem={({ item }) => (
               <Pressable onPress={() => openEntry(item)}>
                 <ThemedView type="backgroundElement" style={styles.card}>
-                  <ThemedText type="smallBold">{item.story_title}</ThemedText>
-                  <ThemedText type="small" style={styles.cardDate}>
-                    {new Date(item.created_at).toLocaleDateString(undefined, {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </ThemedText>
-                  <ThemedText type="small" style={styles.cardPreview} numberOfLines={2}>
-                    {item.entry}
-                  </ThemedText>
+                  <Ionicons name="create-outline" size={22} color="#8a8a8e" style={styles.cardGlyph} />
+                  <ThemedView style={styles.cardBody}>
+                    <ThemedText type="smallBold">{item.story_title}</ThemedText>
+                    <ThemedText type="small" style={styles.cardDate}>
+                      {new Date(item.created_at).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </ThemedText>
+                    <ThemedText type="small" style={styles.cardPreview} numberOfLines={2}>
+                      {item.entry}
+                    </ThemedText>
+                  </ThemedView>
                 </ThemedView>
               </Pressable>
             )}
@@ -146,7 +150,17 @@ const styles = StyleSheet.create({
   centerFill: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.four },
   emptyText: { textAlign: 'center', opacity: 0.6 },
   listContent: { gap: Spacing.two, paddingBottom: Spacing.six },
-  card: { borderRadius: 12, padding: Spacing.three, gap: 4 },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.two,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#C01918',
+    padding: Spacing.three,
+  },
+  cardGlyph: { marginTop: 2 },
+  cardBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
   cardDate: { opacity: 0.5 },
   cardPreview: { opacity: 0.8, marginTop: 2 },
   modalBackdrop: {

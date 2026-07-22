@@ -7,6 +7,7 @@ import { PremiumLockModal } from '@/components/premium-lock-modal';
 import { ReportModal } from '@/components/report-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { VerifiedBadge } from '@/components/verified-badge';
 import { OFFICIAL_ACCOUNT_EMAIL } from '@/constants/official-account';
 import { CardAsh, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
@@ -74,12 +75,7 @@ export function CommentsSection({ storyId }: { storyId: string }) {
         <ThemedView style={styles.commentBody}>
           <ThemedView style={styles.commentHeaderRow}>
             <ThemedText type="smallBold">{reply.authorName}</ThemedText>
-            {reply.authorIsOfficial && (
-              <ThemedView style={styles.officialBadge}>
-                <Ionicons name="checkmark-circle" size={9} color="#fff" />
-                <ThemedText style={styles.officialBadgeText}>Official Reply</ThemedText>
-              </ThemedView>
-            )}
+            {(reply.authorIsOfficial || reply.authorIsPremium) && <VerifiedBadge size={12} />}
             <ThemedText type="small" style={styles.commentTime}>
               {timeAgo(reply.created_at)}
             </ThemedText>
@@ -145,6 +141,7 @@ export function CommentsSection({ storyId }: { storyId: string }) {
               <ThemedView style={styles.commentBody}>
                 <ThemedView style={styles.commentHeaderRow}>
                   <ThemedText type="smallBold">{comment.authorName}</ThemedText>
+                  {(comment.authorIsOfficial || comment.authorIsPremium) && <VerifiedBadge size={13} />}
                   <ThemedText type="small" style={styles.commentTime}>
                     {timeAgo(comment.created_at)}
                   </ThemedText>
@@ -177,7 +174,7 @@ export function CommentsSection({ storyId }: { storyId: string }) {
                   onChangeText={setReplyDraft}
                   placeholder="Write a reply…"
                   placeholderTextColor={theme.placeholder}
-                  style={[styles.input, { color: theme.text }]}
+                  style={[styles.input, styles.replyInput, { color: theme.text, borderColor: theme.border }]}
                 />
                 <Pressable
                   onPress={() => handleReplySubmit(comment.id)}
@@ -227,11 +224,24 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two - 2,
-    fontSize: 15,
+    // 16px is the floor mobile Safari/Chrome won't auto-zoom on focus for --
+    // anything smaller and tapping the field zooms the whole screen in.
+    fontSize: 16,
     backgroundColor: CardAsh,
   },
   postText: { color: '#C01918', fontWeight: '700', fontSize: 15 },
   postTextDisabled: { opacity: 0.35 },
+  // The reply row lives inside a commentThread card that's already CardAsh --
+  // any fill here (even a bordered one) reads as a second box stacked on the
+  // first. A bare bottom-line, no fill and no side borders, is the only
+  // treatment that doesn't look like a repeated background.
+  replyInput: {
+    backgroundColor: 'transparent',
+    borderRadius: 0,
+    borderWidth: 0,
+    borderBottomWidth: 1.5,
+    paddingHorizontal: 2,
+  },
   error: { color: '#ff453a', fontSize: 13 },
   emptyHint: { opacity: 0.6, marginTop: Spacing.two },
   // Each top-level comment (plus its replies) sits in its own ash-toned
@@ -272,14 +282,4 @@ const styles = StyleSheet.create({
   commentText: { fontSize: 14, lineHeight: 20, opacity: 0.9 },
   replyLinkRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2, backgroundColor: 'transparent' },
   replyLink: { color: '#C01918', fontWeight: '600' },
-  officialBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    backgroundColor: '#C01918',
-    borderRadius: 6,
-    paddingHorizontal: 4,
-    paddingVertical: 0,
-  },
-  officialBadgeText: { color: '#fff', fontSize: 9, fontWeight: '700' },
 });

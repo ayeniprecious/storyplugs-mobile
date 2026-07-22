@@ -15,6 +15,7 @@ import { ReportModal } from '@/components/report-modal';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { VerifiedBadge } from '@/components/verified-badge';
 import { CardAsh, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useCategories } from '@/context/categories-context';
@@ -312,7 +313,7 @@ export default function StoryPreview() {
                 <ThemedText type="small" style={styles.brandName} numberOfLines={1}>
                   {appName}
                 </ThemedText>
-                <Ionicons name="checkmark-circle" size={13} color="#C01918" />
+                <VerifiedBadge size={13} />
               </ThemedView>
             </ThemedView>
           </ThemedView>

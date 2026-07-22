@@ -119,7 +119,7 @@ export default function Notifications() {
                 overshootLeft={false}
                 overshootRight={false}
               >
-                <ThemedView style={[styles.row, { borderColor: theme.border }]}>
+                <ThemedView style={styles.row}>
                   <Pressable onPress={() => handleOpen(item)}>
                     <ThemedView style={styles.rowBody}>
                       <ThemedView style={styles.rowHeaderLine}>
@@ -200,7 +200,6 @@ const styles = StyleSheet.create({
   list: { paddingBottom: Spacing.six, gap: Spacing.two },
   row: {
     borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
     padding: Spacing.three,
     gap: Spacing.two,
     overflow: 'hidden',

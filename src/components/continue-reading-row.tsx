@@ -1,4 +1,6 @@
-import { FlatList, StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Link } from 'expo-router';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { StoryCard } from '@/components/story-card';
 import { ThemedText } from '@/components/themed-text';
@@ -16,9 +18,19 @@ export function ContinueReadingRow({ items }: { items: ContinueReadingItem[] }) 
 
   return (
     <ThemedView style={styles.section}>
-      <ThemedText type="smallBold" style={styles.heading}>
-        Continue Reading
-      </ThemedText>
+      <ThemedView style={styles.headingRow}>
+        <ThemedText type="smallBold" style={styles.heading}>
+          Continue Reading
+        </ThemedText>
+        <Link href="/library/continue-reading" asChild>
+          <Pressable style={styles.viewAll} hitSlop={8}>
+            <ThemedText type="small" style={styles.viewAllText}>
+              View all
+            </ThemedText>
+            <Ionicons name="chevron-forward" size={14} color="#C01918" />
+          </Pressable>
+        </Link>
+      </ThemedView>
       <FlatList
         data={items}
         keyExtractor={(item) => item.story.id}
@@ -40,7 +52,15 @@ export function ContinueReadingRow({ items }: { items: ContinueReadingItem[] }) 
 
 const styles = StyleSheet.create({
   section: { gap: Spacing.two, marginBottom: Spacing.two },
+  headingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'transparent',
+  },
   heading: { opacity: 0.85 },
+  viewAll: { flexDirection: 'row', alignItems: 'center', gap: 2, backgroundColor: 'transparent' },
+  viewAllText: { color: '#C01918', fontWeight: '600' },
   row: { gap: Spacing.two },
   cardWrap: { width: HomeCardWidth },
 });
