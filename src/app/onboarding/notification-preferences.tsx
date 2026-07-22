@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   timeChipTextSelected: { color: '#fff', fontWeight: '600', fontSize: 14 },
   error: { color: '#ff453a', marginTop: Spacing.two, fontSize: 14 },
   primaryButton: {
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two,
     alignItems: 'center',

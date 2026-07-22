@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   eyeButton: { position: 'absolute', right: Spacing.three, padding: 4 },
   error: { color: '#ff453a', marginBottom: Spacing.two, fontSize: 14 },
   primaryButton: {
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two,
     alignItems: 'center',

@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   chipSelected: { backgroundColor: '#C01918' },
   chipTextSelected: { color: '#fff', fontWeight: '600' },
   primaryButton: {
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two + 2,
     alignItems: 'center',

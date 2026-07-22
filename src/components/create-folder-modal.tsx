@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   cancelText: { opacity: 0.6, fontWeight: '600' },
   createButton: {
     flex: 1,
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two,
     alignItems: 'center',

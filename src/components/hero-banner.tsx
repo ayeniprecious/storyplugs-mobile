@@ -158,18 +158,22 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start',
     gap: Spacing.two,
     marginTop: Spacing.one,
     backgroundColor: 'transparent',
   },
+  // No flex:1 -- sized to its own content only, pinned to the left, so it
+  // never stretches or drifts on a wider screen the way a flexed button would.
   primaryCta: {
-    flex: 1,
+    alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
     backgroundColor: '#C01918',
     borderRadius: 10,
+    paddingHorizontal: 16,
     paddingVertical: 10,
   },
   primaryCtaText: { color: '#fff', fontWeight: '700', fontSize: 13 },

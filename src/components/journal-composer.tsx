@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   errorText: { color: '#ff453a' },
   saveButton: {
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two,
     alignItems: 'center',

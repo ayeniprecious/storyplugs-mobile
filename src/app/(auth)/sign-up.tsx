@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#C01918' },
   error: { color: '#ff453a', marginBottom: Spacing.two, fontSize: 14 },
   primaryButton: {
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two,
     alignItems: 'center',

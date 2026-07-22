@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   deleteButtonText: { color: '#ff453a', fontWeight: '600' },
   saveButton: {
     flex: 1,
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two,
     alignItems: 'center',

@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   chipSelected: { backgroundColor: '#54545a' },
   chipTextSelected: { color: '#fff' },
   saveButton: {
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two + 2,
     alignItems: 'center',

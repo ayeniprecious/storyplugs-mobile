@@ -15,7 +15,7 @@ import { RankedPosterRow } from '@/components/ranked-poster-row';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { CardAsh, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useNotifications, type NotificationItem } from '@/hooks/use-notifications';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -89,7 +89,7 @@ export default function Notifications() {
         {loading ? (
           <ThemedView style={styles.list}>
             {[0, 1, 2, 3].map((i) => (
-              <ThemedView key={i} style={styles.row}>
+              <ThemedView key={i} type="cardAshSolid" style={styles.row}>
                 <ThemedView style={styles.rowBody}>
                   <Skeleton style={styles.skeletonLineTitle} />
                   <Skeleton style={styles.skeletonLineBody} />
@@ -119,7 +119,7 @@ export default function Notifications() {
                 overshootLeft={false}
                 overshootRight={false}
               >
-                <ThemedView style={styles.row}>
+                <ThemedView type="cardAshSolid" style={styles.row}>
                   <Pressable onPress={() => handleOpen(item)}>
                     <ThemedView style={styles.rowBody}>
                       <ThemedView style={styles.rowHeaderLine}>
@@ -198,12 +198,15 @@ const styles = StyleSheet.create({
   skeletonLineBodyShort: { width: '60%', height: 20, borderRadius: 4 },
   skeletonLineTime: { width: '25%', height: 20, borderRadius: 4 },
   list: { paddingBottom: Spacing.six, gap: Spacing.two },
+  // Opaque (cardAshSolid via the type prop above), not the translucent CardAsh
+  // -- during a swipe, the red DeleteAction sits directly behind this row,
+  // and a translucent fill let it bleed/show through mid-slide instead of
+  // staying fully hidden until the row has actually moved out of the way.
   row: {
     borderRadius: 12,
     padding: Spacing.three,
     gap: Spacing.two,
     overflow: 'hidden',
-    backgroundColor: CardAsh,
   },
   rowBody: { gap: 4, backgroundColor: 'transparent' },
   posterRowWrap: { marginLeft: 13, backgroundColor: 'transparent' },

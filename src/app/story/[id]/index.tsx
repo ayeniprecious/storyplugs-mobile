@@ -443,25 +443,25 @@ export default function StoryPreview() {
 
           {story.daily_lesson && (
             <ThemedView style={styles.lessonCard}>
-              <ThemedView style={styles.lessonHeaderRow}>
-                <Ionicons name="bulb-outline" size={16} color="#C01918" />
-                <ThemedText type="smallBold" style={styles.lessonHeading}>
+              <Ionicons name="bulb-outline" size={22} color="#8a8a8e" style={styles.lessonGlyph} />
+              <ThemedView style={styles.lessonBody}>
+                <ThemedText type="small" style={styles.lessonHeading}>
                   Today&apos;s Lesson
                 </ThemedText>
+                <ThemedText style={styles.lessonText}>{story.daily_lesson}</ThemedText>
               </ThemedView>
-              <ThemedText style={styles.lessonText}>{story.daily_lesson}</ThemedText>
             </ThemedView>
           )}
 
           {story.reflection_question && (
             <ThemedView style={styles.reflectionCard}>
-              <ThemedView style={styles.lessonHeaderRow}>
-                <Ionicons name="help-circle-outline" size={16} color="#C01918" />
-                <ThemedText type="smallBold" style={styles.lessonHeading}>
+              <Ionicons name="sparkles-outline" size={22} color="#8a8a8e" style={styles.lessonGlyph} />
+              <ThemedView style={styles.lessonBody}>
+                <ThemedText type="small" style={styles.lessonHeading}>
                   Reflect
                 </ThemedText>
+                <ThemedText style={styles.reflectionText}>{story.reflection_question}</ThemedText>
               </ThemedView>
-              <ThemedText style={styles.reflectionText}>{story.reflection_question}</ThemedText>
             </ThemedView>
           )}
 
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.two - 2,
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 14,
     paddingHorizontal: Spacing.two,
     paddingVertical: Spacing.two,
@@ -599,19 +599,28 @@ const styles = StyleSheet.create({
   infoLabel: { fontSize: 11, opacity: 0.6 },
   infoSkeleton: { width: 50, height: 15, borderRadius: 4 },
   lessonCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.two,
     borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#C01918',
     padding: Spacing.three,
     backgroundColor: CardAsh,
-    gap: Spacing.one,
   },
-  lessonHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  lessonHeading: { color: '#C01918' },
+  lessonGlyph: { marginTop: 2 },
+  lessonBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
+  lessonHeading: { color: '#C01918', fontSize: 11, textTransform: 'uppercase' },
   lessonText: { fontSize: 15, lineHeight: 22, opacity: 0.9 },
   reflectionCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.two,
     borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#C01918',
     padding: Spacing.three,
     backgroundColor: CardAsh,
-    gap: Spacing.one,
   },
   reflectionText: { fontSize: 15, lineHeight: 22, fontStyle: 'italic', opacity: 0.9 },
   chaptersSection: { gap: Spacing.two, marginTop: Spacing.two },

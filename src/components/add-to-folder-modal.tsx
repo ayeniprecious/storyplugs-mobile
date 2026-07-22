@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   doneButton: {
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 24,
     paddingVertical: Spacing.three,
     alignItems: 'center',

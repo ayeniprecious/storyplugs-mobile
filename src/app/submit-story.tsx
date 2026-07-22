@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   chipTextSelected: { color: '#fff' },
   error: { color: '#ff453a', fontSize: 13 },
   submitButton: {
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two + 2,
     alignItems: 'center',

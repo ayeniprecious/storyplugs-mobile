@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   passwordEyeButton: { position: 'absolute', right: Spacing.three, padding: 4 },
   errorText: { color: '#ff453a', marginBottom: Spacing.two },
   saveButton: {
-    backgroundColor: '#700a0a',
+    backgroundColor: '#C01918',
     borderRadius: 10,
     paddingVertical: Spacing.two + 2,
     alignItems: 'center',
