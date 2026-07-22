@@ -97,14 +97,14 @@ export function HeroBanner({ story }: { story: Story }) {
           <ThemedView style={styles.buttonRow}>
             <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
               <Pressable style={styles.primaryCta}>
-                <Ionicons name="book-outline" size={14} color="#fff" />
+                <Ionicons name="book-outline" size={15} color="#fff" />
                 <ThemedText style={styles.primaryCtaText}>{ctaLabel}</ThemedText>
               </Pressable>
             </Link>
             <Pressable style={styles.secondaryCta} onPress={toggleFavorite}>
               <Ionicons
                 name={isFavorited ? 'bookmark' : 'bookmark-outline'}
-                size={16}
+                size={15}
                 color="#fff"
               />
               <ThemedText style={styles.secondaryCtaText}>{isFavorited ? 'Saved' : 'Save'}</ThemedText>
@@ -165,27 +165,29 @@ const styles = StyleSheet.create({
   },
   // No flex:1 -- sized to its own content only, pinned to the left, so it
   // never stretches or drifts on a wider screen the way a flexed button would.
+  // Padding/radius/font match secondaryCta exactly so the two sit at the same
+  // height side by side instead of looking like two different button sizes.
   primaryCta: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 7,
     backgroundColor: '#C01918',
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    borderRadius: 11,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
   },
-  primaryCtaText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  primaryCtaText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   secondaryCta: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 7,
     backgroundColor: 'rgba(255,255,255,0.14)',
-    borderRadius: 12,
+    borderRadius: 11,
     paddingHorizontal: 18,
-    paddingVertical: 14,
+    paddingVertical: 12,
   },
-  secondaryCtaText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  secondaryCtaText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 });
