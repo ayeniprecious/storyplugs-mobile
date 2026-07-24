@@ -9,7 +9,14 @@ import { useReports } from '@/hooks/use-reports';
 import { useTheme } from '@/hooks/use-theme';
 import type { ReportTargetType } from '@/lib/database.types';
 
-const REASONS = ['Spam', 'Inappropriate content', 'Harassment', 'Something else'];
+const REASONS = [
+  'Spam',
+  'Harassment or abuse',
+  'Threats or violence',
+  'Illegal or unlawful content',
+  'Inappropriate content',
+  'Something else',
+];
 
 interface ReportModalProps {
   visible: boolean;

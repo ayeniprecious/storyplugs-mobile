@@ -165,8 +165,6 @@ export function CommentsSection({ storyId }: { storyId: string }) {
               )}
             </ThemedView>
 
-            {comment.replies.map(renderReply)}
-
             {replyingTo === comment.id && (
               <ThemedView style={[styles.inputRow, styles.replyInputRow]}>
                 <TextInput
@@ -191,6 +189,8 @@ export function CommentsSection({ storyId }: { storyId: string }) {
                 </Pressable>
               </ThemedView>
             )}
+
+            {comment.replies.map(renderReply)}
           </ThemedView>
         ))
       )}
