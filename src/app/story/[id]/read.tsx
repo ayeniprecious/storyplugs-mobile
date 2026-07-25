@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import * as Linking from 'expo-linking';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -38,7 +38,7 @@ import { useStoryReader } from '@/hooks/use-story-reader';
 import { useTheme } from '@/hooks/use-theme';
 import { supabase } from '@/lib/supabase';
 
-const BODY_FONT_SIZE = 16;
+const BODY_FONT_SIZE = 20;
 const TITLE_FONT_SIZE = 28;
 
 export default function StoryRead() {
@@ -85,7 +85,28 @@ export default function StoryRead() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [chapterListOpen, setChapterListOpen] = useState(false);
   const [commentCount, setCommentCount] = useState<number | null>(null);
+  // True for the brief window between flipping the Reader Mode switch and
+  // actually navigating -- gives the toggle time to visibly land "on" before
+  // the screen changes, instead of an instant, easy-to-miss jump.
+  const [enteringReaderMode, setEnteringReaderMode] = useState(false);
   useRecordActivity();
+
+  useEffect(() => {
+    if (!enteringReaderMode) return;
+    const timer = setTimeout(() => enterReaderMode(), 500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enteringReaderMode]);
+
+  // BackButton uses router.back(), which pops to this exact screen instance
+  // rather than remounting it -- so without this, enteringReaderMode would
+  // stay stuck true forever after the first trip into Reader Mode, leaving
+  // the toggle permanently disabled until the whole app was reloaded.
+  useFocusEffect(
+    useCallback(() => {
+      setEnteringReaderMode(false);
+    }, [])
+  );
 
   // Real comment count for the action row -- independent of CommentsSection's
   // own fetch (which only surfaces its count inside its own heading), kept
@@ -248,26 +269,26 @@ export default function StoryRead() {
             )}
           </ThemedView>
           <ThemedView style={styles.topRowActions}>
-            <Pressable onPress={handleFavoriteToggle} hitSlop={8}>
-              <Ionicons name={isFavorited ? 'bookmark' : 'bookmark-outline'} size={20} color="#C01918" />
-            </Pressable>
             <Pressable onPress={() => setMenuOpen(true)} hitSlop={8}>
               <Ionicons name="ellipsis-horizontal" size={20} color="#C01918" />
             </Pressable>
           </ThemedView>
         </ThemedView>
 
-        <ThemedView style={styles.readerModeBar}>
+        <ThemedView style={[styles.readerModeBar, enteringReaderMode && styles.readerModeBarActive]}>
           <ThemedView style={styles.readerModeBarLabel}>
-            <Ionicons name="book-outline" size={16} color={theme.text} />
+            <Ionicons name="reader-outline" size={17} color="#C01918" />
             <ThemedText type="small" style={styles.readerModeBarText}>
-              Reader Mode
+              {enteringReaderMode ? 'Opening Reader Mode…' : 'Reader Mode'}
             </ThemedText>
           </ThemedView>
           <Switch
-            value={false}
+            value={enteringReaderMode}
+            disabled={enteringReaderMode}
             onValueChange={(value) => {
-              if (value) enterReaderMode();
+              if (!value) return;
+              Haptics.selectionAsync();
+              setEnteringReaderMode(true);
             }}
             trackColor={{ false: 'rgba(128,128,128,0.4)', true: '#C01918' }}
             thumbColor="#fff"
@@ -530,17 +551,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.two + 4,
-    paddingVertical: Spacing.two - 2,
+    paddingVertical: Spacing.two,
     marginHorizontal: Spacing.two + 4,
     marginBottom: Spacing.two,
     borderRadius: 12,
-    backgroundColor: 'rgba(128,128,128,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(128,128,128,0.16)',
+    backgroundColor: 'rgba(128,128,128,0.10)',
   },
+  readerModeBarActive: { backgroundColor: 'rgba(192,25,24,0.10)', borderColor: 'rgba(192,25,24,0.35)' },
   readerModeBarLabel: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'transparent' },
   readerModeBarText: { fontWeight: '600' },
   categoryTag: { color: '#C01918', fontWeight: '600', textTransform: 'uppercase' },
   title: { fontSize: TITLE_FONT_SIZE, lineHeight: 33, fontWeight: '800' },
-  body: { fontSize: BODY_FONT_SIZE, lineHeight: 24, opacity: 0.9 },
+  body: { fontSize: BODY_FONT_SIZE, lineHeight: 30, opacity: 0.9 },
   activeSentence: { backgroundColor: 'rgba(192,25,24,0.22)', fontWeight: '700' },
   activeSentenceDark: { backgroundColor: 'rgba(255,255,255,0.22)', color: '#fff', fontWeight: '700' },
   calloutBox: {

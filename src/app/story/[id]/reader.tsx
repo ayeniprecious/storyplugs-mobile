@@ -11,13 +11,19 @@ import { ThemedView } from '@/components/themed-view';
 import { Colors, Spacing } from '@/constants/theme';
 import { AUTO_SCROLL_SPEEDS, useStoryReader } from '@/hooks/use-story-reader';
 
-const BODY_FONT_SIZE = 16;
+const BODY_FONT_SIZE = 20;
 const TITLE_FONT_SIZE = 28;
 
-// Three fixed presets (chip picker) instead of a continuous +/- scale --
-// matches the "Aa / Aa / Aa" three-size picker in the reference design.
-const FONT_SCALE_OPTIONS = [0.9, 1.05, 1.3];
+// Stepped +/- scale rather than a continuous drag -- same "tap to adjust"
+// idiom as the auto-scroll speed control below. Index 3 (1.1x) is the
+// default: noticeably bigger than the normal reading page's flat 20px
+// without needing a tap to get there.
+const FONT_SCALE_STEPS = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6];
+const DEFAULT_FONT_SCALE_INDEX = 3;
 const SPACING_OPTIONS = [1.0, 1.2, 1.4];
+// One icon per spacing level, tight to loose, so the selection reads at a
+// glance instead of every chip showing the same glyph.
+const SPACING_ICONS = ['reorder-four-outline', 'reorder-three-outline', 'reorder-two-outline'] as const;
 
 // Reader Mode's own palette set, deliberately independent of the app-wide
 // Appearance settings -- sepia has no equivalent in the global theme, so it's
@@ -76,11 +82,14 @@ export default function ReaderMode() {
   // only way in or out once closed.
   const [settingsOpen, setSettingsOpen] = useState(true);
   const [readerTheme, setReaderTheme] = useState<'light' | 'sepia' | 'dark'>('light');
-  const [fontScaleIndex, setFontScaleIndex] = useState(1);
+  const [fontScaleIndex, setFontScaleIndex] = useState(DEFAULT_FONT_SCALE_INDEX);
   const [spacingIndex, setSpacingIndex] = useState(1);
-  const [showMoreSettings, setShowMoreSettings] = useState(false);
-  const readerFontScale = FONT_SCALE_OPTIONS[fontScaleIndex];
+  const readerFontScale = FONT_SCALE_STEPS[fontScaleIndex];
   const spacingMultiplier = SPACING_OPTIONS[spacingIndex];
+
+  function adjustFontScale(delta: number) {
+    setFontScaleIndex((prev) => Math.min(FONT_SCALE_STEPS.length - 1, Math.max(0, prev + delta)));
+  }
 
   if (loading || chaptersLoading) {
     return (
@@ -166,7 +175,7 @@ export default function ReaderMode() {
                 color: readerColors.text,
                 opacity: 1,
                 fontSize: BODY_FONT_SIZE * readerFontScale,
-                lineHeight: 24 * readerFontScale * spacingMultiplier,
+                lineHeight: 30 * readerFontScale * spacingMultiplier,
               },
             ]}
           >
@@ -224,9 +233,9 @@ export default function ReaderMode() {
         </ThemedView>
 
         {settingsOpen && (
-          <ThemedView type="cardAshSolid" style={styles.readerPanel}>
+          <ThemedView style={[styles.readerPanel, { backgroundColor: readerColors.cardAshSolid }]}>
             <ThemedView style={styles.readerPanelHeader}>
-              <ThemedText type="smallBold" style={styles.readerPanelHeading}>
+              <ThemedText type="smallBold" style={[styles.readerPanelHeading, { color: readerColors.text }]}>
                 Reader Settings
               </ThemedText>
               <Pressable onPress={() => setSettingsOpen(false)} hitSlop={8} accessibilityLabel="Close reader settings">
@@ -234,30 +243,32 @@ export default function ReaderMode() {
               </Pressable>
             </ThemedView>
 
-            <ThemedText type="small" style={styles.readerPanelLabel}>
-              Text
-            </ThemedText>
-            <ThemedView style={styles.chipRow}>
-              {FONT_SCALE_OPTIONS.map((scale, i) => (
+            <ThemedView style={styles.readerControlRow}>
+              <ThemedText type="small" style={[styles.readerControlLabel, { color: readerColors.textSecondary }]}>
+                Text Size
+              </ThemedText>
+              <ThemedView style={styles.readerControlButtons}>
                 <Pressable
-                  key={scale}
-                  style={[styles.fontChip, fontScaleIndex === i && styles.fontChipSelected]}
-                  onPress={() => setFontScaleIndex(i)}
+                  style={styles.readerControlButton}
+                  onPress={() => adjustFontScale(-1)}
+                  disabled={fontScaleIndex <= 0}
                 >
-                  <ThemedText
-                    style={[
-                      styles.fontChipText,
-                      { fontSize: 13 + i * 4 },
-                      fontScaleIndex === i && styles.fontChipTextSelected,
-                    ]}
-                  >
-                    Aa
-                  </ThemedText>
+                  <Ionicons name="remove" size={16} color={readerColors.text} />
                 </Pressable>
-              ))}
+                <ThemedText type="small" style={[styles.speedLabel, { color: readerColors.textSecondary }]}>
+                  {Math.round(readerFontScale * 100)}%
+                </ThemedText>
+                <Pressable
+                  style={styles.readerControlButton}
+                  onPress={() => adjustFontScale(1)}
+                  disabled={fontScaleIndex >= FONT_SCALE_STEPS.length - 1}
+                >
+                  <Ionicons name="add" size={16} color={readerColors.text} />
+                </Pressable>
+              </ThemedView>
             </ThemedView>
 
-            <ThemedText type="small" style={styles.readerPanelLabel}>
+            <ThemedText type="small" style={[styles.readerPanelLabel, { color: readerColors.textSecondary }]}>
               Theme
             </ThemedText>
             <ThemedView style={styles.chipRow}>
@@ -274,7 +285,7 @@ export default function ReaderMode() {
               ))}
             </ThemedView>
 
-            <ThemedText type="small" style={styles.readerPanelLabel}>
+            <ThemedText type="small" style={[styles.readerPanelLabel, { color: readerColors.textSecondary }]}>
               Spacing
             </ThemedText>
             <ThemedView style={styles.chipRow}>
@@ -285,7 +296,7 @@ export default function ReaderMode() {
                   onPress={() => setSpacingIndex(i)}
                 >
                   <Ionicons
-                    name="reorder-four-outline"
+                    name={SPACING_ICONS[i]}
                     size={16}
                     color={spacingIndex === i ? '#fff' : readerColors.text}
                   />
@@ -293,45 +304,36 @@ export default function ReaderMode() {
               ))}
             </ThemedView>
 
-            <Pressable style={styles.moreSettingsButton} onPress={() => setShowMoreSettings((prev) => !prev)}>
-              <ThemedText style={styles.moreSettingsText}>
-                {showMoreSettings ? 'Hide' : 'More'} Settings
+            <ThemedView style={styles.readerControlRow}>
+              <ThemedText type="small" style={[styles.readerControlLabel, { color: readerColors.textSecondary }]}>
+                Auto-scroll
               </ThemedText>
-              <Ionicons name={showMoreSettings ? 'chevron-up' : 'chevron-down'} size={14} color="#C01918" />
-            </Pressable>
-
-            {showMoreSettings && (
-              <ThemedView style={styles.readerControlRow}>
-                <ThemedText type="small" style={styles.readerControlLabel}>
-                  Auto-scroll
+              <ThemedView style={styles.readerControlButtons}>
+                <Pressable
+                  style={styles.readerControlButton}
+                  onPress={() => adjustSpeed(-1)}
+                  disabled={speedIndex <= 0}
+                >
+                  <Ionicons name="remove" size={16} color={readerColors.text} />
+                </Pressable>
+                <ThemedText type="small" style={[styles.speedLabel, { color: readerColors.textSecondary }]}>
+                  {speedIndex + 1}/{AUTO_SCROLL_SPEEDS.length}
                 </ThemedText>
-                <ThemedView style={styles.readerControlButtons}>
-                  <Pressable
-                    style={styles.readerControlButton}
-                    onPress={() => adjustSpeed(-1)}
-                    disabled={speedIndex <= 0}
-                  >
-                    <Ionicons name="remove" size={16} color={readerColors.text} />
-                  </Pressable>
-                  <ThemedText type="small" style={styles.speedLabel}>
-                    {speedIndex + 1}/{AUTO_SCROLL_SPEEDS.length}
-                  </ThemedText>
-                  <Pressable
-                    style={styles.readerControlButton}
-                    onPress={() => adjustSpeed(1)}
-                    disabled={speedIndex >= AUTO_SCROLL_SPEEDS.length - 1}
-                  >
-                    <Ionicons name="add" size={16} color={readerColors.text} />
-                  </Pressable>
-                  <Pressable
-                    style={[styles.readerControlButton, styles.autoScrollToggle]}
-                    onPress={() => setAutoScrollOn((prev) => !prev)}
-                  >
-                    <Ionicons name={autoScrollOn ? 'pause' : 'play'} size={16} color="#fff" />
-                  </Pressable>
-                </ThemedView>
+                <Pressable
+                  style={styles.readerControlButton}
+                  onPress={() => adjustSpeed(1)}
+                  disabled={speedIndex >= AUTO_SCROLL_SPEEDS.length - 1}
+                >
+                  <Ionicons name="add" size={16} color={readerColors.text} />
+                </Pressable>
+                <Pressable
+                  style={[styles.readerControlButton, styles.autoScrollToggle]}
+                  onPress={() => setAutoScrollOn((prev) => !prev)}
+                >
+                  <Ionicons name={autoScrollOn ? 'pause' : 'play'} size={16} color="#fff" />
+                </Pressable>
               </ThemedView>
-            )}
+            </ThemedView>
           </ThemedView>
         )}
       </SafeAreaView>
@@ -471,19 +473,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   readerPanelHeading: { fontSize: 15 },
-  readerPanelLabel: { opacity: 0.6, marginTop: 2 },
+  readerPanelLabel: { marginTop: 2 },
   chipRow: { flexDirection: 'row', gap: Spacing.two, backgroundColor: 'transparent' },
-  fontChip: {
-    width: 44,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(128,128,128,0.14)',
-  },
   fontChipSelected: { backgroundColor: '#C01918' },
-  fontChipText: { fontWeight: '700' },
-  fontChipTextSelected: { color: '#fff' },
   themeSwatch: {
     width: 32,
     height: 32,
@@ -500,15 +492,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(128,128,128,0.14)',
   },
-  moreSettingsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    marginTop: Spacing.one,
-    paddingVertical: Spacing.two - 2,
-  },
-  moreSettingsText: { color: '#C01918', fontWeight: '600' },
   readerControlRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -516,7 +499,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     marginTop: Spacing.one,
   },
-  readerControlLabel: { opacity: 0.7 },
+  readerControlLabel: {},
   readerControlButtons: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, backgroundColor: 'transparent' },
   readerControlButton: {
     width: 32,
@@ -527,7 +510,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(128,128,128,0.14)',
   },
   autoScrollToggle: { backgroundColor: '#C01918' },
-  speedLabel: { width: 28, textAlign: 'center', opacity: 0.7 },
+  speedLabel: { width: 32, textAlign: 'center' },
   menuBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',

@@ -27,12 +27,23 @@ async function resolveBestVoice(): Promise<string | undefined> {
 export function useTextToSpeech(text: string) {
   const [speaking, setSpeaking] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(-1);
-  const sentencesRef = useRef(tokenizeBody(text));
+  // sentencesRef is what speakFrom actually reads from, so an in-flight
+  // utterance always keeps using the latest body text without speakFrom
+  // needing text as a dependency (which would tear down and rebuild the
+  // whole playback callback chain mid-speech). sentences (state) mirrors it
+  // purely so the JSX consuming it re-renders once the story text arrives --
+  // a ref update alone is invisible to React and stays stuck at whatever it
+  // tokenized on mount (usually '', before the async story fetch resolves)
+  // until something unrelated happens to trigger a re-render.
+  const [sentences, setSentences] = useState(() => tokenizeBody(text));
+  const sentencesRef = useRef(sentences);
   const stopRequestedRef = useRef(false);
   const voiceRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    sentencesRef.current = tokenizeBody(text);
+    const next = tokenizeBody(text);
+    sentencesRef.current = next;
+    setSentences(next);
   }, [text]);
 
   useEffect(() => {
@@ -85,5 +96,5 @@ export function useTextToSpeech(text: string) {
     speakFrom(0);
   }, [speaking, speakFrom]);
 
-  return { speaking, currentIndex, sentences: sentencesRef.current, toggle };
+  return { speaking, currentIndex, sentences, toggle };
 }
