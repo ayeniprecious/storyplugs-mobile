@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { VerifiedBadge } from '@/components/verified-badge';
+import { ENABLE_COMMENTS } from '@/constants/launch-flags';
 import { CardAsh, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useCategories } from '@/context/categories-context';
@@ -443,25 +444,25 @@ export default function StoryPreview() {
 
           {story.daily_lesson && (
             <ThemedView style={styles.lessonCard}>
-              <Ionicons name="bulb-outline" size={22} color="#8a8a8e" style={styles.lessonGlyph} />
-              <ThemedView style={styles.lessonBody}>
-                <ThemedText type="small" style={styles.lessonHeading}>
+              <ThemedView style={styles.lessonHeaderRow}>
+                <Ionicons name="bulb-outline" size={16} color="#C01918" />
+                <ThemedText type="smallBold" style={styles.lessonHeading}>
                   Today&apos;s Lesson
                 </ThemedText>
-                <ThemedText style={styles.lessonText}>{story.daily_lesson}</ThemedText>
               </ThemedView>
+              <ThemedText style={styles.lessonText}>{story.daily_lesson}</ThemedText>
             </ThemedView>
           )}
 
           {story.reflection_question && (
-            <ThemedView style={styles.reflectionCard}>
-              <Ionicons name="sparkles-outline" size={22} color="#8a8a8e" style={styles.lessonGlyph} />
-              <ThemedView style={styles.lessonBody}>
-                <ThemedText type="small" style={styles.lessonHeading}>
+            <ThemedView style={[styles.reflectionCard, { borderColor: theme.border }]}>
+              <ThemedView style={styles.lessonHeaderRow}>
+                <Ionicons name="help-circle-outline" size={16} color="#C01918" />
+                <ThemedText type="smallBold" style={styles.lessonHeading}>
                   Reflect
                 </ThemedText>
-                <ThemedText style={styles.reflectionText}>{story.reflection_question}</ThemedText>
               </ThemedView>
+              <ThemedText style={styles.reflectionText}>{story.reflection_question}</ThemedText>
             </ThemedView>
           )}
 
@@ -490,7 +491,7 @@ export default function StoryPreview() {
             </ThemedView>
           )}
 
-          <CommentsSection storyId={id ?? ''} />
+          {ENABLE_COMMENTS && <CommentsSection storyId={id ?? ''} />}
 
           <CategoryRow
             label={`More ${categoryLabels[story.category] ?? story.category} stories`}
@@ -599,28 +600,18 @@ const styles = StyleSheet.create({
   infoLabel: { fontSize: 11, opacity: 0.6 },
   infoSkeleton: { width: 50, height: 15, borderRadius: 4 },
   lessonCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing.two,
     borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#C01918',
     padding: Spacing.three,
-    backgroundColor: CardAsh,
+    gap: Spacing.one,
   },
-  lessonGlyph: { marginTop: 2 },
-  lessonBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
-  lessonHeading: { color: '#C01918', fontSize: 11, textTransform: 'uppercase' },
+  lessonHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'transparent' },
+  lessonHeading: { color: '#C01918' },
   lessonText: { fontSize: 15, lineHeight: 22, opacity: 0.9 },
   reflectionCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing.two,
     borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#C01918',
     padding: Spacing.three,
-    backgroundColor: CardAsh,
+    borderWidth: 1,
+    gap: Spacing.one,
   },
   reflectionText: { fontSize: 15, lineHeight: 22, fontStyle: 'italic', opacity: 0.9 },
   chaptersSection: { gap: Spacing.two, marginTop: Spacing.two },

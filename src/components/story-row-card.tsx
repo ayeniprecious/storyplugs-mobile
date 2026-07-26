@@ -10,6 +10,7 @@ import { PremiumLockModal } from '@/components/premium-lock-modal';
 import { ReportModal } from '@/components/report-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ENABLE_OFFLINE_DOWNLOADS } from '@/constants/launch-flags';
 import { CardAsh, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useCategories } from '@/context/categories-context';
@@ -200,19 +201,21 @@ export function StoryRowCard({ story, subtitle, progressPercent, onRemove, remov
                 <ThemedText style={styles.menuItemText}>Open Story</ThemedText>
               </Pressable>
 
-              <Pressable style={styles.menuItem} onPress={handleDownloadToggle} disabled={downloadBusy}>
-                {downloadBusy ? (
-                  <ActivityIndicator size="small" color={theme.text} />
-                ) : (
-                  <Ionicons name={downloaded ? 'cloud-done' : 'cloud-download-outline'} size={18} color={theme.text} />
-                )}
-                <ThemedText style={styles.menuItemText}>
-                  {downloaded ? 'Remove Download' : 'Download Offline'}
-                </ThemedText>
-                {!profile?.is_premium && (
-                  <Ionicons name="lock-closed" size={13} color={theme.placeholder} style={styles.menuItemLock} />
-                )}
-              </Pressable>
+              {ENABLE_OFFLINE_DOWNLOADS && (
+                <Pressable style={styles.menuItem} onPress={handleDownloadToggle} disabled={downloadBusy}>
+                  {downloadBusy ? (
+                    <ActivityIndicator size="small" color={theme.text} />
+                  ) : (
+                    <Ionicons name={downloaded ? 'cloud-done' : 'cloud-download-outline'} size={18} color={theme.text} />
+                  )}
+                  <ThemedText style={styles.menuItemText}>
+                    {downloaded ? 'Remove Download' : 'Download Offline'}
+                  </ThemedText>
+                  {!profile?.is_premium && (
+                    <Ionicons name="lock-closed" size={13} color={theme.placeholder} style={styles.menuItemLock} />
+                  )}
+                </Pressable>
+              )}
 
               <Pressable style={styles.menuItem} onPress={handleShare}>
                 <Ionicons name="share-outline" size={18} color={theme.text} />

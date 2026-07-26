@@ -8,6 +8,12 @@ import { BackButton } from '@/components/back-button';
 import { SettingsGroup } from '@/components/settings-group';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import {
+  ENABLE_COMMENTS,
+  ENABLE_COMMUNITY_STORIES,
+  ENABLE_OFFLINE_DOWNLOADS,
+  ENABLE_STREAK_FREEZE,
+} from '@/constants/launch-flags';
 import { CardAsh, Spacing } from '@/constants/theme';
 import { FREE_ARCHIVE_WINDOW_DAYS, STREAK_FREEZES_PER_MONTH } from '@/constants/premium';
 import { useProfile } from '@/context/profile-context';
@@ -17,13 +23,30 @@ import { useTheme } from '@/hooks/use-theme';
 const FEATURES = [
   { label: 'Reader Mode', description: 'Auto-scroll, a dedicated reader theme, and font controls.' },
   { label: 'Full Archive Access', description: `Read stories older than ${FREE_ARCHIVE_WINDOW_DAYS} days.` },
-  { label: 'Streak Freeze', description: `${STREAK_FREEZES_PER_MONTH} freezes a month to protect a missed day.` },
+  ...(ENABLE_STREAK_FREEZE
+    ? [{ label: 'Streak Freeze', description: `${STREAK_FREEZES_PER_MONTH} freezes a month to protect a missed day.` }]
+    : []),
   { label: 'Journal', description: "Write and revisit your own reflections on every story." },
-  { label: 'Offline Downloads', description: 'Save stories to read anytime, even without a signal.' },
+  ...(ENABLE_OFFLINE_DOWNLOADS
+    ? [{ label: 'Offline Downloads', description: 'Save stories to read anytime, even without a signal.' }]
+    : []),
   { label: 'Mood-Matched Picks', description: 'Get story picks matched to how you\'re feeling.' },
-  { label: 'Comment Replies', description: 'Reply to other readers in the comments.' },
+  ...(ENABLE_COMMENTS
+    ? [{ label: 'Comment Replies', description: 'Reply to other readers in the comments.' }]
+    : []),
   { label: 'Year in Reflection', description: 'A shareable, Wrapped-style recap of your reading year.' },
-  { label: 'Submit Your Own Stories', description: 'Share a real story of your own for our team to review and publish.' },
+  ...(ENABLE_COMMUNITY_STORIES
+    ? [{ label: 'Submit Your Own Stories', description: 'Share a real story of your own for our team to review and publish.' }]
+    : []),
+];
+
+// Placeholder pricing for the plan display below -- not wired to a real
+// purchase yet (that's the packages.map() list further down, driven by
+// RevenueCat once store products exist). $39.99/yr vs $4.99/mo * 12 ($59.88)
+// works out to "Save 33%", which is what the Yearly badge claims.
+const PLAN_DISPLAY_OPTIONS = [
+  { key: 'monthly' as const, label: 'Monthly', price: '$4.99', period: '/ month' },
+  { key: 'yearly' as const, label: 'Yearly', price: '$39.99', period: '/ year', badge: 'Save 33%' },
 ];
 
 const FALLBACK_MANAGEMENT_URL =
@@ -98,6 +121,7 @@ export default function ManageSubscription() {
     purchase,
     restore,
   } = usePurchases();
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [justPurchased, setJustPurchased] = useState(false);
   const [restoreMessage, setRestoreMessage] = useState<string | null>(null);
   const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -170,6 +194,50 @@ export default function ManageSubscription() {
                 : 'Upgrade to unlock the full archive, streak protection, journaling, and offline reading.'}
             </ThemedText>
           </ThemedView>
+
+          {!isPremium && (
+            <>
+              <ThemedText type="small" style={styles.sectionHint}>
+                Choose a plan
+              </ThemedText>
+              <ThemedView style={styles.planChoiceRow}>
+                {PLAN_DISPLAY_OPTIONS.map((option) => {
+                  const selected = selectedPlan === option.key;
+                  return (
+                    <Pressable
+                      key={option.key}
+                      onPress={() => setSelectedPlan(option.key)}
+                      style={[
+                        styles.planChoiceCard,
+                        { borderColor: theme.border },
+                        selected && styles.planChoiceCardSelected,
+                      ]}
+                    >
+                      {option.badge && (
+                        <ThemedView style={styles.planChoiceBadge}>
+                          <ThemedText style={styles.planChoiceBadgeText}>{option.badge}</ThemedText>
+                        </ThemedView>
+                      )}
+                      <ThemedView style={styles.planChoiceHeader}>
+                        <ThemedText type="smallBold">{option.label}</ThemedText>
+                        <Ionicons
+                          name={selected ? 'checkmark-circle' : 'ellipse-outline'}
+                          size={18}
+                          color={selected ? '#C01918' : theme.placeholder}
+                        />
+                      </ThemedView>
+                      <ThemedText type="title" style={styles.planChoicePrice}>
+                        {option.price}
+                      </ThemedText>
+                      <ThemedText type="small" style={styles.planChoicePeriod}>
+                        {option.period}
+                      </ThemedText>
+                    </Pressable>
+                  );
+                })}
+              </ThemedView>
+            </>
+          )}
 
           <ThemedText type="small" style={styles.sectionHint}>
             What's included
@@ -280,6 +348,31 @@ const styles = StyleSheet.create({
   planTitle: { fontSize: 17 },
   planBody: { opacity: 0.7, textAlign: 'center', lineHeight: 20 },
   sectionHint: { opacity: 0.6, marginBottom: Spacing.two },
+  planChoiceRow: { flexDirection: 'row', gap: Spacing.two, marginBottom: Spacing.three, backgroundColor: 'transparent' },
+  planChoiceCard: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: Spacing.three,
+  },
+  planChoiceCardSelected: { borderColor: '#C01918', borderWidth: 2 },
+  planChoiceBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#C01918',
+    borderRadius: 20,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 2,
+    marginBottom: Spacing.two,
+  },
+  planChoiceBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  planChoiceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'transparent',
+  },
+  planChoicePrice: { marginTop: Spacing.two },
+  planChoicePeriod: { opacity: 0.6 },
   featureRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',

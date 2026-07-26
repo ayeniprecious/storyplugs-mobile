@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { useFocusEffect, useIsFocused } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Animated, Pressable, RefreshControl, StyleSheet } from "react-native";
 
@@ -28,7 +28,6 @@ import { useDailyContent } from "@/hooks/use-daily-content";
 import { useMoodCheckin } from "@/hooks/use-mood-checkin";
 import { useReadingStreak } from "@/hooks/use-reading-streak";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
-import { useShake } from "@/hooks/use-shake";
 import { buildMoodPicks } from "@/lib/mood-recommendations";
 import { buildRecommendations } from "@/lib/recommendations";
 
@@ -88,7 +87,6 @@ export default function Home() {
     todaysMood,
     todaysCategories,
     hasAnsweredToday,
-    loading: moodLoading,
     saveMoodCheckin,
     clearMoodCheckin,
   } = useMoodCheckin();
@@ -122,24 +120,13 @@ export default function Home() {
     [byCategory],
   );
 
-  // Same is_featured -> is_pinned -> most-recent fallback as Search's
-  // FeaturedCarousel, so the carousel is never empty before an admin curates
-  // anything and both screens agree on what "Featured" means.
-  const featuredStories = useMemo(() => {
-    const featured = allStories.filter((s) => s.is_featured);
-    if (featured.length > 0) return featured;
-    const pinned = allStories.filter((s) => s.is_pinned);
-    if (pinned.length > 0) return pinned;
-    return [...allStories]
-      .sort(
-        (a, b) =>
-          new Date(b.published_at ?? 0).getTime() -
-          new Date(a.published_at ?? 0).getTime(),
-      )
-      .slice(0, 5);
-  }, [allStories]);
-
-  const isFocused = useIsFocused();
+  // Strictly admin-curated -- no is_pinned or most-recent fallback, so the
+  // section simply doesn't render at all until an admin actually marks
+  // something is_featured.
+  const featuredStories = useMemo(
+    () => allStories.filter((s) => s.is_featured),
+    [allStories],
+  );
 
   const moodOption = useMemo(
     () => MOOD_OPTIONS.find((option) => option.value === todaysMood) ?? null,
@@ -186,18 +173,6 @@ export default function Home() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     clearMoodCheckin();
   }
-
-  // Shake replaces the old timed auto-popup entirely -- the mood check-in
-  // only ever appears because the user asked for it, either by shaking or by
-  // tapping the "Feeling X / Change" row or the free-tier banner (both still
-  // go through this same handler). Enabled whenever Home is focused so
-  // shaking mid-story-read (a different, pushed screen) does nothing, same
-  // guarantee the old timer had. Not gated on hasAnsweredToday, so shaking
-  // again later in the day reopens it to change today's answer.
-  useShake(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    handleMoodRowPress();
-  }, isFocused && !moodLoading);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -314,20 +289,17 @@ export default function Home() {
           {quote && (
             <Animated.View {...registerRow("quote", "body")}>
               <ThemedView type="backgroundElement" style={styles.quoteCard}>
-                <ThemedText style={styles.quoteGlyph}>&ldquo;</ThemedText>
-                <ThemedView style={styles.quoteBody}>
-                  <ThemedText type="small" style={styles.sectionLabel}>
-                    Quote of the Day
+                <ThemedText type="smallBold" style={styles.sectionLabel}>
+                  Quote of the Day
+                </ThemedText>
+                <ThemedText style={styles.quoteText}>
+                  &ldquo;{quote.text}&rdquo;
+                </ThemedText>
+                {quote.author && (
+                  <ThemedText type="small" style={styles.quoteAuthor}>
+                    — {quote.author}
                   </ThemedText>
-                  <ThemedText style={styles.quoteText}>
-                    &ldquo;{quote.text}&rdquo;
-                  </ThemedText>
-                  {quote.author && (
-                    <ThemedText type="small" style={styles.quoteAuthor}>
-                      — {quote.author}
-                    </ThemedText>
-                  )}
-                </ThemedView>
+                )}
               </ThemedView>
             </Animated.View>
           )}
@@ -335,20 +307,12 @@ export default function Home() {
           {reflection && (
             <Animated.View {...registerRow("reflection", "body")}>
               <ThemedView type="backgroundElement" style={styles.quoteCard}>
-                <Ionicons
-                  name="sparkles-outline"
-                  size={22}
-                  color="#8a8a8e"
-                  style={styles.reflectionGlyph}
-                />
-                <ThemedView style={styles.quoteBody}>
-                  <ThemedText type="small" style={styles.sectionLabel}>
-                    Reflection of the Day
-                  </ThemedText>
-                  <ThemedText style={styles.quoteText}>
-                    {reflection.text}
-                  </ThemedText>
-                </ThemedView>
+                <ThemedText type="smallBold" style={styles.sectionLabel}>
+                  Reflection of the Day
+                </ThemedText>
+                <ThemedText style={styles.quoteText}>
+                  {reflection.text}
+                </ThemedText>
               </ThemedView>
             </Animated.View>
           )}
@@ -393,11 +357,6 @@ export default function Home() {
                 </Pressable>
               </ThemedView>
             ) : (
-              // Shake is the fun way in, but it only works on a native build
-              // (expo-sensors has no working Accelerometer on web at all, not
-              // even mobile Safari) -- this stays as the one way in on web,
-              // and doubles as a discoverable hint that shaking does
-              // something once there's a native app to shake.
               <Pressable onPress={handleMoodRowPress} style={styles.moodBanner}>
                 <Ionicons name="happy-outline" size={16} color="#C01918" />
                 <ThemedText type="small" style={styles.moodBannerText}>
@@ -559,31 +518,10 @@ const styles = StyleSheet.create({
   },
   moodBannerText: { color: "#C01918", fontWeight: "500" },
   centerBlock: { marginTop: Spacing.five },
-  quoteCard: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: Spacing.two,
-    borderRadius: 14,
-    borderLeftWidth: 4,
-    borderLeftColor: "#C01918",
-    padding: Spacing.two + 4,
-  },
-  quoteGlyph: {
-    fontSize: 32,
-    lineHeight: 32,
-    opacity: 0.35,
-    fontWeight: "800",
-  },
-  reflectionGlyph: { marginTop: 2, opacity: 0.6 },
-  quoteBody: { flex: 1, gap: 6, backgroundColor: "transparent" },
-  sectionLabel: {
-    opacity: 1,
-    fontSize: 11,
-    textTransform: "uppercase",
-    color: "#C01918",
-  },
-  quoteText: { fontSize: 15, lineHeight: 21, fontStyle: "italic" },
-  quoteAuthor: { opacity: 0.6, textAlign: "right", fontSize: 12 },
+  quoteCard: { borderRadius: 16, padding: Spacing.three, gap: Spacing.two },
+  sectionLabel: { opacity: 0.6, textTransform: "uppercase" },
+  quoteText: { fontSize: 18, lineHeight: 26, fontStyle: "italic" },
+  quoteAuthor: { opacity: 0.6, textAlign: "right" },
   emptyCard: {
     borderRadius: 16,
     padding: Spacing.three,

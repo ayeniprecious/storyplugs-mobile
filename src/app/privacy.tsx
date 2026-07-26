@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BackButton } from '@/components/back-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ENABLE_COMMENTS } from '@/constants/launch-flags';
 import { Spacing } from '@/constants/theme';
 import { useAppSettings } from '@/hooks/use-app-settings';
 import { useProfile } from '@/context/profile-context';
@@ -36,21 +37,23 @@ export default function Privacy() {
           </ThemedText>
         </ThemedView>
 
-        <ThemedView type="backgroundElement" style={styles.toggleRow}>
-          <ThemedView style={styles.toggleTextGroup}>
-            <ThemedText type="smallBold">Hide my identity in comments</ThemedText>
-            <ThemedText type="small" style={styles.toggleHint}>
-              New comments you post will show as "Anonymous" instead of your name and photo.
-            </ThemedText>
+        {ENABLE_COMMENTS && (
+          <ThemedView type="backgroundElement" style={styles.toggleRow}>
+            <ThemedView style={styles.toggleTextGroup}>
+              <ThemedText type="smallBold">Hide my identity in comments</ThemedText>
+              <ThemedText type="small" style={styles.toggleHint}>
+                New comments you post will show as "Anonymous" instead of your name and photo.
+              </ThemedText>
+            </ThemedView>
+            <Switch
+              value={hideIdentity}
+              onValueChange={handleToggle}
+              disabled={updating}
+              trackColor={{ false: theme.border, true: theme.backgroundSelected }}
+              thumbColor={theme.text}
+            />
           </ThemedView>
-          <Switch
-            value={hideIdentity}
-            onValueChange={handleToggle}
-            disabled={updating}
-            trackColor={{ false: theme.border, true: theme.backgroundSelected }}
-            thumbColor={theme.text}
-          />
-        </ThemedView>
+        )}
 
         <ThemedText type="smallBold" style={styles.sectionHeading}>
           Privacy Policy

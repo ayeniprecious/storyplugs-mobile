@@ -24,6 +24,7 @@ import { ReportModal } from '@/components/report-modal';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ENABLE_COMMENTS, ENABLE_OFFLINE_DOWNLOADS } from '@/constants/launch-flags';
 import { FREE_ARCHIVE_WINDOW_DAYS } from '@/constants/premium';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
@@ -112,6 +113,7 @@ export default function StoryRead() {
   // own fetch (which only surfaces its count inside its own heading), kept
   // genuine rather than inventing a number.
   useEffect(() => {
+    if (!ENABLE_COMMENTS) return;
     let cancelled = false;
     async function loadCount() {
       if (!id) return;
@@ -383,7 +385,7 @@ export default function StoryRead() {
           {/* Every chapter gets the same shared, story-wide comment thread at
               its bottom -- not just the last one -- so readers can join the
               conversation without having to finish the whole story first. */}
-          <CommentsSection storyId={id ?? ''} />
+          {ENABLE_COMMENTS && <CommentsSection storyId={id ?? ''} />}
         </ScrollView>
 
         <ThemedView style={styles.actionRow}>
@@ -393,12 +395,14 @@ export default function StoryRead() {
               {isFavorited ? 'Saved' : 'Save'}
             </ThemedText>
           </Pressable>
-          <Pressable style={styles.actionButton} onPress={scrollToComments} hitSlop={8}>
-            <Ionicons name="chatbubble-outline" size={19} color="#8a8a8e" />
-            <ThemedText type="small" style={styles.actionButtonText}>
-              {commentCount !== null ? `${commentCount} Comments` : 'Comments'}
-            </ThemedText>
-          </Pressable>
+          {ENABLE_COMMENTS && (
+            <Pressable style={styles.actionButton} onPress={scrollToComments} hitSlop={8}>
+              <Ionicons name="chatbubble-outline" size={19} color="#8a8a8e" />
+              <ThemedText type="small" style={styles.actionButtonText}>
+                {commentCount !== null ? `${commentCount} Comments` : 'Comments'}
+              </ThemedText>
+            </Pressable>
+          )}
           <Pressable style={styles.actionButton} onPress={handleShare} hitSlop={8}>
             <Ionicons name="share-outline" size={19} color="#8a8a8e" />
             <ThemedText type="small" style={styles.actionButtonText}>
@@ -433,21 +437,23 @@ export default function StoryRead() {
       <Modal visible={menuOpen} transparent animationType="fade" onRequestClose={() => setMenuOpen(false)}>
         <Pressable style={styles.menuBackdrop} onPress={() => setMenuOpen(false)}>
           <ThemedView type="cardAshSolid" style={styles.menuSheet} onStartShouldSetResponder={() => true}>
-            <Pressable style={styles.menuItem} onPress={handleDownloadMenuPress} disabled={downloadBusy}>
-              {downloadBusy ? (
-                <ActivityIndicator size="small" color={theme.text} />
-              ) : (
-                <Ionicons
-                  name={isStoryDownloaded ? 'cloud-done' : 'cloud-download-outline'}
-                  size={18}
-                  color={theme.text}
-                />
-              )}
-              <ThemedText style={styles.menuItemText}>
-                {isStoryDownloaded ? 'Remove Download' : 'Download Offline'}
-              </ThemedText>
-              {!profile?.is_premium && <Ionicons name="lock-closed" size={13} color={theme.placeholder} />}
-            </Pressable>
+            {ENABLE_OFFLINE_DOWNLOADS && (
+              <Pressable style={styles.menuItem} onPress={handleDownloadMenuPress} disabled={downloadBusy}>
+                {downloadBusy ? (
+                  <ActivityIndicator size="small" color={theme.text} />
+                ) : (
+                  <Ionicons
+                    name={isStoryDownloaded ? 'cloud-done' : 'cloud-download-outline'}
+                    size={18}
+                    color={theme.text}
+                  />
+                )}
+                <ThemedText style={styles.menuItemText}>
+                  {isStoryDownloaded ? 'Remove Download' : 'Download Offline'}
+                </ThemedText>
+                {!profile?.is_premium && <Ionicons name="lock-closed" size={13} color={theme.placeholder} />}
+              </Pressable>
+            )}
             <Pressable style={styles.menuItem} onPress={handleReportMenuPress}>
               <Ionicons name="flag-outline" size={18} color={theme.text} />
               <ThemedText style={styles.menuItemText}>Report</ThemedText>

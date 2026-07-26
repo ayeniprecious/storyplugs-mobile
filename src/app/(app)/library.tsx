@@ -13,6 +13,7 @@ import { SettingsRow } from '@/components/settings-row';
 import { StoryRowCard } from '@/components/story-row-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ENABLE_COMMUNITY_STORIES, ENABLE_OFFLINE_DOWNLOADS } from '@/constants/launch-flags';
 import { CardAsh, Spacing } from '@/constants/theme';
 import { useProfile } from '@/context/profile-context';
 import { useAllStories } from '@/hooks/use-all-stories';
@@ -243,19 +244,23 @@ export default function Library() {
               counter since the stat cards above already show those counts;
               Downloads doesn't have a stat card, so it gets one here. */}
           <SettingsGroup>
-            <SettingsRow
-              label="Downloads"
-              href="/library/downloads"
-              showChevron
-              right={
-                <ThemedText type="small" style={styles.navCount}>
-                  {downloadsLoading ? '' : downloads.length}
-                </ThemedText>
-              }
-            />
+            {ENABLE_OFFLINE_DOWNLOADS && (
+              <SettingsRow
+                label="Downloads"
+                href="/library/downloads"
+                showChevron
+                right={
+                  <ThemedText type="small" style={styles.navCount}>
+                    {downloadsLoading ? '' : downloads.length}
+                  </ThemedText>
+                }
+              />
+            )}
             <SettingsRow label="Saved" href="/library/saved" showChevron />
-            <SettingsRow label="Completed" href="/library/completed" showChevron />
-            <SettingsRow label="Community Stories" href="/community-stories" showChevron isLast />
+            <SettingsRow label="Completed" href="/library/completed" showChevron isLast={!ENABLE_COMMUNITY_STORIES} />
+            {ENABLE_COMMUNITY_STORIES && (
+              <SettingsRow label="Community Stories" href="/community-stories" showChevron isLast />
+            )}
           </SettingsGroup>
 
           {recommended.length > 0 && (

@@ -8,6 +8,7 @@ import { Avatar } from '@/components/avatar';
 import { BackButton } from '@/components/back-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ENABLE_PROFILE_PICTURE_UPLOAD } from '@/constants/launch-flags';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useProfile } from '@/context/profile-context';
@@ -59,24 +60,29 @@ export default function EditProfile() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <ThemedView style={styles.avatarWrap}>
             <Pressable
-              onPress={() => (profile?.avatar_url ? setAvatarViewerOpen(true) : pickAndUpload())}
+              onPress={() => {
+                if (profile?.avatar_url) setAvatarViewerOpen(true);
+                else if (ENABLE_PROFILE_PICTURE_UPLOAD) pickAndUpload();
+              }}
               disabled={uploading}
             >
               <Avatar url={profile?.avatar_url} fallbackLetter={initial} size={96} />
             </Pressable>
-            <Pressable
-              onPress={pickAndUpload}
-              disabled={uploading}
-              style={[styles.avatarEditBadge, { borderColor: theme.background }]}
-            >
-              {uploading ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Ionicons name="camera" size={16} color="#fff" />
-              )}
-            </Pressable>
+            {ENABLE_PROFILE_PICTURE_UPLOAD && (
+              <Pressable
+                onPress={pickAndUpload}
+                disabled={uploading}
+                style={[styles.avatarEditBadge, { borderColor: theme.background }]}
+              >
+                {uploading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Ionicons name="camera" size={16} color="#fff" />
+                )}
+              </Pressable>
+            )}
           </ThemedView>
-          {avatarError && (
+          {ENABLE_PROFILE_PICTURE_UPLOAD && avatarError && (
             <ThemedText type="small" style={styles.errorText}>
               {avatarError}
             </ThemedText>

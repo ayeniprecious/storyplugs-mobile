@@ -37,6 +37,15 @@ export const Colors = {
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
+// Splash/welcome/sign-in/sign-up/onboarding all share this backdrop -- a
+// subtle nod to the brand red in both themes, not a full wash (bold brand red
+// stays reserved for buttons/selected states, per this app's established
+// color usage elsewhere).
+export const AuthGradient: Record<'light' | 'dark', readonly [string, string]> = {
+  light: ['#fff4f3', '#ffffff'],
+  dark: ['#2a070b', '#000000'],
+};
+
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */

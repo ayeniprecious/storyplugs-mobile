@@ -5,13 +5,17 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Spacing } from '@/constants/theme';
+import { AuthGradient, CardAsh, Spacing } from '@/constants/theme';
 import { CONTENT_TYPE_OPTIONS as CONTENT_TYPES, TIME_SLOT_OPTIONS as TIME_SLOTS } from '@/constants/notification-options';
 import { useProfile } from '@/context/profile-context';
+import { useThemePrefs } from '@/context/theme-prefs-context';
+import { useTheme } from '@/hooks/use-theme';
 import type { NotificationContentType } from '@/lib/database.types';
 
 export default function NotificationPreferences() {
   const { saveNotificationPreferences } = useProfile();
+  const theme = useTheme();
+  const { resolvedScheme } = useThemePrefs();
   const [selectedTypes, setSelectedTypes] = useState<NotificationContentType[]>([]);
   const [selectedTime, setSelectedTime] = useState('anytime');
   const [submitting, setSubmitting] = useState(false);
@@ -40,44 +44,44 @@ export default function NotificationPreferences() {
   }
 
   return (
-    <LinearGradient colors={['#2a070b', '#000000']} style={styles.container}>
+    <LinearGradient colors={AuthGradient[resolvedScheme]} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         {router.canGoBack() && (
           <View style={styles.header}>
             <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backButton}>
-              <Ionicons name="chevron-back" size={22} color="rgba(255,255,255,0.6)" />
-              <Text style={styles.backLabel}>Back</Text>
+              <Ionicons name="chevron-back" size={22} color={theme.textSecondary} />
+              <Text style={[styles.backLabel, { color: theme.textSecondary }]}>Back</Text>
             </Pressable>
           </View>
         )}
         <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.title}>Your daily vitamin</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: theme.text }]}>Your daily vitamin</Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             We&apos;ll send you a gentle nudge once a day — pick what you want to hear about and when.
             You can change this anytime in your Profile.
           </Text>
 
-          <Text style={styles.sectionLabel}>What would you like to receive?</Text>
+          <Text style={[styles.sectionLabel, { color: theme.text }]}>What would you like to receive?</Text>
           {CONTENT_TYPES.map((type) => {
             const selected = selectedTypes.includes(type.value);
             return (
               <Pressable
                 key={type.value}
                 onPress={() => toggleType(type.value)}
-                style={[styles.optionCard, selected && styles.optionCardSelected]}
+                style={[styles.optionCard, { borderColor: theme.border }, selected && styles.optionCardSelected]}
               >
-                <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+                <View style={[styles.checkbox, !selected && { backgroundColor: CardAsh }, selected && styles.checkboxSelected]}>
                   {selected && <Ionicons name="checkmark" size={16} color="#fff" />}
                 </View>
                 <View style={styles.optionTextGroup}>
-                  <Text style={styles.optionLabel}>{type.label}</Text>
-                  <Text style={styles.optionBlurb}>{type.blurb}</Text>
+                  <Text style={[styles.optionLabel, { color: theme.text }]}>{type.label}</Text>
+                  <Text style={[styles.optionBlurb, { color: theme.textSecondary }]}>{type.blurb}</Text>
                 </View>
               </Pressable>
             );
           })}
 
-          <Text style={styles.sectionLabel}>When should we send it?</Text>
+          <Text style={[styles.sectionLabel, { color: theme.text }]}>When should we send it?</Text>
           <View style={styles.timeRow}>
             {TIME_SLOTS.map((slot) => {
               const selected = selectedTime === slot.value;
@@ -85,9 +89,9 @@ export default function NotificationPreferences() {
                 <Pressable
                   key={slot.value}
                   onPress={() => setSelectedTime(slot.value)}
-                  style={[styles.timeChip, selected && styles.timeChipSelected]}
+                  style={[styles.timeChip, { borderColor: theme.border }, selected && styles.timeChipSelected]}
                 >
-                  <Text style={selected ? styles.timeChipTextSelected : styles.timeChipText}>
+                  <Text style={selected ? styles.timeChipTextSelected : [styles.timeChipText, { color: theme.text }]}>
                     {slot.label}
                   </Text>
                 </Pressable>
@@ -117,14 +121,13 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
   },
   backButton: { flexDirection: 'row', alignItems: 'center' },
-  backLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 14 },
+  backLabel: { fontSize: 14 },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: Spacing.two + 4, paddingVertical: Spacing.three, gap: Spacing.two },
   footer: { paddingHorizontal: Spacing.two + 4, paddingBottom: Spacing.three, gap: Spacing.two },
-  title: { color: '#fff', fontSize: 24, lineHeight: 30, marginBottom: Spacing.two, fontWeight: '600' },
-  subtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 15, marginBottom: Spacing.three },
+  title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.two, fontWeight: '600' },
+  subtitle: { fontSize: 15, marginBottom: Spacing.three },
   sectionLabel: {
-    color: 'rgba(255,255,255,0.85)',
     fontSize: 14,
     fontWeight: '700',
     marginTop: Spacing.three,
@@ -137,7 +140,6 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#3a3a3c',
     marginBottom: Spacing.two,
   },
   optionCardSelected: { borderColor: '#C01918' },
@@ -147,21 +149,19 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   checkboxSelected: { backgroundColor: '#C01918' },
   optionTextGroup: { flex: 1, gap: 2 },
-  optionLabel: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  optionBlurb: { color: 'rgba(255,255,255,0.6)', fontSize: 13 },
+  optionLabel: { fontSize: 14, fontWeight: '700' },
+  optionBlurb: { fontSize: 13 },
   timeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   timeChip: {
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#3a3a3c',
   },
-  timeChipText: { color: 'rgba(255,255,255,0.85)', fontSize: 14 },
+  timeChipText: { fontSize: 14 },
   timeChipSelected: { backgroundColor: '#C01918', borderColor: '#C01918' },
   timeChipTextSelected: { color: '#fff', fontWeight: '600', fontSize: 14 },
   error: { color: '#ff453a', marginTop: Spacing.two, fontSize: 14 },

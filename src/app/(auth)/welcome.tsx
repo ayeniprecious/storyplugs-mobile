@@ -4,7 +4,9 @@ import { Link } from 'expo-router';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Spacing } from '@/constants/theme';
+import { AuthGradient, Spacing } from '@/constants/theme';
+import { useThemePrefs } from '@/context/theme-prefs-context';
+import { useTheme } from '@/hooks/use-theme';
 
 const FEATURES: { icon: keyof typeof Ionicons.glyphMap; title: string; blurb: string }[] = [
   {
@@ -25,8 +27,11 @@ const FEATURES: { icon: keyof typeof Ionicons.glyphMap; title: string; blurb: st
 ];
 
 export default function Welcome() {
+  const theme = useTheme();
+  const { resolvedScheme } = useThemePrefs();
+
   return (
-    <LinearGradient colors={['#2a070b', '#000000']} style={styles.container}>
+    <LinearGradient colors={AuthGradient[resolvedScheme]} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.brandBlock}>
           <Image
@@ -34,7 +39,9 @@ export default function Welcome() {
             style={styles.logoMark}
             resizeMode="contain"
           />
-          <Text style={styles.tagline}>Stories that prove humanity isn&apos;t lost.</Text>
+          <Text style={[styles.tagline, { color: theme.textSecondary }]}>
+            Stories that prove humanity isn&apos;t lost.
+          </Text>
         </View>
 
         <View style={styles.featureList}>
@@ -44,8 +51,8 @@ export default function Welcome() {
                 <Ionicons name={feature.icon} size={22} color="#C01918" />
               </View>
               <View style={styles.featureText}>
-                <Text style={styles.featureTitle}>{feature.title}</Text>
-                <Text style={styles.featureBlurb}>{feature.blurb}</Text>
+                <Text style={[styles.featureTitle, { color: theme.text }]}>{feature.title}</Text>
+                <Text style={[styles.featureBlurb, { color: theme.textSecondary }]}>{feature.blurb}</Text>
               </View>
             </View>
           ))}
@@ -58,8 +65,8 @@ export default function Welcome() {
             </Pressable>
           </Link>
           <Link href="/(auth)/sign-in" asChild>
-            <Pressable style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>I already have an account</Text>
+            <Pressable style={StyleSheet.flatten([styles.secondaryButton, { borderColor: theme.border }])}>
+              <Text style={[styles.secondaryButtonText, { color: theme.text }]}>I already have an account</Text>
             </Pressable>
           </Link>
         </View>
@@ -78,7 +85,7 @@ const styles = StyleSheet.create({
   },
   brandBlock: { alignItems: 'center', marginTop: Spacing.six },
   logoMark: { width: 140, height: 140, marginBottom: Spacing.two },
-  tagline: { color: 'rgba(255,255,255,0.65)', fontSize: 15, marginTop: Spacing.two },
+  tagline: { fontSize: 15, marginTop: Spacing.two },
   featureList: { gap: Spacing.three },
   featureRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   featureIcon: {
@@ -90,8 +97,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   featureText: { flex: 1, gap: 2 },
-  featureTitle: { color: '#fff', fontSize: 15, fontWeight: '600' },
-  featureBlurb: { color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 18 },
+  featureTitle: { fontSize: 15, fontWeight: '600' },
+  featureBlurb: { fontSize: 13, lineHeight: 18 },
   buttonBlock: { gap: Spacing.two },
   primaryButton: {
     backgroundColor: '#C01918',
@@ -102,10 +109,9 @@ const styles = StyleSheet.create({
   primaryButtonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
   secondaryButton: {
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
     borderRadius: 10,
     paddingVertical: Spacing.two + 4,
     alignItems: 'center',
   },
-  secondaryButtonText: { color: '#fff', fontWeight: '500', fontSize: 14 },
+  secondaryButtonText: { fontWeight: '500', fontSize: 14 },
 });

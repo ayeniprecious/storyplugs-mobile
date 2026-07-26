@@ -1,13 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Spacing } from '@/constants/theme';
+import { AuthGradient, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useProfile } from '@/context/profile-context';
+import { useThemePrefs } from '@/context/theme-prefs-context';
+import { useTheme } from '@/hooks/use-theme';
+
+// Closes the in-progress auth browser tab/popup when it redirects back with
+// the OAuth result -- see the Expo + Supabase OAuth guide.
+WebBrowser.maybeCompleteAuthSession();
 
 const STEP_COUNT = 5;
 const MIN_AGE = 13;
@@ -38,8 +45,10 @@ function calculateAge(day: number, month: number, year: number) {
 }
 
 export default function SignUp() {
-  const { signUpWithEmail } = useAuth();
+  const { signUpWithEmail, signInWithGoogle, signInWithApple } = useAuth();
   const { refreshProfile } = useProfile();
+  const theme = useTheme();
+  const { resolvedScheme } = useThemePrefs();
 
   const [step, setStep] = useState(0);
   const [displayName, setDisplayName] = useState('');
@@ -51,8 +60,26 @@ export default function SignUp() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
+  const [appleSubmitting, setAppleSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmationSent, setConfirmationSent] = useState(false);
+
+  async function handleGoogleSignUp() {
+    setGoogleSubmitting(true);
+    setError(null);
+    const { error: googleError } = await signInWithGoogle();
+    setGoogleSubmitting(false);
+    if (googleError) setError(googleError);
+  }
+
+  async function handleAppleSignUp() {
+    setAppleSubmitting(true);
+    setError(null);
+    const { error: appleError } = await signInWithApple();
+    setAppleSubmitting(false);
+    if (appleError) setError(appleError);
+  }
 
   function handleContinue() {
     setError(null);
@@ -121,10 +148,10 @@ export default function SignUp() {
 
   if (confirmationSent) {
     return (
-      <LinearGradient colors={['#2a070b', '#000000']} style={styles.container}>
+      <LinearGradient colors={AuthGradient[resolvedScheme]} style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
-          <Text style={styles.title}>Check your email</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: theme.text }]}>Check your email</Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             We sent a confirmation link to {email}. Confirm it, then come back and sign in.
           </Text>
           <Link href="/(auth)/sign-in" asChild>
@@ -138,20 +165,27 @@ export default function SignUp() {
   }
 
   return (
-    <LinearGradient colors={['#2a070b', '#000000']} style={styles.container}>
+    <LinearGradient colors={AuthGradient[resolvedScheme]} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           {step > 0 ? (
             <Pressable onPress={() => setStep(step - 1)} hitSlop={12} style={styles.backButton}>
-              <Ionicons name="chevron-back" size={22} color="rgba(255,255,255,0.6)" />
-              <Text style={styles.backLabel}>Back</Text>
+              <Ionicons name="chevron-back" size={22} color={theme.textSecondary} />
+              <Text style={[styles.backLabel, { color: theme.textSecondary }]}>Back</Text>
             </Pressable>
           ) : (
             <View style={styles.backButton} />
           )}
           <View style={styles.progressDots}>
             {Array.from({ length: STEP_COUNT }).map((_, i) => (
-              <View key={i} style={[styles.dot, i === step ? styles.dotActive : i < step && styles.dotDone]} />
+              <View
+                key={i}
+                style={[
+                  styles.dot,
+                  { backgroundColor: theme.border },
+                  i === step ? styles.dotActive : i < step && styles.dotDone,
+                ]}
+              />
             ))}
           </View>
         </View>
@@ -159,65 +193,65 @@ export default function SignUp() {
         <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
           {step === 0 && (
             <>
-              <Text style={styles.title}>What&apos;s your name?</Text>
-              <Text style={styles.subtitle}>So we know what to call you.</Text>
+              <Text style={[styles.title, { color: theme.text }]}>What&apos;s your name?</Text>
+              <Text style={[styles.subtitle, { color: theme.textSecondary }]}>So we know what to call you.</Text>
               <TextInput
                 value={displayName}
                 onChangeText={setDisplayName}
                 placeholder="Your name"
-                placeholderTextColor="#8a8a8a"
-                style={styles.input}
+                placeholderTextColor={theme.placeholder}
+                style={[styles.input, { borderColor: theme.border, color: theme.text }]}
               />
             </>
           )}
 
           {step === 1 && (
             <>
-              <Text style={styles.title}>What&apos;s your email?</Text>
-              <Text style={styles.subtitle}>We&apos;ll use this to sign you in.</Text>
+              <Text style={[styles.title, { color: theme.text }]}>What&apos;s your email?</Text>
+              <Text style={[styles.subtitle, { color: theme.textSecondary }]}>We&apos;ll use this to sign you in.</Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
                 placeholder="Email"
-                placeholderTextColor="#8a8a8a"
+                placeholderTextColor={theme.placeholder}
                 autoCapitalize="none"
                 keyboardType="email-address"
-                style={styles.input}
+                style={[styles.input, { borderColor: theme.border, color: theme.text }]}
               />
             </>
           )}
 
           {step === 2 && (
             <>
-              <Text style={styles.title}>When&apos;s your birthday?</Text>
-              <Text style={styles.subtitle}>Helps us tailor content that fits.</Text>
+              <Text style={[styles.title, { color: theme.text }]}>When&apos;s your birthday?</Text>
+              <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Helps us tailor content that fits.</Text>
               <View style={styles.dobRow}>
                 <TextInput
                   value={day}
                   onChangeText={setDay}
                   placeholder="DD"
-                  placeholderTextColor="#8a8a8a"
+                  placeholderTextColor={theme.placeholder}
                   keyboardType="number-pad"
                   maxLength={2}
-                  style={[styles.input, styles.dobInput]}
+                  style={[styles.input, styles.dobInput, { borderColor: theme.border, color: theme.text }]}
                 />
                 <TextInput
                   value={month}
                   onChangeText={setMonth}
                   placeholder="MM"
-                  placeholderTextColor="#8a8a8a"
+                  placeholderTextColor={theme.placeholder}
                   keyboardType="number-pad"
                   maxLength={2}
-                  style={[styles.input, styles.dobInput]}
+                  style={[styles.input, styles.dobInput, { borderColor: theme.border, color: theme.text }]}
                 />
                 <TextInput
                   value={year}
                   onChangeText={setYear}
                   placeholder="YYYY"
-                  placeholderTextColor="#8a8a8a"
+                  placeholderTextColor={theme.placeholder}
                   keyboardType="number-pad"
                   maxLength={4}
-                  style={[styles.input, styles.dobInputYear]}
+                  style={[styles.input, styles.dobInputYear, { borderColor: theme.border, color: theme.text }]}
                 />
               </View>
             </>
@@ -225,18 +259,18 @@ export default function SignUp() {
 
           {step === 3 && (
             <>
-              <Text style={styles.title}>What&apos;s your gender?</Text>
-              <Text style={styles.subtitle}>Helps us personalize your experience.</Text>
+              <Text style={[styles.title, { color: theme.text }]}>What&apos;s your gender?</Text>
+              <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Helps us personalize your experience.</Text>
               {GENDER_OPTIONS.map((option) => {
                 const selected = gender === option.value;
                 return (
                   <Pressable
                     key={option.value}
                     onPress={() => setGender(option.value)}
-                    style={[styles.optionCard, selected && styles.optionCardSelected]}
+                    style={[styles.optionCard, { borderColor: theme.border }, selected && styles.optionCardSelected]}
                   >
-                    <Text style={styles.optionLabel}>{option.label}</Text>
-                    <View style={[styles.radio, selected && styles.radioSelected]}>
+                    <Text style={[styles.optionLabel, { color: theme.text }]}>{option.label}</Text>
+                    <View style={[styles.radio, { borderColor: theme.border }, selected && styles.radioSelected]}>
                       {selected && <View style={styles.radioInner} />}
                     </View>
                   </Pressable>
@@ -247,23 +281,23 @@ export default function SignUp() {
 
           {step === 4 && (
             <>
-              <Text style={styles.title}>Create a password</Text>
-              <Text style={styles.subtitle}>At least 6 characters.</Text>
+              <Text style={[styles.title, { color: theme.text }]}>Create a password</Text>
+              <Text style={[styles.subtitle, { color: theme.textSecondary }]}>At least 6 characters.</Text>
               <View style={styles.passwordWrap}>
                 <TextInput
                   value={password}
                   onChangeText={setPassword}
                   placeholder="Password"
-                  placeholderTextColor="#8a8a8a"
+                  placeholderTextColor={theme.placeholder}
                   secureTextEntry={!showPassword}
-                  style={[styles.input, styles.passwordInput]}
+                  style={[styles.input, styles.passwordInput, { borderColor: theme.border, color: theme.text }]}
                 />
                 <Pressable
                   onPress={() => setShowPassword((v) => !v)}
                   style={styles.eyeButton}
                   hitSlop={8}
                 >
-                  <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color="#8a8a8a" />
+                  <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={theme.placeholder} />
                 </Pressable>
               </View>
             </>
@@ -283,11 +317,49 @@ export default function SignUp() {
           </Pressable>
 
           {step === 0 && (
-            <Link href="/(auth)/sign-in" asChild>
-              <Pressable>
-                <Text style={styles.link}>Already have an account? Sign in</Text>
+            <>
+              <View style={styles.dividerRow}>
+                <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+                <Text style={[styles.dividerText, { color: theme.textSecondary }]}>or</Text>
+                <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+              </View>
+
+              <Pressable
+                style={[styles.googleButton, { borderColor: theme.border }]}
+                onPress={handleGoogleSignUp}
+                disabled={googleSubmitting}
+              >
+                {googleSubmitting ? (
+                  <ActivityIndicator color="#1f1f1f" />
+                ) : (
+                  <>
+                    <Ionicons name="logo-google" size={18} color="#1f1f1f" />
+                    <Text style={styles.googleButtonText}>Continue with Google</Text>
+                  </>
+                )}
               </Pressable>
-            </Link>
+
+              <Pressable
+                style={[styles.appleButton, { borderColor: theme.border }]}
+                onPress={handleAppleSignUp}
+                disabled={appleSubmitting}
+              >
+                {appleSubmitting ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="logo-apple" size={20} color="#fff" />
+                    <Text style={styles.appleButtonText}>Continue with Apple</Text>
+                  </>
+                )}
+              </Pressable>
+
+              <Link href="/(auth)/sign-in" asChild>
+                <Pressable>
+                  <Text style={styles.link}>Already have an account? Sign in</Text>
+                </Pressable>
+              </Link>
+            </>
           )}
         </View>
       </SafeAreaView>
@@ -305,7 +377,7 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
   },
   backButton: { flexDirection: 'row', alignItems: 'center', width: 70 },
-  backLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 14 },
+  backLabel: { fontSize: 14 },
   progressDots: {
     flex: 1,
     flexDirection: 'row',
@@ -313,7 +385,7 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     marginRight: 70,
   },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#3a3a3c' },
+  dot: { width: 8, height: 8, borderRadius: 4 },
   dotActive: { backgroundColor: '#C01918', width: 22 },
   dotDone: { backgroundColor: '#C01918', opacity: 0.5 },
   scroll: { flex: 1 },
@@ -325,16 +397,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   footer: { paddingHorizontal: Spacing.two + 4, paddingBottom: Spacing.three, gap: Spacing.two },
-  title: { color: '#fff', fontSize: 24, lineHeight: 30, marginBottom: Spacing.two, fontWeight: '600' },
-  subtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 15, marginBottom: Spacing.three },
+  title: { fontSize: 24, lineHeight: 30, marginBottom: Spacing.two, fontWeight: '600' },
+  subtitle: { fontSize: 15, marginBottom: Spacing.three },
   input: {
     borderWidth: 1,
-    borderColor: '#3a3a3c',
     borderRadius: 10,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two + 4,
     fontSize: 16,
-    color: '#fff',
     marginBottom: Spacing.two,
   },
   passwordWrap: { justifyContent: 'center' },
@@ -350,17 +420,15 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#3a3a3c',
     marginBottom: Spacing.two,
   },
   optionCardSelected: { borderColor: '#C01918' },
-  optionLabel: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  optionLabel: { fontSize: 14, fontWeight: '600' },
   radio: {
     width: 22,
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: '#3a3a3c',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -375,5 +443,37 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
   },
   primaryButtonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    marginTop: Spacing.three,
+  },
+  dividerLine: { flex: 1, height: 1 },
+  dividerText: { fontSize: 13 },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: Spacing.two,
+    marginTop: Spacing.three,
+  },
+  googleButtonText: { color: '#1f1f1f', fontWeight: '600', fontSize: 15 },
+  appleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    backgroundColor: '#000',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: Spacing.two,
+    marginTop: Spacing.two,
+  },
+  appleButtonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
   link: { color: '#3c87f7', textAlign: 'center', marginTop: Spacing.four, fontSize: 14 },
 });

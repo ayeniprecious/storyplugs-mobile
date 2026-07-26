@@ -45,17 +45,13 @@ export default function Search() {
     );
   }, [allStories, query]);
 
-  // Falls back through is_featured -> is_pinned -> most recent, so the
-  // carousel is never empty before an admin curates anything.
-  const featuredStories = useMemo(() => {
-    const featured = allStories.filter((s) => s.is_featured);
-    if (featured.length > 0) return featured;
-    const pinned = allStories.filter((s) => s.is_pinned);
-    if (pinned.length > 0) return pinned;
-    return [...allStories]
-      .sort((a, b) => new Date(b.published_at ?? 0).getTime() - new Date(a.published_at ?? 0).getTime())
-      .slice(0, 5);
-  }, [allStories]);
+  // Strictly admin-curated -- no is_pinned or most-recent fallback, so the
+  // section simply doesn't render at all until an admin actually marks
+  // something is_featured.
+  const featuredStories = useMemo(
+    () => allStories.filter((s) => s.is_featured),
+    [allStories],
+  );
 
   // Same 7-day window as the "New" ribbon badge on StoryCard, reused rather
   // than duplicated so the two stay consistent with each other. Capped --

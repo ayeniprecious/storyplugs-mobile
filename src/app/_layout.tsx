@@ -68,6 +68,9 @@ function AppStack({
         <Stack.Screen name="story/[id]" options={{ presentation: "card" }} />
         <Stack.Screen name="notifications" options={{ presentation: "card" }} />
       </Stack.Protected>
+      {/* Unguarded: OAuth code exchange and email confirmation links both land
+          here regardless of whether a session already exists yet. */}
+      <Stack.Screen name="auth/callback" />
     </Stack>
   );
 }

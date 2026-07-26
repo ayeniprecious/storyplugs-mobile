@@ -10,6 +10,7 @@ import { SettingsGroup } from '@/components/settings-group';
 import { SettingsRow } from '@/components/settings-row';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ENABLE_STREAK_FREEZE } from '@/constants/launch-flags';
 import { CardAsh, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useProfile } from '@/context/profile-context';
@@ -37,6 +38,11 @@ export default function Profile() {
     ? new Date(profile.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
     : '–';
 
+  // Google/Apple sign-in never sets a password, so there's nothing for those
+  // accounts to re-verify -- fall back to identities so we don't wrongly gate
+  // an OAuth-only account behind a password field it can never fill in.
+  const hasPassword = user?.identities?.some((identity) => identity.provider === 'email') ?? true;
+
   async function handleSignOut() {
     setConfirmingSignOut(false);
     setSigningOut(true);
@@ -51,17 +57,19 @@ export default function Profile() {
     setDeleting(true);
     setDeleteError(null);
 
-    // Re-verify the caller's password before destroying their account --
-    // signInWithPassword either confirms it or fails with an auth error, no
-    // separate check needed.
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: user.email,
-      password: deletePassword,
-    });
-    if (authError) {
-      setDeleting(false);
-      setDeleteError('Incorrect password.');
-      return;
+    if (hasPassword) {
+      // Re-verify the caller's password before destroying their account --
+      // signInWithPassword either confirms it or fails with an auth error, no
+      // separate check needed.
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: deletePassword,
+      });
+      if (authError) {
+        setDeleting(false);
+        setDeleteError('Incorrect password.');
+        return;
+      }
     }
 
     const { error } = await supabase.functions.invoke('delete-account');
@@ -97,7 +105,7 @@ export default function Profile() {
             </Pressable>
           </Link>
 
-          {canSaveStreak && (
+          {ENABLE_STREAK_FREEZE && canSaveStreak && (
             <ThemedView style={styles.freezeBanner}>
               <Ionicons name="snow" size={18} color="#3c87f7" />
               <ThemedView style={styles.freezeBannerTextGroup}>
@@ -130,7 +138,7 @@ export default function Profile() {
               <ThemedText type="small" style={styles.statLabel}>
                 Day Streak
               </ThemedText>
-              {profile?.is_premium && (
+              {ENABLE_STREAK_FREEZE && profile?.is_premium && (
                 <ThemedText type="small" style={styles.freezeCountLabel}>
                   {freezesAvailable} freeze{freezesAvailable === 1 ? '' : 's'} left
                 </ThemedText>
@@ -257,15 +265,17 @@ export default function Profile() {
               <ThemedText type="small" style={styles.modalBody}>
                 This permanently deletes your account and all your data. This cannot be undone.
               </ThemedText>
-              <TextInput
-                value={deletePassword}
-                onChangeText={setDeletePassword}
-                placeholder="Enter your current password"
-                placeholderTextColor={theme.placeholder}
-                secureTextEntry
-                autoCapitalize="none"
-                style={[styles.modalInput, { borderColor: theme.border, color: theme.text }]}
-              />
+              {hasPassword && (
+                <TextInput
+                  value={deletePassword}
+                  onChangeText={setDeletePassword}
+                  placeholder="Enter your current password"
+                  placeholderTextColor={theme.placeholder}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  style={[styles.modalInput, { borderColor: theme.border, color: theme.text }]}
+                />
+              )}
               {deleteError && (
                 <ThemedText type="small" style={styles.deleteErrorText}>
                   {deleteError}
@@ -283,9 +293,13 @@ export default function Profile() {
                   <ThemedText style={styles.modalCancelText}>Cancel</ThemedText>
                 </Pressable>
                 <Pressable
-                  style={[styles.modalButton, styles.modalDeleteButton, (!deletePassword || deleting) && styles.modalButtonDisabled]}
+                  style={[
+                    styles.modalButton,
+                    styles.modalDeleteButton,
+                    ((hasPassword && !deletePassword) || deleting) && styles.modalButtonDisabled,
+                  ]}
                   onPress={handleDeleteAccount}
-                  disabled={!deletePassword || deleting}
+                  disabled={(hasPassword && !deletePassword) || deleting}
                 >
                   {deleting ? (
                     <ActivityIndicator size="small" color="#fff" />

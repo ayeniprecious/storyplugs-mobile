@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BackButton } from '@/components/back-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ENABLE_COMMENTS } from '@/constants/launch-flags';
 import { Spacing } from '@/constants/theme';
 
 const FAQ_ITEMS: { question: string; answer: string }[] = [
@@ -25,11 +26,15 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
     question: 'How do I remove a story from My Library?',
     answer: 'Open My Library and tap the X on any row in Continue Reading, Saved, or Completed to remove it.',
   },
-  {
-    question: 'Can I hide my name on comments?',
-    answer:
-      'Yes — go to Profile → Privacy and turn on "Hide my identity in comments." New comments you post will show as Anonymous.',
-  },
+  ...(ENABLE_COMMENTS
+    ? [
+        {
+          question: 'Can I hide my name on comments?',
+          answer:
+            'Yes — go to Profile → Privacy and turn on "Hide my identity in comments." New comments you post will show as Anonymous.',
+        },
+      ]
+    : []),
   {
     question: 'How do I delete my account?',
     answer:

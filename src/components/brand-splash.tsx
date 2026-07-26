@@ -2,6 +2,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef } from "react";
 import { Animated, Easing, StyleSheet } from "react-native";
 
+import { AuthGradient } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
+import { useThemePrefs } from "@/context/theme-prefs-context";
+
 interface BrandSplashProps {
   /** Flip to true when the app is ready — the splash fades out, then calls onHidden. */
   done: boolean;
@@ -14,6 +18,8 @@ interface BrandSplashProps {
  * auth/profile have resolved, then flips `done` to fade it out over the app.
  */
 export function BrandSplash({ done, onHidden }: BrandSplashProps) {
+  const theme = useTheme();
+  const { resolvedScheme } = useThemePrefs();
   const containerOpacity = useRef(new Animated.Value(1)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const logoScale = useRef(new Animated.Value(0.7)).current;
@@ -68,7 +74,7 @@ export function BrandSplash({ done, onHidden }: BrandSplashProps) {
       pointerEvents={done ? "none" : "auto"}
       style={[StyleSheet.absoluteFill, { opacity: containerOpacity }]}
     >
-      <LinearGradient colors={["#2a070b", "#000000"]} style={styles.gradient}>
+      <LinearGradient colors={AuthGradient[resolvedScheme]} style={styles.gradient}>
         <Animated.Image
           source={require("@/assets/images/logo-mark.png")}
           style={[
@@ -80,7 +86,7 @@ export function BrandSplash({ done, onHidden }: BrandSplashProps) {
         <Animated.Text
           style={[
             styles.tagline,
-            { opacity: textOpacity, transform: [{ translateY: textShift }] },
+            { color: theme.textSecondary, opacity: textOpacity, transform: [{ translateY: textShift }] },
           ]}
         >
           Plugging Stories Into The World
@@ -93,5 +99,5 @@ export function BrandSplash({ done, onHidden }: BrandSplashProps) {
 const styles = StyleSheet.create({
   gradient: { flex: 1, alignItems: "center", justifyContent: "center" },
   logoMark: { width: 180, height: 180, marginBottom: 8 },
-  tagline: { color: "rgba(255,255,255,0.65)", fontSize: 15, marginTop: 8 },
+  tagline: { fontSize: 15, marginTop: 8 },
 });
