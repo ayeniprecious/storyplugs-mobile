@@ -358,14 +358,11 @@ export default function StoryRead() {
                 </>
               )}
               {story.daily_lesson && (
-                <ThemedView style={styles.calloutBox}>
-                  <Ionicons name="bulb-outline" size={20} color="#8a8a8e" style={styles.calloutGlyph} />
-                  <ThemedView style={styles.calloutBody}>
-                    <ThemedText type="small" style={styles.calloutLabel}>
-                      Today&apos;s Lesson
-                    </ThemedText>
-                    <ThemedText style={styles.calloutText}>{story.daily_lesson}</ThemedText>
-                  </ThemedView>
+                <ThemedView type="backgroundElement" style={styles.lessonCard}>
+                  <ThemedText type="smallBold" style={styles.lessonLabel}>
+                    Today&apos;s Lesson
+                  </ThemedText>
+                  <ThemedText style={styles.lessonText}>{story.daily_lesson}</ThemedText>
                 </ThemedView>
               )}
 
@@ -570,7 +567,7 @@ const styles = StyleSheet.create({
   readerModeBarText: { fontWeight: '600' },
   categoryTag: { color: '#C01918', fontWeight: '600', textTransform: 'uppercase' },
   title: { fontSize: TITLE_FONT_SIZE, lineHeight: 33, fontWeight: '800' },
-  body: { fontSize: BODY_FONT_SIZE, lineHeight: 30, opacity: 0.9 },
+  body: { fontSize: BODY_FONT_SIZE, lineHeight: 36, opacity: 0.9 },
   activeSentence: { backgroundColor: 'rgba(192,25,24,0.22)', fontWeight: '700' },
   activeSentenceDark: { backgroundColor: 'rgba(255,255,255,0.22)', color: '#fff', fontWeight: '700' },
   calloutBox: {
@@ -587,6 +584,12 @@ const styles = StyleSheet.create({
   calloutBody: { flex: 1, gap: 4, backgroundColor: 'transparent' },
   calloutLabel: { color: '#C01918', fontSize: 11, textTransform: 'uppercase' },
   calloutText: { fontSize: 15, lineHeight: 22, opacity: 0.9 },
+  // Matches Home's Quote of the Day card exactly (see (app)/index.tsx's
+  // quoteCard/sectionLabel/quoteText) instead of the Reflect callout's
+  // icon + left-border treatment.
+  lessonCard: { borderRadius: 16, padding: Spacing.three, gap: Spacing.two },
+  lessonLabel: { opacity: 0.6, textTransform: 'uppercase' },
+  lessonText: { fontSize: 18, lineHeight: 26, fontStyle: 'italic' },
   completeButton: {
     marginTop: Spacing.two,
     backgroundColor: '#C01918',
