@@ -307,25 +307,29 @@ export default function StoryPreview() {
         <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent}>
           <ThemedView style={styles.headerRow}>
             <View style={styles.coverShadowWrap}>
-              <View style={[styles.cover, { backgroundColor: getCoverColor(story) }]}>
-                <LinearGradient
-                  colors={COVER_GRADIENT_COLORS}
-                  locations={COVER_GRADIENT_LOCATIONS}
-                  style={StyleSheet.absoluteFill}
-                />
-                <CoverSpine widthPercent={18} />
-                <CoverFrame inset={7} />
-                <View style={styles.coverContent}>
-                  <Text numberOfLines={5} style={styles.coverTitle}>
-                    {story.title}
-                  </Text>
-                  {story.author_name && (
-                    <Text numberOfLines={1} style={styles.coverAuthor}>
-                      {story.author_name}
+              {story.image_url ? (
+                <Image source={{ uri: story.image_url }} style={styles.cover} contentFit="cover" />
+              ) : (
+                <View style={[styles.cover, { backgroundColor: getCoverColor(story) }]}>
+                  <LinearGradient
+                    colors={COVER_GRADIENT_COLORS}
+                    locations={COVER_GRADIENT_LOCATIONS}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <CoverSpine widthPercent={18} />
+                  <CoverFrame inset={7} />
+                  <View style={styles.coverContent}>
+                    <Text numberOfLines={5} style={styles.coverTitle}>
+                      {story.title}
                     </Text>
-                  )}
+                    {story.author_name && (
+                      <Text numberOfLines={1} style={styles.coverAuthor}>
+                        {story.author_name}
+                      </Text>
+                    )}
+                  </View>
                 </View>
-              </View>
+              )}
             </View>
             <ThemedView style={styles.headerInfo}>
               <ThemedText type="title" style={styles.title} numberOfLines={4}>
@@ -473,7 +477,7 @@ export default function StoryPreview() {
               <ThemedView style={styles.lessonHeaderRow}>
                 <Ionicons name="bulb-outline" size={16} color="#C01918" />
                 <ThemedText type="smallBold" style={styles.lessonHeading}>
-                  Today&apos;s Lesson
+                  Lesson
                 </ThemedText>
               </ThemedView>
               <ThemedText style={styles.lessonText}>{story.daily_lesson}</ThemedText>

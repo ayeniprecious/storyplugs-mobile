@@ -360,7 +360,7 @@ export default function StoryRead() {
               {story.daily_lesson && (
                 <ThemedView type="backgroundElement" style={styles.lessonCard}>
                   <ThemedText type="smallBold" style={styles.lessonLabel}>
-                    Today&apos;s Lesson
+                    Lesson
                   </ThemedText>
                   <ThemedText style={styles.lessonText}>{story.daily_lesson}</ThemedText>
                 </ThemedView>

@@ -45,7 +45,7 @@ export function ShortStoryCard({
 
       <ThemedView style={styles.badge}>
         <Ionicons name="book-outline" size={10} color="#C01918" />
-        <ThemedText style={styles.badgeText}>SHORT STORY</ThemedText>
+        <ThemedText style={styles.badgeText}>SHORT</ThemedText>
       </ThemedView>
 
       <ThemedView style={styles.bottomContent}>
@@ -109,8 +109,8 @@ const styles = StyleSheet.create({
   },
   badgeText: { color: '#fff', fontWeight: '700', fontSize: 8, letterSpacing: 0.3 },
   bottomContent: { padding: 12, gap: 5, backgroundColor: 'transparent' },
-  title: { fontSize: 16, lineHeight: 19, fontWeight: '800', color: '#fff', letterSpacing: -0.2 },
-  excerpt: { fontSize: 11, lineHeight: 15, color: 'rgba(255,255,255,0.82)' },
+  title: { fontSize: 19, lineHeight: 23, fontWeight: '800', color: '#fff', letterSpacing: -0.2 },
+  excerpt: { fontSize: 13, lineHeight: 18, color: 'rgba(255,255,255,0.82)' },
   metaRow: { flexDirection: 'row', gap: 10, backgroundColor: 'transparent', marginTop: 1 },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent', flexShrink: 1 },
   metaText: { color: 'rgba(255,255,255,0.75)', fontSize: 10, fontWeight: '600' },
