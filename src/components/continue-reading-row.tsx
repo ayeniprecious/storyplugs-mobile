@@ -42,7 +42,7 @@ export function ContinueReadingRow({ items }: { items: ContinueReadingItem[] }) 
         removeClippedSubviews
         renderItem={({ item }) => (
           <View style={styles.cardWrap}>
-            <BookCoverCard story={item.story} progressPercent={item.progressPercent} />
+            <BookCoverCard story={item.story} progressPercent={item.progressPercent} preferImage />
           </View>
         )}
       />

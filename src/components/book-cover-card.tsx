@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -70,25 +71,40 @@ export function BookCoverCard({
   story,
   progressPercent,
   rank,
+  preferImage = false,
 }: {
   story: Story;
   progressPercent?: number;
   rank?: number;
+  // When true and the story has a real image_url (short stories), shows
+  // that photo instead of the solid-color book cover. Opt-in per call
+  // site -- screens that are deliberately color-card-only everywhere
+  // (Recommended, Category rows, Search, notification posters) don't pass
+  // this and are unaffected.
+  preferImage?: boolean;
 }) {
   const color = getCoverColor(story);
   const hasProgress = progressPercent !== undefined;
+  const hasImage = preferImage && !!story.image_url;
 
   return (
     <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
       <Pressable style={styles.shadowWrap}>
-        <View style={[styles.card, { backgroundColor: color }]}>
+        <View style={[styles.card, !hasImage && { backgroundColor: color }]}>
+          {hasImage && (
+            <Image source={{ uri: story.image_url as string }} style={StyleSheet.absoluteFill} contentFit="cover" />
+          )}
           <LinearGradient
             colors={COVER_GRADIENT_COLORS}
             locations={COVER_GRADIENT_LOCATIONS}
             style={StyleSheet.absoluteFill}
           />
-          <CoverSpine />
-          <CoverFrame />
+          {!hasImage && (
+            <>
+              <CoverSpine />
+              <CoverFrame />
+            </>
+          )}
           {rank !== undefined && (
             <View style={styles.rankBadge}>
               <Text style={styles.rankBadgeText}>{rank}</Text>

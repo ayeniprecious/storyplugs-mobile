@@ -1,5 +1,6 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
 import { Link, router } from 'expo-router';
@@ -34,6 +35,10 @@ interface StoryRowCardProps {
   progressPercent?: number;
   onRemove?: () => void;
   removeLabel?: string;
+  // When true and the story has a real image_url (short stories), shows
+  // that photo instead of the solid-color book cover -- opt-in per call
+  // site, same as BookCoverCard's prop of the same name.
+  preferImage?: boolean;
 }
 
 // Horizontal list-item card -- title, then category/read-time/18+ on one meta
@@ -45,13 +50,21 @@ interface StoryRowCardProps {
 // poster-style StoryCard's grid/carousel look -- Library's Continue
 // Reading/Saved/Downloads/Completed/folder sections plus curated row-style
 // sections on Home/Search.
-export function StoryRowCard({ story, subtitle, progressPercent, onRemove, removeLabel }: StoryRowCardProps) {
+export function StoryRowCard({
+  story,
+  subtitle,
+  progressPercent,
+  onRemove,
+  removeLabel,
+  preferImage = false,
+}: StoryRowCardProps) {
   const { labels: categoryLabels } = useCategories();
   const theme = useTheme();
   const { user } = useAuth();
   const { profile } = useProfile();
   const { settings } = useAppSettings();
   const hasProgress = progressPercent !== undefined;
+  const hasImage = preferImage && !!story.image_url;
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
@@ -149,23 +162,33 @@ export function StoryRowCard({ story, subtitle, progressPercent, onRemove, remov
       <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
         <Pressable style={styles.rowPressable}>
           <View style={styles.thumbShadowWrap}>
-            <View style={[styles.thumb, { backgroundColor: getCoverColor(story) }]}>
-              <LinearGradient
-                colors={COVER_GRADIENT_COLORS}
-                locations={COVER_GRADIENT_LOCATIONS}
-                style={StyleSheet.absoluteFill}
-              />
-              <CoverSpine widthPercent={26} />
-              <View style={styles.thumbContent}>
-                <Text numberOfLines={3} style={styles.thumbTitle}>
-                  {story.title}
-                </Text>
-                {story.author_name && (
-                  <Text numberOfLines={1} style={styles.thumbAuthor}>
-                    {story.author_name}
-                  </Text>
-                )}
-              </View>
+            <View style={[styles.thumb, !hasImage && { backgroundColor: getCoverColor(story) }]}>
+              {hasImage ? (
+                <Image
+                  source={{ uri: story.image_url as string }}
+                  style={StyleSheet.absoluteFill}
+                  contentFit="cover"
+                />
+              ) : (
+                <>
+                  <LinearGradient
+                    colors={COVER_GRADIENT_COLORS}
+                    locations={COVER_GRADIENT_LOCATIONS}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <CoverSpine widthPercent={26} />
+                  <View style={styles.thumbContent}>
+                    <Text numberOfLines={3} style={styles.thumbTitle}>
+                      {story.title}
+                    </Text>
+                    {story.author_name && (
+                      <Text numberOfLines={1} style={styles.thumbAuthor}>
+                        {story.author_name}
+                      </Text>
+                    )}
+                  </View>
+                </>
+              )}
             </View>
           </View>
           <ThemedView style={styles.rowBody}>

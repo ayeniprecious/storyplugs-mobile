@@ -20,6 +20,7 @@ export default function ContinueReadingList() {
           progressPercent={item.progressPercent}
           onRemove={() => removeItem(item.story.id)}
           removeLabel="Remove from Continue Reading"
+          preferImage
         />
       ))}
     </StoryListScreen>

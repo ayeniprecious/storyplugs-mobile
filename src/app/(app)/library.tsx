@@ -189,6 +189,7 @@ export default function Library() {
                       progressPercent={progressPercent}
                       onRemove={() => removeFromContinueReading(story.id)}
                       removeLabel="Remove from Continue Reading"
+                      preferImage
                     />
                   ))}
                 </View>
