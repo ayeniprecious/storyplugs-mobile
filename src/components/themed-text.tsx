@@ -3,6 +3,7 @@ import { Platform, StyleSheet, Text, type TextProps, type TextStyle } from 'reac
 import { Fonts, ThemeColor } from '@/constants/theme';
 import { useThemePrefs } from '@/context/theme-prefs-context';
 import { useTheme } from '@/hooks/use-theme';
+import { resolveMontserrat } from '@/lib/montserrat';
 
 export type ThemedTextProps = TextProps & {
   type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
@@ -33,6 +34,13 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
   // fontSize means a large enough preference makes the text taller than the
   // line box it sits in -- clipped or overlapping lines, not just "bigger."
   const baseLineHeight = typeof flattened.lineHeight === 'number' ? flattened.lineHeight : undefined;
+  // Montserrat is fixed-weight per font file -- fontWeight alone does nothing
+  // once fontFamily is set, so resolve whichever weight this text ended up
+  // with (its own style, or the 500 default below) to the matching loaded
+  // family. A caller that already set its own fontFamily (the 'code' type's
+  // monospace) is left alone.
+  const fontFamily =
+    flattened.fontFamily ?? resolveMontserrat(flattened.fontWeight ?? 500);
 
   return (
     <Text
@@ -41,6 +49,7 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
         typeStyle,
         style,
         {
+          fontFamily,
           fontSize: baseFontSize * fontScale,
           ...(baseLineHeight !== undefined ? { lineHeight: baseLineHeight * fontScale } : {}),
         },

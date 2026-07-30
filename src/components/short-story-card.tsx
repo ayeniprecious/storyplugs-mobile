@@ -1,67 +1,146 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { getCoverColor } from '@/components/book-cover-card';
 import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { useCategories } from '@/context/categories-context';
+import { useFavorite } from '@/hooks/use-favorite';
 import type { Story } from '@/lib/database.types';
 import { estimateReadMinutes } from '@/lib/read-time';
 
-// A wide, low card (as opposed to the app's usual 2:3 poster) -- the shape
-// itself reads as "quick read" at a glance, distinct from the taller browse
-// carousels elsewhere on Home.
-export function ShortStoryCard({ story }: { story: Story }) {
-  const minutes = estimateReadMinutes(story.body);
+// Home's Short Stories row card -- the same visual language as HeroBanner
+// (full-bleed image, bottom gradient, title/excerpt/meta/actions stacked at
+// the bottom edge) just smaller and fixed-width so many sit in one endless
+// horizontal row. Short stories are the one story type with a real
+// image_url cover instead of a color card, hence the plain Image here
+// rather than getCoverColor. Only the Read button navigates -- same
+// interaction split as HeroBanner, where Save is its own tap target rather
+// than the whole card being a link.
+export function ShortStoryCard({
+  story,
+  style,
+}: {
+  story: Story;
+  // Lets the View All page reuse this exact card full-width instead of the
+  // fixed row width, without duplicating the whole component.
+  style?: StyleProp<ViewStyle>;
+}) {
+  const { labels: categoryLabels } = useCategories();
+  const { isFavorited, toggle: toggleFavorite } = useFavorite(story.id);
+  const readMinutes = estimateReadMinutes(story.body);
 
   return (
-    <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
-      <Pressable style={styles.card}>
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: getCoverColor(story) }]} />
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.85)']}
-          locations={[0.4, 1]}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={styles.heartBadge}>
-          <Ionicons name="heart" size={11} color="#fff" />
-        </View>
-        <View style={styles.content}>
-          <ThemedText numberOfLines={2} style={styles.title}>
-            {story.title}
-          </ThemedText>
-          <View style={styles.metaRow}>
-            <Ionicons name="time-outline" size={12} color="rgba(255,255,255,0.75)" />
-            <ThemedText style={styles.meta}>{minutes} min read</ThemedText>
-          </View>
-        </View>
-      </Pressable>
-    </Link>
+    <View style={[styles.card, style]}>
+      {story.image_url && (
+        <Image source={{ uri: story.image_url }} style={StyleSheet.absoluteFill} contentFit="cover" />
+      )}
+      <LinearGradient
+        colors={['transparent', 'rgba(0,0,0,0.55)', 'rgba(0,0,0,0.96)']}
+        locations={[0, 0.5, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+
+      <ThemedView style={styles.badge}>
+        <Ionicons name="book-outline" size={10} color="#C01918" />
+        <ThemedText style={styles.badgeText}>SHORT STORY</ThemedText>
+      </ThemedView>
+
+      <ThemedView style={styles.bottomContent}>
+        <ThemedText style={styles.title} numberOfLines={2}>
+          {story.title}
+        </ThemedText>
+        <ThemedText style={styles.excerpt} numberOfLines={3}>
+          {story.body}
+        </ThemedText>
+
+        <ThemedView style={styles.metaRow}>
+          <ThemedView style={styles.metaItem}>
+            <Ionicons name="pricetag-outline" size={11} color="rgba(255,255,255,0.75)" />
+            <ThemedText style={styles.metaText} numberOfLines={1}>
+              {categoryLabels[story.category] ?? story.category}
+            </ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.metaItem}>
+            <Ionicons name="time-outline" size={11} color="rgba(255,255,255,0.75)" />
+            <ThemedText style={styles.metaText}>{readMinutes} min</ThemedText>
+          </ThemedView>
+        </ThemedView>
+
+        <ThemedView style={styles.buttonRow}>
+          <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
+            <Pressable style={styles.primaryCta}>
+              <Ionicons name="book-outline" size={12} color="#fff" />
+              <ThemedText style={styles.primaryCtaText}>Read</ThemedText>
+            </Pressable>
+          </Link>
+          <Pressable style={styles.secondaryCta} onPress={toggleFavorite}>
+            <Ionicons name={isFavorited ? 'bookmark' : 'bookmark-outline'} size={12} color="#fff" />
+            <ThemedText style={styles.secondaryCtaText}>{isFavorited ? 'Saved' : 'Save'}</ThemedText>
+          </Pressable>
+        </ThemedView>
+      </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    width: 210,
-    height: 120,
-    borderRadius: 14,
+    width: 220,
+    height: 300,
+    borderRadius: 18,
     overflow: 'hidden',
     backgroundColor: '#1c1c1e',
     justifyContent: 'flex-end',
   },
-  heartBadge: {
+  badge: {
     position: 'absolute',
-    top: 8,
-    left: 8,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    top: 10,
+    left: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  badgeText: { color: '#fff', fontWeight: '700', fontSize: 8, letterSpacing: 0.3 },
+  bottomContent: { padding: 12, gap: 5, backgroundColor: 'transparent' },
+  title: { fontSize: 16, lineHeight: 19, fontWeight: '800', color: '#fff', letterSpacing: -0.2 },
+  excerpt: { fontSize: 11, lineHeight: 15, color: 'rgba(255,255,255,0.82)' },
+  metaRow: { flexDirection: 'row', gap: 10, backgroundColor: 'transparent', marginTop: 1 },
+  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent', flexShrink: 1 },
+  metaText: { color: 'rgba(255,255,255,0.75)', fontSize: 10, fontWeight: '600' },
+  buttonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+    backgroundColor: 'transparent',
+  },
+  primaryCta: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(192,25,24,0.85)',
+    gap: 5,
+    backgroundColor: '#C01918',
+    borderRadius: 9,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
-  content: { padding: 10, gap: 4 },
-  title: { color: '#fff', fontSize: 14, fontWeight: '700', lineHeight: 18 },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  meta: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '500' },
+  primaryCtaText: { color: '#fff', fontWeight: '700', fontSize: 11 },
+  secondaryCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderRadius: 9,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  secondaryCtaText: { color: '#fff', fontWeight: '700', fontSize: 11 },
 });

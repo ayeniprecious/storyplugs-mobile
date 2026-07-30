@@ -66,6 +66,10 @@ export interface Story {
   is_pinned: boolean;
   // 20260728000000_story_mature_flag.sql -- admin-editable, drives the "18+" badge.
   is_mature: boolean;
+  // 20260830000000_short_stories_rebuild.sql -- has a real image_url cover
+  // instead of a color card, eligible to be Story of the Day, shown in
+  // Home's Short Stories row.
+  is_short_story: boolean;
   published_at: string | null;
   created_at: string;
   updated_at: string;

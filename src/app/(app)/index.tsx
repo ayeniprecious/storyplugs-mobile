@@ -12,6 +12,7 @@ import { HeroBanner } from "@/components/hero-banner";
 import { MoodCheckinModal } from "@/components/mood-checkin-modal";
 import { PremiumLockModal } from "@/components/premium-lock-modal";
 import { RankedStoryList } from "@/components/ranked-story-list";
+import { ShortStoriesRow } from "@/components/short-stories-row";
 import { Skeleton } from "@/components/skeleton";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
@@ -28,6 +29,7 @@ import { useDailyContent } from "@/hooks/use-daily-content";
 import { useMoodCheckin } from "@/hooks/use-mood-checkin";
 import { useReadingStreak } from "@/hooks/use-reading-streak";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
+import { useShortStories } from "@/hooks/use-short-stories";
 import { buildMoodPicks } from "@/lib/mood-recommendations";
 import { buildRecommendations } from "@/lib/recommendations";
 import { supabase } from "@/lib/supabase";
@@ -81,6 +83,7 @@ export default function Home() {
     loading: streakLoading,
     refresh: refreshStreak,
   } = useReadingStreak();
+  const { stories: shortStories } = useShortStories();
   const [refreshing, setRefreshing] = useState(false);
   const { registerContainer, registerRow, handleScroll } = useScrollReveal();
   const { byAnchor: curatedByAnchor } = useCuratedSections("home");
@@ -325,6 +328,10 @@ export default function Home() {
               </ThemedView>
             </Animated.View>
           )}
+
+          <Animated.View {...registerRow("short-stories", "body")}>
+            <ShortStoriesRow stories={shortStories} />
+          </Animated.View>
 
           {curatedByAnchor.home_after_reflection?.map((section) => (
             <CuratedSection key={section.id} section={section} />

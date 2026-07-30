@@ -15,7 +15,15 @@ interface DailyContentResult {
 async function fetchDailyContent(): Promise<DailyContentResult> {
   try {
     const [storiesRes, quotesRes, reflectionsRes] = await Promise.all([
-      supabase.from("stories").select("*").eq("status", "published").order("id"),
+      // Story of the Day only ever picks from short stories -- these are
+      // the only stories with a real cover image, and the deterministic
+      // rotation below assumes a stable, image-bearing pool.
+      supabase
+        .from("stories")
+        .select("*")
+        .eq("status", "published")
+        .eq("is_short_story", true)
+        .order("id"),
       supabase.from("quotes").select("*").eq("status", "published").order("id"),
       supabase.from("reflections").select("*").eq("status", "published").order("id"),
     ]);

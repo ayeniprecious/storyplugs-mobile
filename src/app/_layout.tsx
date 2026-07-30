@@ -1,14 +1,16 @@
 import type { Session } from "@supabase/supabase-js";
 import {
   Montserrat_400Regular,
+  Montserrat_500Medium,
   Montserrat_600SemiBold,
   Montserrat_700Bold,
+  Montserrat_800ExtraBold,
   useFonts,
 } from "@expo-google-fonts/montserrat";
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { BrandSplash } from "@/components/brand-splash";
@@ -24,6 +26,17 @@ import { prefetchAllStories } from "@/hooks/use-all-stories";
 import type { Profile } from "@/lib/database.types";
 
 SplashScreen.preventAutoHideAsync();
+
+// Global fallback so any raw <Text> that skips ThemedText (and doesn't set
+// its own fontFamily) still renders in Montserrat instead of the platform
+// default -- ThemedText's own weight-aware resolution (lib/montserrat.ts)
+// is the primary mechanism and still wins wherever a component uses it;
+// this only fills the gap for the few spots that don't.
+const TextDefaults = Text as unknown as { defaultProps?: { style?: unknown } };
+TextDefaults.defaultProps = {
+  ...TextDefaults.defaultProps,
+  style: [{ fontFamily: "Montserrat_400Regular" }, TextDefaults.defaultProps?.style],
+};
 
 // Both queries are publicly readable (status='published' has no auth
 // requirement in RLS), so there's no reason to wait for session/profile to
@@ -136,8 +149,10 @@ export default function RootLayout() {
   // wordmark on sign-in would otherwise flash in with the system font first.
   const [fontsLoaded] = useFonts({
     Montserrat_400Regular,
+    Montserrat_500Medium,
     Montserrat_600SemiBold,
     Montserrat_700Bold,
+    Montserrat_800ExtraBold,
   });
   if (!fontsLoaded) return null;
 
