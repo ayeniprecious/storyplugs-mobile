@@ -1,9 +1,10 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { getCoverColor } from '@/components/book-cover-card';
+import { COVER_GRADIENT_COLORS, getCoverColor } from '@/components/book-cover-card';
 import { isNewStory } from '@/components/story-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -58,7 +59,14 @@ export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
         <Pressable style={styles.rowPressable}>
           {rank !== undefined && <ThemedText style={styles.rank}>{rank}</ThemedText>}
           <View style={styles.thumbWrap}>
-            <View style={[styles.thumb, { backgroundColor: getCoverColor(story) }]} />
+            <View style={[styles.thumb, { backgroundColor: getCoverColor(story) }]}>
+              <LinearGradient colors={COVER_GRADIENT_COLORS} style={StyleSheet.absoluteFill} />
+              <View style={styles.thumbContent}>
+                <Text numberOfLines={4} style={styles.thumbTitle}>
+                  {story.title}
+                </Text>
+              </View>
+            </View>
             {isNewStory(story) && (
               <ThemedView style={styles.newBadge}>
                 <ThemedText style={styles.newBadgeText}>New</ThemedText>
@@ -120,8 +128,23 @@ const styles = StyleSheet.create({
   rowPressable: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two },
   saveButton: { padding: 6 },
   rank: { fontSize: 22, fontWeight: '700', width: 26, textAlign: 'center' },
-  thumbWrap: { width: 64, height: 92, borderRadius: 6, overflow: 'hidden' },
+  thumbWrap: {
+    width: 64,
+    height: 92,
+    borderRadius: 4,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
+  },
   thumb: { width: '100%', height: '100%' },
+  thumbContent: { flex: 1, alignItems: 'center', padding: 6, paddingTop: 16 },
+  thumbTitle: {
+    color: '#fff',
+    fontSize: 9,
+    lineHeight: 11,
+    textAlign: 'center',
+    fontFamily: 'Montserrat_600SemiBold',
+  },
   newBadge: {
     position: 'absolute',
     top: 0,

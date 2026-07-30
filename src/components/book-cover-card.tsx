@@ -5,13 +5,18 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Story } from '@/lib/database.types';
 
 // Apple Books-style library card: a solid admin-picked color instead of a
-// cover image, title and author both centered on their own lines (via
-// justify-content/text-align, not absolute positioning -- there's no image
-// to overlay on top of here). Falls back to a neutral color for stories
-// that haven't had one set yet. Accepts the same optional progressPercent/
-// rank props StoryCard did, so it's a drop-in replacement everywhere a
-// poster-style story card is used.
+// cover image. Title stays pinned at the top of the card and author at the
+// bottom -- only their own text is centered (textAlign), not the block as a
+// whole -- via justify-content: space-between, not absolute positioning.
+// Falls back to a neutral color for stories that haven't had one set yet.
+// Accepts the same optional progressPercent/rank props StoryCard did, so
+// it's a drop-in replacement everywhere a poster-style story card is used.
 const FALLBACK_COLOR = '#2c2c2e';
+
+// Shared with the smaller book-shaped swatches (StoryRowCard's thumb,
+// RankedStoryRow's thumb) so every "book" surface gets the same dark,
+// moody wash rather than a bright, washed-out highlight.
+export const COVER_GRADIENT_COLORS = ['rgba(255,255,255,0.04)', 'rgba(0,0,0,0.45)'] as const;
 
 export function getCoverColor(story: Story) {
   return story.cover_color || FALLBACK_COLOR;
@@ -32,10 +37,7 @@ export function BookCoverCard({
   return (
     <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
       <Pressable style={StyleSheet.flatten([styles.card, { backgroundColor: color }])}>
-        <LinearGradient
-          colors={['rgba(255,255,255,0.16)', 'rgba(0,0,0,0.12)']}
-          style={StyleSheet.absoluteFill}
-        />
+        <LinearGradient colors={COVER_GRADIENT_COLORS} style={StyleSheet.absoluteFill} />
         {rank !== undefined && (
           <View style={styles.rankBadge}>
             <Text style={styles.rankBadgeText}>{rank}</Text>
@@ -73,9 +75,8 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     padding: 14,
-    gap: 6,
   },
   title: {
     color: '#fff',

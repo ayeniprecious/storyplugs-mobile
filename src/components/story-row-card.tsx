@@ -1,11 +1,12 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
 import { Link, router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 
-import { getCoverColor } from '@/components/book-cover-card';
+import { COVER_GRADIENT_COLORS, getCoverColor } from '@/components/book-cover-card';
 import { PremiumLockModal } from '@/components/premium-lock-modal';
 import { ReportModal } from '@/components/report-modal';
 import { ThemedText } from '@/components/themed-text';
@@ -142,7 +143,19 @@ export function StoryRowCard({ story, subtitle, progressPercent, onRemove, remov
     <ThemedView style={styles.row}>
       <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
         <Pressable style={styles.rowPressable}>
-          <View style={[styles.thumb, { backgroundColor: getCoverColor(story) }]} />
+          <View style={[styles.thumb, { backgroundColor: getCoverColor(story) }]}>
+            <LinearGradient colors={COVER_GRADIENT_COLORS} style={StyleSheet.absoluteFill} />
+            <View style={styles.thumbContent}>
+              <Text numberOfLines={3} style={styles.thumbTitle}>
+                {story.title}
+              </Text>
+              {story.author_name && (
+                <Text numberOfLines={1} style={styles.thumbAuthor}>
+                  {story.author_name}
+                </Text>
+              )}
+            </View>
+          </View>
           <ThemedView style={styles.rowBody}>
             <ThemedText type="smallBold" numberOfLines={1}>
               {story.title}
@@ -264,7 +277,31 @@ const styles = StyleSheet.create({
     backgroundColor: CardAsh,
   },
   rowPressable: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two, padding: Spacing.two },
-  thumb: { width: 64, height: 64, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.4)' },
+  // A book-shaped 2:3 swatch (not the old 64x64 square) so it reads the
+  // same as every other cover card in the app -- title pinned top, author
+  // pinned bottom, both centered on their own line only.
+  thumb: {
+    width: 64,
+    height: 96,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
+    overflow: 'hidden',
+  },
+  thumbContent: { flex: 1, alignItems: 'center', justifyContent: 'space-between', padding: 6 },
+  thumbTitle: {
+    color: '#fff',
+    fontSize: 9,
+    lineHeight: 11,
+    textAlign: 'center',
+    fontFamily: 'Montserrat_600SemiBold',
+  },
+  thumbAuthor: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 7,
+    textAlign: 'center',
+    fontFamily: 'Montserrat_400Regular',
+  },
   rowBody: { flex: 1, minWidth: 0, gap: 4, backgroundColor: 'transparent' },
   // Category + read time must never push each other (or the menu button)
   // out of place -- categoryTag holds its shape (flexShrink: 0, it's short
