@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -57,7 +58,11 @@ export function HeroBanner({ story }: { story: Story }) {
   return (
     <ThemedView style={styles.wrapper}>
       <ThemedView style={styles.card}>
-        <View style={[styles.image, { backgroundColor: getCoverColor(story) }]} />
+        {story.image_url ? (
+          <Image source={{ uri: story.image_url }} style={styles.image} contentFit="cover" />
+        ) : (
+          <View style={[styles.image, { backgroundColor: getCoverColor(story) }]} />
+        )}
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.55)', 'rgba(0,0,0,0.96)']}
           locations={[0, 0.5, 1]}
