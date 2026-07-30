@@ -17,6 +17,13 @@ export function useScrollReveal() {
   const rows = useRef(new Map<string, RowEntry>()).current;
   const containerOffsets = useRef(new Map<string, number>()).current;
   const revealed = useRef(new Set<string>()).current;
+  // Tracks real scroll position so onLayout-triggered reveal checks (rows
+  // that mount well after the user has already scrolled -- e.g. the mood
+  // picks appearing after answering the check-in) don't wrongly assume the
+  // scroll position is still 0. Without this, a row that's genuinely on
+  // screen right now stays invisible until the next real scroll event
+  // happens to come along and correct it.
+  const scrollYRef = useRef(0);
 
   const getOpacity = useCallback(
     (id: string) => {
@@ -61,7 +68,7 @@ export function useScrollReveal() {
         containerOffsets.set(id, e.nativeEvent.layout.y);
         // Rows registered before this container's own offset was known were skipped below --
         // now that it's here, re-check everything with correct, comparable offsets.
-        reveal(0, Dimensions.get('window').height);
+        reveal(scrollYRef.current, Dimensions.get('window').height);
       },
     }),
     [containerOffsets, reveal]
@@ -76,7 +83,7 @@ export function useScrollReveal() {
         // treat the row as if it had no container (offset understated), risking a premature,
         // permanent reveal that a later correction can no longer undo.
         if (!containerId || containerOffsets.has(containerId)) {
-          reveal(0, Dimensions.get('window').height);
+          reveal(scrollYRef.current, Dimensions.get('window').height);
         }
       },
     }),
@@ -85,6 +92,7 @@ export function useScrollReveal() {
 
   const handleScroll = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      scrollYRef.current = e.nativeEvent.contentOffset.y;
       reveal(e.nativeEvent.contentOffset.y, e.nativeEvent.layoutMeasurement.height);
     },
     [reveal]

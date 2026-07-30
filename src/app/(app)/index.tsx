@@ -388,25 +388,27 @@ export default function Home() {
             </Pressable>
           )}
 
+          {/* No scroll-reveal wrapper on these two -- they're a direct
+              response to a user action (answering the mood check-in), not
+              static page content, so they should appear the instant
+              they're ready rather than waiting on the fade-in system meant
+              for content already laid out when the page first scrolls
+              into view. */}
           {moodOption && moodPicking && (
-            <Animated.View {...registerRow("mood-picks-loading", "body")}>
-              <ThemedView type="backgroundElement" style={styles.moodLoadingCard}>
-                <ActivityIndicator color="#C01918" />
-                <ThemedText type="small" style={styles.moodLoadingText}>
-                  Please wait, we are personalizing stories for you…
-                </ThemedText>
-              </ThemedView>
-            </Animated.View>
+            <ThemedView type="backgroundElement" style={styles.moodLoadingCard}>
+              <ActivityIndicator color="#C01918" />
+              <ThemedText type="small" style={styles.moodLoadingText}>
+                Please wait, we are personalizing stories for you…
+              </ThemedText>
+            </ThemedView>
           )}
 
           {moodOption && !moodPicking && moodPicks.length > 0 && (
-            <Animated.View {...registerRow("mood-picks", "body")}>
-              <RankedStoryList
-                label={`Picked for feeling ${moodOption.label.toLowerCase()}`}
-                stories={moodPicks}
-                onReshuffle={handleMoodReshuffle}
-              />
-            </Animated.View>
+            <RankedStoryList
+              label={`Picked for feeling ${moodOption.label.toLowerCase()}`}
+              stories={moodPicks}
+              onReshuffle={handleMoodReshuffle}
+            />
           )}
 
           {curatedByAnchor.home_after_reflection?.map((section) => (
