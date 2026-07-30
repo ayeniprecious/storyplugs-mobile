@@ -6,6 +6,7 @@ import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, Scroll
 
 import { FREE_ARCHIVE_WINDOW_DAYS } from '@/constants/premium';
 import { useProfile } from '@/context/profile-context';
+import { clearAudioPosition, getAudioPosition, saveAudioPosition } from '@/hooks/use-audio-position';
 import { isDownloaded, readDownloadedContent } from '@/hooks/use-downloads';
 import { useStoryChapters } from '@/hooks/use-story-chapters';
 import { useStoryProgress } from '@/hooks/use-story-progress';
@@ -135,6 +136,48 @@ export function useStoryReader(
   const tts = useTextToSpeech(bodyText);
   const isListening = hasRecordedAudio ? playerStatus.playing : tts.speaking;
 
+  // Latest status/id available to the unmount cleanup below without making it
+  // re-run (and re-save) on every 500ms status tick -- only story navigation
+  // should recreate that effect, not playback progress.
+  const playerStatusRef = useRef(playerStatus);
+  playerStatusRef.current = playerStatus;
+  const resumedStoryIdRef = useRef<string | null>(null);
+
+  // Resume the recorded narration from wherever the listener last paused it
+  // -- once the player has actually finished loading the source (seeking any
+  // earlier fails silently on some platforms) and only once per story, so it
+  // doesn't fight a manual scrub forward on every later status tick.
+  useEffect(() => {
+    if (!hasRecordedAudio || !story?.id || !playerStatus.isLoaded) return;
+    if (resumedStoryIdRef.current === story.id) return;
+    resumedStoryIdRef.current = story.id;
+    getAudioPosition(story.id).then((seconds) => {
+      if (seconds > 0) player.seekTo(seconds);
+    });
+  }, [hasRecordedAudio, story?.id, playerStatus.isLoaded, player]);
+
+  // Reaching the end naturally means there's nothing left to resume -- the
+  // next play should start over from the beginning, not replay the last
+  // couple of seconds.
+  useEffect(() => {
+    if (hasRecordedAudio && story?.id && playerStatus.didJustFinish) {
+      clearAudioPosition(story.id);
+    }
+  }, [hasRecordedAudio, story?.id, playerStatus.didJustFinish]);
+
+  // Also save on navigating away mid-playback (screen unmount / switching to
+  // a different story), not just on an explicit pause tap -- otherwise
+  // leaving the reader while audio is still playing would silently drop the
+  // position.
+  useEffect(() => {
+    if (!hasRecordedAudio || !story?.id) return;
+    const storyId = story.id;
+    return () => {
+      const status = playerStatusRef.current;
+      if (status.playing) saveAudioPosition(storyId, status.currentTime);
+    };
+  }, [hasRecordedAudio, story?.id]);
+
   // A story's overall progress is how far through ALL of its chapters the
   // reader is, not just the current one -- otherwise scrolling to the bottom
   // of chapter 1 of 5 would report 100%.
@@ -216,8 +259,12 @@ export function useStoryReader(
 
   function handleListenToggle() {
     if (hasRecordedAudio) {
-      if (playerStatus.playing) player.pause();
-      else player.play();
+      if (playerStatus.playing) {
+        player.pause();
+        if (story?.id) saveAudioPosition(story.id, playerStatus.currentTime);
+      } else {
+        player.play();
+      }
     } else {
       tts.toggle();
     }
