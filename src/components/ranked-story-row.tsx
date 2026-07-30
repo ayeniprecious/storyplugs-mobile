@@ -65,6 +65,11 @@ export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
                 <Text numberOfLines={4} style={styles.thumbTitle}>
                   {story.title}
                 </Text>
+                {story.author_name && (
+                  <Text numberOfLines={1} style={styles.thumbAuthor}>
+                    {story.author_name}
+                  </Text>
+                )}
               </View>
             </View>
             {isNewStory(story) && (
@@ -137,13 +142,25 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.4)',
   },
   thumb: { width: '100%', height: '100%' },
-  thumbContent: { flex: 1, alignItems: 'center', padding: 6, paddingTop: 16 },
+  thumbContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 6,
+    paddingTop: 16,
+  },
   thumbTitle: {
     color: '#fff',
-    fontSize: 9,
-    lineHeight: 11,
+    fontSize: 8,
+    lineHeight: 10,
     textAlign: 'center',
     fontFamily: 'Montserrat_600SemiBold',
+  },
+  thumbAuthor: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 6,
+    textAlign: 'center',
+    fontFamily: 'Montserrat_400Regular',
   },
   newBadge: {
     position: 'absolute',

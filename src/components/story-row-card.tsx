@@ -291,14 +291,14 @@ const styles = StyleSheet.create({
   thumbContent: { flex: 1, alignItems: 'center', justifyContent: 'space-between', padding: 6 },
   thumbTitle: {
     color: '#fff',
-    fontSize: 9,
-    lineHeight: 11,
+    fontSize: 8,
+    lineHeight: 10,
     textAlign: 'center',
     fontFamily: 'Montserrat_600SemiBold',
   },
   thumbAuthor: {
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 7,
+    fontSize: 6,
     textAlign: 'center',
     fontFamily: 'Montserrat_400Regular',
   },

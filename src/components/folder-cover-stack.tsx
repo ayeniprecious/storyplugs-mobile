@@ -1,6 +1,7 @@
-import { StyleSheet, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { getCoverColor } from '@/components/book-cover-card';
+import { COVER_GRADIENT_COLORS, getCoverColor } from '@/components/book-cover-card';
 import type { Story } from '@/lib/database.types';
 
 interface FolderCoverStackProps {
@@ -12,19 +13,26 @@ interface FolderCoverStackProps {
   size: number;
 }
 
+// Below this the front cover is too small for its title to be legible (the
+// Add to Folder picker's 36px row size), so it stays a plain color swatch.
+const MIN_SIZE_FOR_TITLE = 50;
+
 // Shared "book spines peeking out of a folder" visual: the front (most
 // recently added) cover sits flat and full-size with a drop shadow, the next
 // two behind it are slightly smaller, rotated, and faded so their tips show
 // past the front one's edges. Each cover is a solid admin-picked color
-// swatch (matching BookCoverCard) rather than a cover image. Renders only
-// the absolutely-positioned swatches -- the caller's own container needs
-// alignItems/justifyContent 'center' to anchor them (matching how Library's
-// FolderCard tile already centers its stack), and handles its own empty
-// state when there are no covers yet.
+// swatch with the same dark gradient wash and low, book-style border radius
+// as BookCoverCard -- the front one also prints the story's title when
+// there's enough room to read it. Renders only the absolutely-positioned
+// swatches -- the caller's own container needs alignItems/justifyContent
+// 'center' to anchor them (matching how Library's FolderCard tile already
+// centers its stack), and handles its own empty state when there are no
+// covers yet.
 export function FolderCoverStack({ coverStories, size }: FolderCoverStackProps) {
   const backSize = Math.round(size * 0.85);
   const thirdOffset = Math.round(size * 0.12);
   const secondOffset = Math.round(size * 0.06);
+  const showFrontTitle = size >= MIN_SIZE_FOR_TITLE;
 
   return (
     <>
@@ -35,14 +43,15 @@ export function FolderCoverStack({ coverStories, size }: FolderCoverStackProps) 
             {
               width: backSize,
               height: backSize,
-              borderRadius: Math.round(backSize * 0.14),
               top: thirdOffset,
               transform: [{ rotate: '-10deg' }],
               opacity: 0.5,
               backgroundColor: getCoverColor(coverStories[2]),
             },
           ]}
-        />
+        >
+          <LinearGradient colors={COVER_GRADIENT_COLORS} style={StyleSheet.absoluteFill} />
+        </View>
       )}
       {coverStories[1] && (
         <View
@@ -51,40 +60,59 @@ export function FolderCoverStack({ coverStories, size }: FolderCoverStackProps) 
             {
               width: backSize,
               height: backSize,
-              borderRadius: Math.round(backSize * 0.14),
               top: secondOffset,
               transform: [{ rotate: '8deg' }],
               opacity: 0.75,
               backgroundColor: getCoverColor(coverStories[1]),
             },
           ]}
-        />
+        >
+          <LinearGradient colors={COVER_GRADIENT_COLORS} style={StyleSheet.absoluteFill} />
+        </View>
       )}
       {coverStories[0] && (
         <View
           style={[
             styles.cover,
             styles.coverFront,
-            {
-              width: size,
-              height: size,
-              borderRadius: Math.round(size * 0.13),
-              backgroundColor: getCoverColor(coverStories[0]),
-            },
+            { width: size, height: size, backgroundColor: getCoverColor(coverStories[0]) },
           ]}
-        />
+        >
+          <LinearGradient colors={COVER_GRADIENT_COLORS} style={StyleSheet.absoluteFill} />
+          {showFrontTitle && (
+            <View style={styles.frontContent}>
+              <Text numberOfLines={3} style={styles.frontTitle}>
+                {coverStories[0].title}
+              </Text>
+            </View>
+          )}
+        </View>
       )}
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  cover: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255,255,255,0.4)' },
+  cover: {
+    position: 'absolute',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
+    overflow: 'hidden',
+  },
   coverFront: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 4,
+  },
+  frontContent: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 4 },
+  frontTitle: {
+    color: '#fff',
+    fontSize: 8,
+    lineHeight: 10,
+    textAlign: 'center',
+    fontFamily: 'Montserrat_600SemiBold',
   },
 });

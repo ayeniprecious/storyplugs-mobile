@@ -80,14 +80,14 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#fff',
-    fontSize: 14,
-    lineHeight: 18,
+    fontSize: 11,
+    lineHeight: 14,
     textAlign: 'center',
     fontFamily: 'Montserrat_600SemiBold',
   },
   author: {
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 11,
+    fontSize: 9,
     textAlign: 'center',
     fontFamily: 'Montserrat_400Regular',
   },
