@@ -4,7 +4,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { COVER_GRADIENT_COLORS, getCoverColor } from '@/components/book-cover-card';
+import {
+  CoverSpine,
+  COVER_GRADIENT_COLORS,
+  COVER_GRADIENT_LOCATIONS,
+  getCoverColor,
+} from '@/components/book-cover-card';
 import { isNewStory } from '@/components/story-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -59,25 +64,32 @@ export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
       <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
         <Pressable style={styles.rowPressable}>
           {rank !== undefined && <ThemedText style={styles.rank}>{rank}</ThemedText>}
-          <View style={styles.thumbWrap}>
-            <View style={[styles.thumb, { backgroundColor: getCoverColor(story) }]}>
-              <LinearGradient colors={COVER_GRADIENT_COLORS} style={StyleSheet.absoluteFill} />
-              <View style={[styles.thumbContent, isNew && styles.thumbContentWithBadge]}>
-                <Text numberOfLines={4} style={styles.thumbTitle}>
-                  {story.title}
-                </Text>
-                {story.author_name && (
-                  <Text numberOfLines={1} style={styles.thumbAuthor}>
-                    {story.author_name}
+          <View style={styles.thumbShadowWrap}>
+            <View style={styles.thumbWrap}>
+              <View style={[styles.thumb, { backgroundColor: getCoverColor(story) }]}>
+                <LinearGradient
+                  colors={COVER_GRADIENT_COLORS}
+                  locations={COVER_GRADIENT_LOCATIONS}
+                  style={StyleSheet.absoluteFill}
+                />
+                <CoverSpine widthPercent={26} />
+                <View style={[styles.thumbContent, isNew && styles.thumbContentWithBadge]}>
+                  <Text numberOfLines={4} style={styles.thumbTitle}>
+                    {story.title}
                   </Text>
-                )}
+                  {story.author_name && (
+                    <Text numberOfLines={1} style={styles.thumbAuthor}>
+                      {story.author_name}
+                    </Text>
+                  )}
+                </View>
               </View>
+              {isNew && (
+                <ThemedView style={styles.newBadge}>
+                  <ThemedText style={styles.newBadgeText}>New</ThemedText>
+                </ThemedView>
+              )}
             </View>
-            {isNew && (
-              <ThemedView style={styles.newBadge}>
-                <ThemedText style={styles.newBadgeText}>New</ThemedText>
-              </ThemedView>
-            )}
           </View>
           <ThemedView style={styles.body}>
             <ThemedText type="smallBold" numberOfLines={2} style={styles.title}>
@@ -134,9 +146,20 @@ const styles = StyleSheet.create({
   rowPressable: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two },
   saveButton: { padding: 6 },
   rank: { fontSize: 22, fontWeight: '700', width: 26, textAlign: 'center' },
-  thumbWrap: {
+  // Shadow lives on this outer wrapper -- overflow: hidden on thumbWrap
+  // (needed to clip the gradient/spine/badge to the rounded corners) would
+  // otherwise clip the shadow itself to nothing.
+  thumbShadowWrap: {
     width: 64,
     height: 92,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  thumbWrap: {
+    flex: 1,
     borderRadius: 4,
     overflow: 'hidden',
     borderWidth: 1,

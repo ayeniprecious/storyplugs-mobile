@@ -10,7 +10,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AddToFolderModal } from '@/components/add-to-folder-modal';
 import { BackButton } from '@/components/back-button';
-import { COVER_GRADIENT_COLORS, getCoverColor } from '@/components/book-cover-card';
+import {
+  CoverFrame,
+  CoverSpine,
+  COVER_GRADIENT_COLORS,
+  COVER_GRADIENT_LOCATIONS,
+  getCoverColor,
+} from '@/components/book-cover-card';
 import { CategoryRow } from '@/components/category-row';
 import { CommentsSection } from '@/components/comments-section';
 import { ReportModal } from '@/components/report-modal';
@@ -300,17 +306,25 @@ export default function StoryPreview() {
 
         <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent}>
           <ThemedView style={styles.headerRow}>
-            <View style={[styles.cover, { backgroundColor: getCoverColor(story) }]}>
-              <LinearGradient colors={COVER_GRADIENT_COLORS} style={StyleSheet.absoluteFill} />
-              <View style={styles.coverContent}>
-                <Text numberOfLines={5} style={styles.coverTitle}>
-                  {story.title}
-                </Text>
-                {story.author_name && (
-                  <Text numberOfLines={1} style={styles.coverAuthor}>
-                    {story.author_name}
+            <View style={styles.coverShadowWrap}>
+              <View style={[styles.cover, { backgroundColor: getCoverColor(story) }]}>
+                <LinearGradient
+                  colors={COVER_GRADIENT_COLORS}
+                  locations={COVER_GRADIENT_LOCATIONS}
+                  style={StyleSheet.absoluteFill}
+                />
+                <CoverSpine widthPercent={18} />
+                <CoverFrame inset={7} />
+                <View style={styles.coverContent}>
+                  <Text numberOfLines={5} style={styles.coverTitle}>
+                    {story.title}
                   </Text>
-                )}
+                  {story.author_name && (
+                    <Text numberOfLines={1} style={styles.coverAuthor}>
+                      {story.author_name}
+                    </Text>
+                  )}
+                </View>
               </View>
             </View>
             <ThemedView style={styles.headerInfo}>
@@ -549,9 +563,20 @@ const styles = StyleSheet.create({
   skeletonLineShort: { width: '60%', height: 24, borderRadius: 4 },
   // Cover + title/brand block, side by side like a book's title page.
   headerRow: { flexDirection: 'row', gap: Spacing.three, alignItems: 'flex-start' },
-  cover: {
+  // Shadow lives on this outer, non-clipping wrapper -- overflow: hidden
+  // on `cover` (needed to clip the gradient/spine/frame to the rounded
+  // corners) would otherwise clip the shadow itself to nothing.
+  coverShadowWrap: {
     width: 130,
     height: 180,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  cover: {
+    flex: 1,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.4)',

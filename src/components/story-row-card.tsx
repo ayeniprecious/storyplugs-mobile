@@ -6,7 +6,12 @@ import { Link, router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 
-import { COVER_GRADIENT_COLORS, getCoverColor } from '@/components/book-cover-card';
+import {
+  CoverSpine,
+  COVER_GRADIENT_COLORS,
+  COVER_GRADIENT_LOCATIONS,
+  getCoverColor,
+} from '@/components/book-cover-card';
 import { PremiumLockModal } from '@/components/premium-lock-modal';
 import { ReportModal } from '@/components/report-modal';
 import { ThemedText } from '@/components/themed-text';
@@ -143,17 +148,24 @@ export function StoryRowCard({ story, subtitle, progressPercent, onRemove, remov
     <ThemedView style={styles.row}>
       <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
         <Pressable style={styles.rowPressable}>
-          <View style={[styles.thumb, { backgroundColor: getCoverColor(story) }]}>
-            <LinearGradient colors={COVER_GRADIENT_COLORS} style={StyleSheet.absoluteFill} />
-            <View style={styles.thumbContent}>
-              <Text numberOfLines={3} style={styles.thumbTitle}>
-                {story.title}
-              </Text>
-              {story.author_name && (
-                <Text numberOfLines={1} style={styles.thumbAuthor}>
-                  {story.author_name}
+          <View style={styles.thumbShadowWrap}>
+            <View style={[styles.thumb, { backgroundColor: getCoverColor(story) }]}>
+              <LinearGradient
+                colors={COVER_GRADIENT_COLORS}
+                locations={COVER_GRADIENT_LOCATIONS}
+                style={StyleSheet.absoluteFill}
+              />
+              <CoverSpine widthPercent={26} />
+              <View style={styles.thumbContent}>
+                <Text numberOfLines={3} style={styles.thumbTitle}>
+                  {story.title}
                 </Text>
-              )}
+                {story.author_name && (
+                  <Text numberOfLines={1} style={styles.thumbAuthor}>
+                    {story.author_name}
+                  </Text>
+                )}
+              </View>
             </View>
           </View>
           <ThemedView style={styles.rowBody}>
@@ -279,10 +291,20 @@ const styles = StyleSheet.create({
   rowPressable: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two, padding: Spacing.two },
   // A book-shaped 2:3 swatch (not the old 64x64 square) so it reads the
   // same as every other cover card in the app -- title pinned top, author
-  // pinned bottom, both centered on their own line only.
-  thumb: {
+  // pinned bottom, both centered on their own line only. Shadow lives on
+  // the outer wrapper since overflow: hidden on `thumb` (needed to clip
+  // the gradient/spine to the rounded corners) would clip the shadow too.
+  thumbShadowWrap: {
     width: 64,
     height: 96,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  thumb: {
+    flex: 1,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.4)',
