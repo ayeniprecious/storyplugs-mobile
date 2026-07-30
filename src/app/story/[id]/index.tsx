@@ -307,7 +307,7 @@ export default function StoryPreview() {
         <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent}>
           <ThemedView style={styles.headerRow}>
             <View style={styles.coverShadowWrap}>
-              {story.image_url ? (
+              {story.is_short_story && story.image_url ? (
                 <Image source={{ uri: story.image_url }} style={styles.cover} contentFit="cover" />
               ) : (
                 <View style={[styles.cover, { backgroundColor: getCoverColor(story) }]}>

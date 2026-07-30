@@ -76,7 +76,7 @@ export function BookCoverCard({
   story: Story;
   progressPercent?: number;
   rank?: number;
-  // When true and the story has a real image_url (short stories), shows
+  // When true and the story is a short story with a real image_url, shows
   // that photo instead of the solid-color book cover. Opt-in per call
   // site -- screens that are deliberately color-card-only everywhere
   // (Recommended, Category rows, Search, notification posters) don't pass
@@ -85,7 +85,10 @@ export function BookCoverCard({
 }) {
   const color = getCoverColor(story);
   const hasProgress = progressPercent !== undefined;
-  const hasImage = preferImage && !!story.image_url;
+  // Only short stories ever get a real photo -- a regular story that
+  // happens to have an image_url set (e.g. leftover from admin testing)
+  // still renders as a color card.
+  const hasImage = preferImage && story.is_short_story && !!story.image_url;
 
   return (
     <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>

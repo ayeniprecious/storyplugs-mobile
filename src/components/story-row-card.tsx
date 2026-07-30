@@ -17,7 +17,7 @@ import { PremiumLockModal } from '@/components/premium-lock-modal';
 import { ReportModal } from '@/components/report-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ENABLE_OFFLINE_DOWNLOADS } from '@/constants/launch-flags';
+import { ENABLE_COMMENTS, ENABLE_OFFLINE_DOWNLOADS } from '@/constants/launch-flags';
 import { CardAsh, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useCategories } from '@/context/categories-context';
@@ -64,7 +64,8 @@ export function StoryRowCard({
   const { profile } = useProfile();
   const { settings } = useAppSettings();
   const hasProgress = progressPercent !== undefined;
-  const hasImage = preferImage && !!story.image_url;
+  // Only short stories ever get a real photo -- see BookCoverCard's same check.
+  const hasImage = preferImage && story.is_short_story && !!story.image_url;
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
@@ -268,10 +269,12 @@ export function StoryRowCard({
                 <ThemedText style={styles.menuItemText}>Share Story</ThemedText>
               </Pressable>
 
-              <Pressable style={styles.menuItem} onPress={handleCommentPress}>
-                <Ionicons name="chatbubble-outline" size={18} color={theme.text} />
-                <ThemedText style={styles.menuItemText}>Comment</ThemedText>
-              </Pressable>
+              {ENABLE_COMMENTS && (
+                <Pressable style={styles.menuItem} onPress={handleCommentPress}>
+                  <Ionicons name="chatbubble-outline" size={18} color={theme.text} />
+                  <ThemedText style={styles.menuItemText}>Comment</ThemedText>
+                </Pressable>
+              )}
 
               <Pressable style={styles.menuItem} onPress={handleReportPress}>
                 <Ionicons name="flag-outline" size={18} color={theme.text} />
