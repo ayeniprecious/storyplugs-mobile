@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Animated, Pressable, RefreshControl, StyleSheet } from "react-native";
+import { ActivityIndicator, Animated, Pressable, RefreshControl, StyleSheet } from "react-native";
 
 import { CategoryRow } from "@/components/category-row";
 import { ContinueReadingRow } from "@/components/continue-reading-row";
@@ -132,6 +132,14 @@ export default function Home() {
     [allStories],
   );
 
+  // Mood picks come from short stories only -- falls back to the full
+  // catalog only if there genuinely aren't any short stories yet, so the
+  // feature still works before any exist.
+  const moodPool = useMemo(() => {
+    const shortOnly = allStories.filter((s) => s.is_short_story);
+    return shortOnly.length > 0 ? shortOnly : allStories;
+  }, [allStories]);
+
   const moodOption = useMemo(
     () => MOOD_OPTIONS.find((option) => option.value === todaysMood) ?? null,
     [todaysMood],
@@ -140,24 +148,33 @@ export default function Home() {
   // State (not useMemo) because buildMoodPicks is randomized internally --
   // reshuffleCount is a dependency with no other purpose than forcing this
   // effect to recompute (and thus re-roll) when the user asks for different
-  // picks via RankedStoryList's onReshuffle.
+  // picks via RankedStoryList's onReshuffle. moodPicking drives a brief
+  // "personalizing" loading state -- the computation itself is instant, but
+  // showing it as instant reads as if nothing was actually personalized.
   const [moodPicks, setMoodPicks] = useState<typeof allStories>([]);
+  const [moodPicking, setMoodPicking] = useState(false);
   const [reshuffleCount, setReshuffleCount] = useState(0);
   useEffect(() => {
     if (!moodOption) {
       setMoodPicks([]);
+      setMoodPicking(false);
       return;
     }
-    setMoodPicks(
-      buildMoodPicks(
-        allStories,
-        moodOption,
-        todaysCategories,
-        story?.id ? [story.id] : [],
-        5,
-      ),
-    );
-  }, [moodOption, todaysCategories, allStories, story?.id, reshuffleCount]);
+    setMoodPicking(true);
+    const timer = setTimeout(() => {
+      setMoodPicks(
+        buildMoodPicks(
+          moodPool,
+          moodOption,
+          todaysCategories,
+          story?.id ? [story.id] : [],
+          5,
+        ),
+      );
+      setMoodPicking(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [moodOption, todaysCategories, moodPool, story?.id, reshuffleCount]);
 
   function handleMoodSubmit(mood: string, categories: string[]) {
     saveMoodCheckin(mood, categories);
@@ -333,28 +350,6 @@ export default function Home() {
             <ShortStoriesRow stories={shortStories} />
           </Animated.View>
 
-          {curatedByAnchor.home_after_reflection?.map((section) => (
-            <CuratedSection key={section.id} section={section} />
-          ))}
-
-          {continueLoading ? (
-            <CategoryRowSkeleton />
-          ) : (
-            <Animated.View {...registerRow("continue-reading", "body")}>
-              <ContinueReadingRow items={continueItems} />
-            </Animated.View>
-          )}
-
-          {curatedByAnchor.home_after_continue_reading?.map((section) => (
-            <CuratedSection key={section.id} section={section} />
-          ))}
-
-          {recommended.length > 0 && (
-            <Animated.View {...registerRow("recommended", "body")}>
-              <CategoryRow label="Recommended for You" stories={recommended} />
-            </Animated.View>
-          )}
-
           {profile?.is_premium ? (
             hasAnsweredToday && moodOption ? (
               <ThemedView style={styles.moodRowWrap}>
@@ -393,13 +388,46 @@ export default function Home() {
             </Pressable>
           )}
 
-          {moodOption && moodPicks.length > 0 && (
+          {moodOption && moodPicking && (
+            <Animated.View {...registerRow("mood-picks-loading", "body")}>
+              <ThemedView type="backgroundElement" style={styles.moodLoadingCard}>
+                <ActivityIndicator color="#C01918" />
+                <ThemedText type="small" style={styles.moodLoadingText}>
+                  Please wait, we are personalizing stories for you…
+                </ThemedText>
+              </ThemedView>
+            </Animated.View>
+          )}
+
+          {moodOption && !moodPicking && moodPicks.length > 0 && (
             <Animated.View {...registerRow("mood-picks", "body")}>
               <RankedStoryList
                 label={`Picked for feeling ${moodOption.label.toLowerCase()}`}
                 stories={moodPicks}
                 onReshuffle={handleMoodReshuffle}
               />
+            </Animated.View>
+          )}
+
+          {curatedByAnchor.home_after_reflection?.map((section) => (
+            <CuratedSection key={section.id} section={section} />
+          ))}
+
+          {continueLoading ? (
+            <CategoryRowSkeleton />
+          ) : (
+            <Animated.View {...registerRow("continue-reading", "body")}>
+              <ContinueReadingRow items={continueItems} />
+            </Animated.View>
+          )}
+
+          {curatedByAnchor.home_after_continue_reading?.map((section) => (
+            <CuratedSection key={section.id} section={section} />
+          ))}
+
+          {recommended.length > 0 && (
+            <Animated.View {...registerRow("recommended", "body")}>
+              <CategoryRow label="Recommended for You" stories={recommended} />
             </Animated.View>
           )}
 
@@ -542,6 +570,14 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(192,25,24,0.12)",
   },
   moodBannerText: { color: "#C01918", fontWeight: "500" },
+  moodLoadingCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.two,
+    borderRadius: 16,
+    padding: Spacing.three,
+  },
+  moodLoadingText: { flex: 1, opacity: 0.75 },
   centerBlock: { marginTop: Spacing.five },
   quoteCard: { borderRadius: 16, padding: Spacing.three, gap: Spacing.two },
   sectionLabel: { opacity: 0.6, textTransform: "uppercase" },
