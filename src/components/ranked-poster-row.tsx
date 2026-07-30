@@ -1,6 +1,6 @@
 import { FlatList, StyleSheet, View } from 'react-native';
 
-import { StoryCard } from '@/components/story-card';
+import { BookCoverCard } from '@/components/book-cover-card';
 import { HomeCardWidth, Spacing } from '@/constants/theme';
 import type { Story } from '@/lib/database.types';
 
@@ -24,7 +24,7 @@ export function RankedPosterRow({ stories }: { stories: Story[] }) {
       removeClippedSubviews
       renderItem={({ item, index }) => (
         <View style={styles.cardWrap}>
-          <StoryCard story={item} rank={index + 1} />
+          <BookCoverCard story={item} rank={index + 1} />
         </View>
       )}
     />

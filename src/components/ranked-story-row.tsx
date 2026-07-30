@@ -1,9 +1,9 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { getCoverColor } from '@/components/book-cover-card';
 import { isNewStory } from '@/components/story-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -58,7 +58,7 @@ export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
         <Pressable style={styles.rowPressable}>
           {rank !== undefined && <ThemedText style={styles.rank}>{rank}</ThemedText>}
           <View style={styles.thumbWrap}>
-            {story.image_url && <Image source={{ uri: story.image_url }} style={styles.thumb} contentFit="cover" />}
+            <View style={[styles.thumb, { backgroundColor: getCoverColor(story) }]} />
             {isNewStory(story) && (
               <ThemedView style={styles.newBadge}>
                 <ThemedText style={styles.newBadgeText}>New</ThemedText>

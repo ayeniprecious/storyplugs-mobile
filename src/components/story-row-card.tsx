@@ -1,11 +1,11 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
 import { Link, router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, Share, StyleSheet } from 'react-native';
+import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 
+import { getCoverColor } from '@/components/book-cover-card';
 import { PremiumLockModal } from '@/components/premium-lock-modal';
 import { ReportModal } from '@/components/report-modal';
 import { ThemedText } from '@/components/themed-text';
@@ -142,9 +142,7 @@ export function StoryRowCard({ story, subtitle, progressPercent, onRemove, remov
     <ThemedView style={styles.row}>
       <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
         <Pressable style={styles.rowPressable}>
-          {story.image_url && (
-            <Image source={{ uri: story.image_url }} style={styles.thumb} contentFit="cover" />
-          )}
+          <View style={[styles.thumb, { backgroundColor: getCoverColor(story) }]} />
           <ThemedView style={styles.rowBody}>
             <ThemedText type="smallBold" numberOfLines={1}>
               {story.title}
@@ -266,7 +264,7 @@ const styles = StyleSheet.create({
     backgroundColor: CardAsh,
   },
   rowPressable: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two, padding: Spacing.two },
-  thumb: { width: 64, height: 64, borderRadius: 8 },
+  thumb: { width: 64, height: 64, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.4)' },
   rowBody: { flex: 1, minWidth: 0, gap: 4, backgroundColor: 'transparent' },
   // Category + read time must never push each other (or the menu button)
   // out of place -- categoryTag holds its shape (flexShrink: 0, it's short

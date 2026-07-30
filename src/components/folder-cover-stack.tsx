@@ -1,6 +1,6 @@
-import { Image } from 'expo-image';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { getCoverColor } from '@/components/book-cover-card';
 import type { Story } from '@/lib/database.types';
 
 interface FolderCoverStackProps {
@@ -12,14 +12,15 @@ interface FolderCoverStackProps {
   size: number;
 }
 
-// Shared "photos peeking out of a folder" visual: the front (most recently
-// added) cover sits flat and full-size with a drop shadow, the next two
-// behind it are slightly smaller, rotated, and faded so their tips show
-// past the front one's edges. Renders only the absolutely-positioned cover
-// images -- the caller's own container needs alignItems/justifyContent
-// 'center' to anchor them (matching how Library's FolderCard tile already
-// centers its stack), and handles its own empty state when there are no
-// covers yet.
+// Shared "book spines peeking out of a folder" visual: the front (most
+// recently added) cover sits flat and full-size with a drop shadow, the next
+// two behind it are slightly smaller, rotated, and faded so their tips show
+// past the front one's edges. Each cover is a solid admin-picked color
+// swatch (matching BookCoverCard) rather than a cover image. Renders only
+// the absolutely-positioned swatches -- the caller's own container needs
+// alignItems/justifyContent 'center' to anchor them (matching how Library's
+// FolderCard tile already centers its stack), and handles its own empty
+// state when there are no covers yet.
 export function FolderCoverStack({ coverStories, size }: FolderCoverStackProps) {
   const backSize = Math.round(size * 0.85);
   const thirdOffset = Math.round(size * 0.12);
@@ -27,9 +28,8 @@ export function FolderCoverStack({ coverStories, size }: FolderCoverStackProps) 
 
   return (
     <>
-      {coverStories[2]?.image_url && (
-        <Image
-          source={{ uri: coverStories[2].image_url }}
+      {coverStories[2] && (
+        <View
           style={[
             styles.cover,
             {
@@ -39,14 +39,13 @@ export function FolderCoverStack({ coverStories, size }: FolderCoverStackProps) 
               top: thirdOffset,
               transform: [{ rotate: '-10deg' }],
               opacity: 0.5,
+              backgroundColor: getCoverColor(coverStories[2]),
             },
           ]}
-          contentFit="cover"
         />
       )}
-      {coverStories[1]?.image_url && (
-        <Image
-          source={{ uri: coverStories[1].image_url }}
+      {coverStories[1] && (
+        <View
           style={[
             styles.cover,
             {
@@ -56,20 +55,23 @@ export function FolderCoverStack({ coverStories, size }: FolderCoverStackProps) 
               top: secondOffset,
               transform: [{ rotate: '8deg' }],
               opacity: 0.75,
+              backgroundColor: getCoverColor(coverStories[1]),
             },
           ]}
-          contentFit="cover"
         />
       )}
-      {coverStories[0]?.image_url && (
-        <Image
-          source={{ uri: coverStories[0].image_url }}
+      {coverStories[0] && (
+        <View
           style={[
             styles.cover,
             styles.coverFront,
-            { width: size, height: size, borderRadius: Math.round(size * 0.13) },
+            {
+              width: size,
+              height: size,
+              borderRadius: Math.round(size * 0.13),
+              backgroundColor: getCoverColor(coverStories[0]),
+            },
           ]}
-          contentFit="cover"
         />
       )}
     </>
@@ -77,7 +79,7 @@ export function FolderCoverStack({ coverStories, size }: FolderCoverStackProps) 
 }
 
 const styles = StyleSheet.create({
-  cover: { position: 'absolute' },
+  cover: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255,255,255,0.4)' },
   coverFront: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

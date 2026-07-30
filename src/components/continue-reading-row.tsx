@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
-import { StoryCard } from '@/components/story-card';
+import { BookCoverCard } from '@/components/book-cover-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { HomeCardWidth, Spacing } from '@/constants/theme';
@@ -42,7 +42,7 @@ export function ContinueReadingRow({ items }: { items: ContinueReadingItem[] }) 
         removeClippedSubviews
         renderItem={({ item }) => (
           <View style={styles.cardWrap}>
-            <StoryCard story={item.story} progressPercent={item.progressPercent} />
+            <BookCoverCard story={item.story} progressPercent={item.progressPercent} />
           </View>
         )}
       />

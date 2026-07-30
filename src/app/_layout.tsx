@@ -1,5 +1,6 @@
 import type { Session } from "@supabase/supabase-js";
 import {
+  Montserrat_400Regular,
   Montserrat_600SemiBold,
   Montserrat_700Bold,
   useFonts,
@@ -133,7 +134,11 @@ function ThemedRoot() {
 export default function RootLayout() {
   // Keep the native splash up until the brand font is ready — the Montserrat
   // wordmark on sign-in would otherwise flash in with the system font first.
-  const [fontsLoaded] = useFonts({ Montserrat_600SemiBold, Montserrat_700Bold });
+  const [fontsLoaded] = useFonts({
+    Montserrat_400Regular,
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
+  });
   if (!fontsLoaded) return null;
 
   return (

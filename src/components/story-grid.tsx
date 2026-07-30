@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Animated, FlatList, StyleSheet } from 'react-native';
 
-import { StoryCard } from '@/components/story-card';
+import { BookCoverCard } from '@/components/book-cover-card';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useScrollReveal } from '@/hooks/use-scroll-reveal';
@@ -36,7 +36,7 @@ export function StoryGrid({ stories }: { stories: Story[] }) {
           <ThemedView style={styles.row}>
             {row.map((story) => (
               <ThemedView key={story.id} style={styles.gridCard}>
-                <StoryCard story={story} />
+                <BookCoverCard story={story} />
               </ThemedView>
             ))}
             {row.length === 1 && <ThemedView style={styles.gridCard} />}

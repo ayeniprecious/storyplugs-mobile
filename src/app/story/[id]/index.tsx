@@ -4,11 +4,12 @@ import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, Pressable, ScrollView, Share, StyleSheet } from 'react-native';
+import { Platform, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AddToFolderModal } from '@/components/add-to-folder-modal';
 import { BackButton } from '@/components/back-button';
+import { getCoverColor } from '@/components/book-cover-card';
 import { CategoryRow } from '@/components/category-row';
 import { CommentsSection } from '@/components/comments-section';
 import { ReportModal } from '@/components/report-modal';
@@ -298,9 +299,7 @@ export default function StoryPreview() {
 
         <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent}>
           <ThemedView style={styles.headerRow}>
-            {story.image_url && (
-              <Image source={{ uri: story.image_url }} style={styles.cover} contentFit="cover" />
-            )}
+            <View style={[styles.cover, { backgroundColor: getCoverColor(story) }]} />
             <ThemedView style={styles.headerInfo}>
               <ThemedText type="title" style={styles.title} numberOfLines={4}>
                 {story.title}
@@ -537,7 +536,7 @@ const styles = StyleSheet.create({
   skeletonLineShort: { width: '60%', height: 24, borderRadius: 4 },
   // Cover + title/brand block, side by side like a book's title page.
   headerRow: { flexDirection: 'row', gap: Spacing.three, alignItems: 'flex-start' },
-  cover: { width: 130, height: 180, borderRadius: 12, backgroundColor: '#1c1c1e' },
+  cover: { width: 130, height: 180, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.4)' },
   headerInfo: { flex: 1, gap: Spacing.two, paddingTop: 2, backgroundColor: 'transparent' },
   title: { fontSize: 22, lineHeight: 27 },
   // No individual human authors on admin-curated stories -- this is a small

@@ -1,28 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { getCoverColor } from '@/components/book-cover-card';
 import { ThemedText } from '@/components/themed-text';
 import type { Story } from '@/lib/database.types';
 import { estimateReadMinutes } from '@/lib/read-time';
 
 // A wide, low card (as opposed to the app's usual 2:3 poster) -- the shape
 // itself reads as "quick read" at a glance, distinct from the taller browse
-// carousels elsewhere on Home. Falls back to a warm brand-tinted gradient
-// (no broken-image state) when a story has no cover art yet.
+// carousels elsewhere on Home.
 export function ShortStoryCard({ story }: { story: Story }) {
   const minutes = estimateReadMinutes(story.body);
 
   return (
     <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
       <Pressable style={styles.card}>
-        {story.image_url ? (
-          <Image source={{ uri: story.image_url }} style={StyleSheet.absoluteFill} contentFit="cover" />
-        ) : (
-          <LinearGradient colors={['#3a1210', '#160504']} style={StyleSheet.absoluteFill} />
-        )}
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: getCoverColor(story) }]} />
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.85)']}
           locations={[0.4, 1]}

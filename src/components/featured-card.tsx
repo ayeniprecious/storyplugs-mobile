@@ -1,8 +1,8 @@
-import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
+import { getCoverColor } from '@/components/book-cover-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useCategories } from '@/context/categories-context';
@@ -20,9 +20,7 @@ export function FeaturedCard({ story }: { story: Story }) {
   return (
     <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
       <Pressable style={styles.card}>
-        {story.image_url && (
-          <Image source={{ uri: story.image_url }} style={StyleSheet.absoluteFill} contentFit="cover" />
-        )}
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: getCoverColor(story) }]} />
         <LinearGradient
           colors={['rgba(0,0,0,0.05)', 'rgba(0,0,0,0.85)']}
           locations={[0.3, 1]}
