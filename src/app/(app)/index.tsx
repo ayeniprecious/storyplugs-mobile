@@ -30,6 +30,7 @@ import { useReadingStreak } from "@/hooks/use-reading-streak";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 import { buildMoodPicks } from "@/lib/mood-recommendations";
 import { buildRecommendations } from "@/lib/recommendations";
+import { supabase } from "@/lib/supabase";
 
 function getTimeOfDayGreeting() {
   const hour = new Date().getHours();
@@ -195,6 +196,14 @@ export default function Home() {
     }, [refreshContinue, refreshStreak]),
   );
 
+  // Fires the welcome notification the first time this user ever reaches
+  // Home -- not at signUp() time, which happens before email confirmation.
+  // Safe to call every mount: send_welcome_notification() is a no-op after
+  // the first successful send (guarded server-side by profiles.welcome_notified_at).
+  useEffect(() => {
+    supabase.rpc("send_welcome_notification");
+  }, []);
+
   return (
     <ThemedView style={styles.container}>
       <Animated.ScrollView
@@ -209,54 +218,9 @@ export default function Home() {
           />
         }
       >
-        {loading ? (
-          <ThemedView style={styles.loadingHero}>
-            <TopNav title="Home" />
-            <Skeleton style={styles.heroSkeletonImage} />
-            <ThemedView style={styles.heroSkeletonContent}>
-              <Skeleton style={styles.heroSkeletonTag} />
-              <Skeleton style={styles.heroSkeletonTitle} />
-              <Skeleton style={styles.heroSkeletonExcerpt} />
-              <ThemedView style={styles.heroSkeletonButtonRow}>
-                <Skeleton style={styles.heroSkeletonButton} />
-                <Skeleton style={styles.heroSkeletonButton} />
-              </ThemedView>
-            </ThemedView>
-          </ThemedView>
-        ) : story ? (
-          <HeroBanner story={story} />
-        ) : (
-          <ThemedView>
-            <TopNav title="Home" />
-            <ThemedView
-              type="backgroundElement"
-              style={[styles.emptyCard, styles.bodyPadding]}
-            >
-              <ThemedText type="smallBold">No story scheduled today</ThemedText>
-              <ThemedText type="small" style={styles.emptyBlurb}>
-                Check back soon — new stories are added regularly.
-              </ThemedText>
-            </ThemedView>
-          </ThemedView>
-        )}
+        <TopNav title="Home" />
 
-        <ThemedView style={styles.bodyPadding} {...registerContainer("body")}>
-          {!loading && error && (
-            <ThemedView type="backgroundElement" style={styles.emptyCard}>
-              <ThemedText type="smallBold">
-                Couldn&apos;t load today&apos;s content
-              </ThemedText>
-              <ThemedText type="small" style={styles.emptyBlurb}>
-                {error}
-              </ThemedText>
-              <Pressable style={styles.retryButton} onPress={refreshDaily}>
-                <ThemedText style={styles.retryButtonText}>
-                  Try Again
-                </ThemedText>
-              </Pressable>
-            </ThemedView>
-          )}
-
+        <ThemedView style={[styles.bodyPadding, styles.greetingSection]}>
           <ThemedView style={styles.greetingRow}>
             <ThemedText style={styles.greetingTitle}>
               {getTimeOfDayGreeting()}
@@ -284,6 +248,51 @@ export default function Home() {
               Longest streak: {longestStreak} day
               {longestStreak === 1 ? "" : "s"}
             </ThemedText>
+          )}
+        </ThemedView>
+
+        {loading ? (
+          <ThemedView style={styles.loadingHero}>
+            <Skeleton style={styles.heroSkeletonImage} />
+            <ThemedView style={styles.heroSkeletonContent}>
+              <Skeleton style={styles.heroSkeletonTag} />
+              <Skeleton style={styles.heroSkeletonTitle} />
+              <Skeleton style={styles.heroSkeletonExcerpt} />
+              <ThemedView style={styles.heroSkeletonButtonRow}>
+                <Skeleton style={styles.heroSkeletonButton} />
+                <Skeleton style={styles.heroSkeletonButton} />
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
+        ) : story ? (
+          <HeroBanner story={story} />
+        ) : (
+          <ThemedView
+            type="backgroundElement"
+            style={[styles.emptyCard, styles.bodyPadding]}
+          >
+            <ThemedText type="smallBold">No story scheduled today</ThemedText>
+            <ThemedText type="small" style={styles.emptyBlurb}>
+              Check back soon — new stories are added regularly.
+            </ThemedText>
+          </ThemedView>
+        )}
+
+        <ThemedView style={styles.bodyPadding} {...registerContainer("body")}>
+          {!loading && error && (
+            <ThemedView type="backgroundElement" style={styles.emptyCard}>
+              <ThemedText type="smallBold">
+                Couldn&apos;t load today&apos;s content
+              </ThemedText>
+              <ThemedText type="small" style={styles.emptyBlurb}>
+                {error}
+              </ThemedText>
+              <Pressable style={styles.retryButton} onPress={refreshDaily}>
+                <ThemedText style={styles.retryButtonText}>
+                  Try Again
+                </ThemedText>
+              </Pressable>
+            </ThemedView>
           )}
 
           {quote && (
@@ -316,6 +325,10 @@ export default function Home() {
               </ThemedView>
             </Animated.View>
           )}
+
+          {curatedByAnchor.home_after_reflection?.map((section) => (
+            <CuratedSection key={section.id} section={section} />
+          ))}
 
           {continueLoading ? (
             <CategoryRowSkeleton />
@@ -450,6 +463,7 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
     gap: Spacing.three,
   },
+  greetingSection: { marginBottom: Spacing.two },
   loadingHero: { marginBottom: Spacing.three },
   heroSkeletonImage: {
     height: 190,

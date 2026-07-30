@@ -50,9 +50,13 @@ export interface Category {
 export interface Story {
   id: string;
   title: string;
+  // 20260825000000_story_author_and_cover_color.sql -- admin-editable byline
+  // and book-cover background color, shown on category rows.
+  author_name: string | null;
   body: string;
   image_url: string | null;
   audio_url: string | null;
+  cover_color: string | null;
   category: string;
   reflection_question: string | null;
   daily_lesson: string | null;
@@ -182,7 +186,7 @@ export interface JournalEntry {
 // anchor points on Home/Search. `anchor` values are documented in
 // use-curated-sections.ts alongside the anchor constants each screen reads.
 export type CuratedSectionPage = "home" | "search";
-export type CuratedSectionStyle = "poster" | "row" | "ranked";
+export type CuratedSectionStyle = "poster" | "row" | "ranked" | "short";
 
 export interface CuratedSection {
   id: string;

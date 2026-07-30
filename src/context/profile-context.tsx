@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/context/auth-context";
+import { FORCE_PREMIUM_FOR_TESTING } from "@/constants/launch-flags";
 import { canChangeDisplayName, getNextNameChangeDate } from "@/lib/display-name-lock";
 import type { NotificationContentType, Profile, StoryLengthPref } from "@/lib/database.types";
 import { supabase } from "@/lib/supabase";
@@ -42,7 +43,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       .select("*")
       .eq("id", userId)
       .single();
-    if (!error) setProfile(data as Profile);
+    if (!error) {
+      setProfile(
+        FORCE_PREMIUM_FOR_TESTING ? ({ ...data, is_premium: true } as Profile) : (data as Profile)
+      );
+    }
     if (!options?.silent) setLoading(false);
   }, []);
 

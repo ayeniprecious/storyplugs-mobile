@@ -45,7 +45,7 @@ function calculateAge(day: number, month: number, year: number) {
 }
 
 export default function SignUp() {
-  const { signUpWithEmail, signInWithGoogle, signInWithApple } = useAuth();
+  const { signUpWithEmail, resendConfirmationEmail, signInWithGoogle, signInWithApple } = useAuth();
   const { refreshProfile } = useProfile();
   const theme = useTheme();
   const { resolvedScheme } = useThemePrefs();
@@ -64,6 +64,20 @@ export default function SignUp() {
   const [appleSubmitting, setAppleSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmationSent, setConfirmationSent] = useState(false);
+  const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent'>('idle');
+  const [resendError, setResendError] = useState<string | null>(null);
+
+  async function handleResend() {
+    setResendState('sending');
+    setResendError(null);
+    const { error: resendErrorMessage } = await resendConfirmationEmail(email);
+    if (resendErrorMessage) {
+      setResendError(resendErrorMessage);
+      setResendState('idle');
+      return;
+    }
+    setResendState('sent');
+  }
 
   async function handleGoogleSignUp() {
     setGoogleSubmitting(true);
@@ -149,16 +163,41 @@ export default function SignUp() {
   if (confirmationSent) {
     return (
       <LinearGradient colors={AuthGradient[resolvedScheme]} style={styles.container}>
-        <SafeAreaView style={styles.safeArea}>
-          <Text style={[styles.title, { color: theme.text }]}>Check your email</Text>
-          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-            We sent a confirmation link to {email}. Confirm it, then come back and sign in.
+        <SafeAreaView style={styles.confirmationSafeArea}>
+          <View style={styles.confirmationIconRing}>
+            <View style={styles.confirmationIcon}>
+              <Ionicons name="mail-unread-outline" size={36} color="#fff" />
+            </View>
+          </View>
+          <Text style={[styles.confirmationTitle, { color: theme.text }]}>Check your email</Text>
+          <Text style={[styles.confirmationSubtitle, { color: theme.textSecondary }]}>
+            We sent a confirmation link to <Text style={{ fontWeight: '600' }}>{email}</Text>. Open
+            it, tap Verify on the page that opens, then come back here and sign in.
           </Text>
+
           <Link href="/(auth)/sign-in" asChild>
-            <Pressable style={styles.primaryButton}>
+            <Pressable style={StyleSheet.flatten([styles.primaryButton, styles.confirmationButton])}>
               <Text style={styles.primaryButtonText}>Back to Sign In</Text>
             </Pressable>
           </Link>
+
+          {resendState === 'sent' ? (
+            <View style={styles.resendSentRow}>
+              <Ionicons name="checkmark-circle" size={16} color="#32b45a" />
+              <Text style={styles.resendSentText}>Sent! Check your inbox again.</Text>
+            </View>
+          ) : (
+            <Pressable onPress={handleResend} disabled={resendState === 'sending'} style={styles.resendButton}>
+              {resendState === 'sending' ? (
+                <ActivityIndicator color={theme.textSecondary} size="small" />
+              ) : (
+                <Text style={[styles.resendButtonText, { color: theme.textSecondary }]}>
+                  Didn&apos;t get it? <Text style={styles.resendButtonTextAccent}>Resend email</Text>
+                </Text>
+              )}
+            </Pressable>
+          )}
+          {resendError && <Text style={styles.error}>{resendError}</Text>}
         </SafeAreaView>
       </LinearGradient>
     );
@@ -370,6 +409,47 @@ export default function SignUp() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
+  confirmationSafeArea: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.four,
+  },
+  confirmationIconRing: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(192,25,24,0.12)',
+    marginBottom: Spacing.four,
+  },
+  confirmationIcon: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#C01918',
+  },
+  confirmationTitle: { fontSize: 26, fontWeight: '700', marginBottom: Spacing.two },
+  confirmationSubtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
+    marginBottom: Spacing.five,
+  },
+  confirmationButton: { alignSelf: 'stretch', marginTop: 0 },
+  resendButton: { marginTop: Spacing.four, paddingVertical: Spacing.two },
+  resendButtonText: { fontSize: 14, textAlign: 'center' },
+  resendButtonTextAccent: { color: '#C01918', fontWeight: '600' },
+  resendSentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: Spacing.four,
+  },
+  resendSentText: { color: '#32b45a', fontSize: 14, fontWeight: '500' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

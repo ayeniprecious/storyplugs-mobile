@@ -17,6 +17,7 @@ interface AuthContextValue {
     extra: { dateOfBirth: string; gender: string }
   ) => Promise<{ error: string | null; needsEmailConfirmation: boolean }>;
   signInWithEmail: (email: string, password: string) => Promise<{ error: string | null }>;
+  resendConfirmationEmail: (email: string) => Promise<{ error: string | null }>;
   signInWithGoogle: () => Promise<{ error: string | null }>;
   signInWithApple: () => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
@@ -87,6 +88,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: error?.message ?? null };
   }, []);
 
+  const resendConfirmationEmail = useCallback(async (email: string) => {
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: Linking.createURL("auth/callback") },
+    });
+    return { error: error?.message ?? null };
+  }, []);
+
   // Shared by Google and Apple -- the two providers only differ by name.
   //
   // Native: get the provider's auth URL without letting supabase-js redirect
@@ -146,11 +156,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
       signUpWithEmail,
       signInWithEmail,
+      resendConfirmationEmail,
       signInWithGoogle,
       signInWithApple,
       signOut,
     }),
-    [session, loading, signUpWithEmail, signInWithEmail, signInWithGoogle, signInWithApple, signOut]
+    [
+      session,
+      loading,
+      signUpWithEmail,
+      signInWithEmail,
+      resendConfirmationEmail,
+      signInWithGoogle,
+      signInWithApple,
+      signOut,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -5,7 +5,6 @@ import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
-import { TopNav } from '@/components/top-nav';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -57,8 +56,6 @@ export function HeroBanner({ story }: { story: Story }) {
 
   return (
     <ThemedView style={styles.wrapper}>
-      <TopNav title="Home" />
-
       <ThemedView style={styles.card}>
         {story.image_url && <Image source={{ uri: story.image_url }} style={styles.image} contentFit="cover" />}
         <LinearGradient
