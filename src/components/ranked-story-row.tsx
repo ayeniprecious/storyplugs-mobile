@@ -42,6 +42,7 @@ export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
   const { labels: categoryLabels } = useCategories();
   const theme = useTheme();
   const { isFavorited, toggle: toggleFavorite } = useFavorite(story.id);
+  const isNew = isNewStory(story);
 
   function handleSavePress() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -61,7 +62,7 @@ export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
           <View style={styles.thumbWrap}>
             <View style={[styles.thumb, { backgroundColor: getCoverColor(story) }]}>
               <LinearGradient colors={COVER_GRADIENT_COLORS} style={StyleSheet.absoluteFill} />
-              <View style={styles.thumbContent}>
+              <View style={[styles.thumbContent, isNew && styles.thumbContentWithBadge]}>
                 <Text numberOfLines={4} style={styles.thumbTitle}>
                   {story.title}
                 </Text>
@@ -72,7 +73,7 @@ export function RankedStoryRow({ story, rank, isLast }: RankedStoryRowProps) {
                 )}
               </View>
             </View>
-            {isNewStory(story) && (
+            {isNew && (
               <ThemedView style={styles.newBadge}>
                 <ThemedText style={styles.newBadgeText}>New</ThemedText>
               </ThemedView>
@@ -142,13 +143,12 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.4)',
   },
   thumb: { width: '100%', height: '100%' },
-  thumbContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 6,
-    paddingTop: 16,
-  },
+  // Top padding only widens when the New badge is actually present -- it
+  // was previously reserving clearance for the badge unconditionally,
+  // which pushed the title down and away from the top edge on every
+  // non-new story (the vast majority), unlike StoryRowCard's cover.
+  thumbContent: { flex: 1, alignItems: 'center', justifyContent: 'space-between', padding: 6 },
+  thumbContentWithBadge: { paddingTop: 16 },
   thumbTitle: {
     color: '#fff',
     fontSize: 8,

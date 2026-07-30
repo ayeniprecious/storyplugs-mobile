@@ -463,7 +463,11 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
     gap: Spacing.three,
   },
-  greetingSection: { marginBottom: Spacing.two },
+  // Overrides bodyPadding's own paddingTop -- TopNav already has its own
+  // bottom padding, so stacking bodyPadding's full top padding on top of
+  // that left too much air between the nav and the greeting. marginBottom
+  // goes the other way, opening up more room before the Hero below.
+  greetingSection: { paddingTop: Spacing.one, marginBottom: Spacing.four },
   loadingHero: { marginBottom: Spacing.three },
   heroSkeletonImage: {
     height: 190,

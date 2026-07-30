@@ -16,7 +16,7 @@ const FALLBACK_COLOR = '#2c2c2e';
 // Shared with the smaller book-shaped swatches (StoryRowCard's thumb,
 // RankedStoryRow's thumb) so every "book" surface gets the same dark,
 // moody wash rather than a bright, washed-out highlight.
-export const COVER_GRADIENT_COLORS = ['rgba(255,255,255,0.04)', 'rgba(0,0,0,0.45)'] as const;
+export const COVER_GRADIENT_COLORS = ['rgba(255,255,255,0.03)', 'rgba(0,0,0,0.55)'] as const;
 
 export function getCoverColor(story: Story) {
   return story.cover_color || FALLBACK_COLOR;
