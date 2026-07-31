@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
+import { isNewStory } from '@/components/story-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useCategories } from '@/context/categories-context';
@@ -31,6 +32,7 @@ export function ShortStoryCard({
   const { labels: categoryLabels } = useCategories();
   const { isFavorited, toggle: toggleFavorite } = useFavorite(story.id);
   const readMinutes = estimateReadMinutes(story.body);
+  const isNew = isNewStory(story);
 
   return (
     <View style={[styles.card, style]}>
@@ -47,6 +49,12 @@ export function ShortStoryCard({
         <Ionicons name="book-outline" size={10} color="#C01918" />
         <ThemedText style={styles.badgeText}>SHORT</ThemedText>
       </ThemedView>
+
+      {isNew && (
+        <ThemedView style={styles.newBadge}>
+          <ThemedText style={styles.newBadgeText}>New</ThemedText>
+        </ThemedView>
+      )}
 
       <ThemedView style={styles.bottomContent}>
         <ThemedText style={styles.title} numberOfLines={2}>
@@ -88,7 +96,7 @@ export function ShortStoryCard({
 
 const styles = StyleSheet.create({
   card: {
-    width: 220,
+    width: 240,
     height: 300,
     borderRadius: 18,
     overflow: 'hidden',
@@ -108,6 +116,16 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   badgeText: { color: '#fff', fontWeight: '700', fontSize: 8, letterSpacing: 0.3 },
+  newBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#C01918',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  newBadgeText: { color: '#fff', fontWeight: '700', fontSize: 8, letterSpacing: 0.3 },
   bottomContent: { padding: 12, gap: 5, backgroundColor: 'transparent' },
   title: { fontSize: 19, lineHeight: 23, fontWeight: '800', color: '#fff', letterSpacing: -0.2 },
   excerpt: { fontSize: 13, lineHeight: 18, color: 'rgba(255,255,255,0.82)' },

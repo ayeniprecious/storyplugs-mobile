@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { isNewStory } from '@/components/story-card';
 import type { Story } from '@/lib/database.types';
 
 // Apple Books-style library card: a solid admin-picked color instead of a
@@ -89,6 +90,7 @@ export function BookCoverCard({
   // happens to have an image_url set (e.g. leftover from admin testing)
   // still renders as a color card.
   const hasImage = preferImage && story.is_short_story && !!story.image_url;
+  const isNew = isNewStory(story);
 
   return (
     <Link href={{ pathname: '/story/[id]', params: { id: story.id } }} asChild>
@@ -113,7 +115,12 @@ export function BookCoverCard({
               <Text style={styles.rankBadgeText}>{rank}</Text>
             </View>
           )}
-          <View style={styles.content}>
+          {isNew && (
+            <View style={styles.newBadge}>
+              <Text style={styles.newBadgeText}>New</Text>
+            </View>
+          )}
+          <View style={[styles.content, isNew && styles.contentWithBadge]}>
             <Text numberOfLines={4} style={styles.title}>
               {story.title}
             </Text>
@@ -160,6 +167,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 14,
   },
+  // Only widens when the New badge is actually present, so the title stays
+  // centered as usual on the vast majority of (non-new) cards.
+  contentWithBadge: { paddingTop: 24 },
   title: {
     color: '#fff',
     fontSize: 11,
@@ -186,6 +196,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   rankBadgeText: { color: '#fff', fontSize: 12, fontWeight: '700' },
+  newBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: '#C01918',
+    borderBottomLeftRadius: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  newBadgeText: { color: '#fff', fontSize: 10, lineHeight: 12, fontWeight: '700' },
   progressTrack: {
     position: 'absolute',
     left: 0,
