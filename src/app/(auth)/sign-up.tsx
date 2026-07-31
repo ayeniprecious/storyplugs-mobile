@@ -59,6 +59,8 @@ export default function SignUp() {
   const [gender, setGender] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [appleSubmitting, setAppleSubmitting] = useState(false);
@@ -137,6 +139,10 @@ export default function SignUp() {
   async function handleSignUp() {
     if (password.length < 6) {
       setError('Password must be at least 6 characters.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords don\'t match.');
       return;
     }
     setSubmitting(true);
@@ -337,6 +343,27 @@ export default function SignUp() {
                   hitSlop={8}
                 >
                   <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={theme.placeholder} />
+                </Pressable>
+              </View>
+              <View style={styles.passwordWrap}>
+                <TextInput
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  placeholder="Confirm password"
+                  placeholderTextColor={theme.placeholder}
+                  secureTextEntry={!showConfirmPassword}
+                  style={[styles.input, styles.passwordInput, { borderColor: theme.border, color: theme.text }]}
+                />
+                <Pressable
+                  onPress={() => setShowConfirmPassword((v) => !v)}
+                  style={styles.eyeButton}
+                  hitSlop={8}
+                >
+                  <Ionicons
+                    name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color={theme.placeholder}
+                  />
                 </Pressable>
               </View>
             </>

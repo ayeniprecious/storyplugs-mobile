@@ -17,8 +17,10 @@ export default function ChangePassword() {
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [changing, setChanging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [changed, setChanged] = useState(false);
@@ -32,6 +34,10 @@ export default function ChangePassword() {
     }
     if (newPassword.length < 6) {
       setError('New password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setError('New passwords don\'t match.');
       return;
     }
     setChanging(true);
@@ -52,6 +58,7 @@ export default function ChangePassword() {
     }
     setCurrentPassword('');
     setNewPassword('');
+    setConfirmNewPassword('');
     setChanged(true);
   }
 
@@ -105,6 +112,30 @@ export default function ChangePassword() {
             <Pressable onPress={() => setShowNewPassword((v) => !v)} style={styles.passwordEyeButton} hitSlop={8}>
               <Ionicons
                 name={showNewPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={18}
+                color={theme.placeholder}
+              />
+            </Pressable>
+          </ThemedView>
+          <ThemedView style={styles.passwordFieldWrap}>
+            <TextInput
+              value={confirmNewPassword}
+              onChangeText={(text) => {
+                setConfirmNewPassword(text);
+                setError(null);
+              }}
+              placeholder="Confirm new password"
+              placeholderTextColor={theme.placeholder}
+              secureTextEntry={!showConfirmNewPassword}
+              style={[styles.passwordInput, { borderColor: theme.border, color: theme.text }]}
+            />
+            <Pressable
+              onPress={() => setShowConfirmNewPassword((v) => !v)}
+              style={styles.passwordEyeButton}
+              hitSlop={8}
+            >
+              <Ionicons
+                name={showConfirmNewPassword ? 'eye-off-outline' : 'eye-outline'}
                 size={18}
                 color={theme.placeholder}
               />
