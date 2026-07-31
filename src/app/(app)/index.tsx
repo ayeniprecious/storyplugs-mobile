@@ -218,11 +218,17 @@ export default function Home() {
 
   // Fires the welcome notification the first time this user ever reaches
   // Home -- not at signUp() time, which happens before email confirmation.
-  // Safe to call every mount: send_welcome_notification() is a no-op after
-  // the first successful send (guarded server-side by profiles.welcome_notified_at).
+  // Gated on `user` being populated: on a fresh sign-in redirect (e.g. right
+  // after tapping the email confirmation link), this component can mount
+  // before supabase-js has finished restoring the session, so an unguarded
+  // call here goes out without a user JWT attached -- auth.uid() resolves
+  // null server-side and the RPC silently no-ops. Safe to re-fire whenever
+  // `user` changes: send_welcome_notification() is a no-op after the first
+  // successful send (guarded server-side by profiles.welcome_notified_at).
   useEffect(() => {
+    if (!user) return;
     supabase.rpc("send_welcome_notification");
-  }, []);
+  }, [user]);
 
   return (
     <ThemedView style={styles.container}>
