@@ -42,7 +42,7 @@ interface PreviewProgress {
   progressPercent: number;
 }
 
-const EXCERPT_LINE_HEIGHT = 24;
+const EXCERPT_LINE_HEIGHT = 26;
 const EXCERPT_COLLAPSED_HEIGHT = EXCERPT_LINE_HEIGHT * 4;
 
 export default function StoryPreview() {
@@ -370,7 +370,10 @@ export default function StoryPreview() {
           </ThemedView>
 
           <ThemedView style={styles.excerptWrap}>
-            <ThemedText style={styles.excerpt} numberOfLines={excerptExpanded ? undefined : 4}>
+            <ThemedText
+              style={styles.excerpt}
+              numberOfLines={!story.is_short_story && excerptExpanded ? undefined : 4}
+            >
               {story.body}
             </ThemedText>
             {!excerptExpanded && (
@@ -382,7 +385,12 @@ export default function StoryPreview() {
               </ThemedText>
             )}
           </ThemedView>
-          {excerptOverflows && (
+          {/* Short stories are just their one short body -- letting "…more"
+              reveal the rest here would make opening the reader page
+              pointless. Longer stories still get it since story.body on
+              this page is only ever a single-part story's full text; a
+              chaptered story's actual content lives in its chapters. */}
+          {!story.is_short_story && excerptOverflows && (
             <Pressable onPress={() => setExcerptExpanded((prev) => !prev)} hitSlop={8}>
               <ThemedText style={styles.excerptToggle}>
                 {excerptExpanded ? 'See less' : '…more'}
@@ -627,7 +635,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   excerptWrap: { position: 'relative' },
-  excerpt: { fontSize: 15, lineHeight: EXCERPT_LINE_HEIGHT, opacity: 0.8 },
+  excerpt: { fontSize: 16, lineHeight: EXCERPT_LINE_HEIGHT, opacity: 0.8 },
   excerptMeasure: { position: 'absolute', top: 0, left: 0, right: 0, opacity: 0, zIndex: -1 },
   excerptToggle: { color: '#C01918', fontWeight: '600', marginTop: 4 },
   actionsRow: { flexDirection: 'row', alignItems: 'stretch', gap: Spacing.three, marginTop: Spacing.one },
@@ -668,14 +676,14 @@ const styles = StyleSheet.create({
   },
   lessonHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'transparent' },
   lessonHeading: { color: '#C01918' },
-  lessonText: { fontSize: 15, lineHeight: 22, opacity: 0.9 },
+  lessonText: { fontSize: 16, lineHeight: 25, opacity: 0.9 },
   reflectionCard: {
     borderRadius: 12,
     padding: Spacing.three,
     borderWidth: 1,
     gap: Spacing.one,
   },
-  reflectionText: { fontSize: 15, lineHeight: 22, fontStyle: 'italic', opacity: 0.9 },
+  reflectionText: { fontSize: 16, lineHeight: 25, fontStyle: 'italic', opacity: 0.9 },
   chaptersSection: { gap: Spacing.two, marginTop: Spacing.two },
   chaptersHeading: { opacity: 0.85 },
   chapterRow: {
