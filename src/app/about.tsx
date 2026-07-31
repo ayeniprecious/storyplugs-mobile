@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { Image } from 'expo-image';
-import { Link } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -51,13 +51,16 @@ export default function About() {
           </ThemedText>
         </ThemedView>
 
-        <Link href="/privacy" asChild>
-          <Pressable style={styles.linkRow}>
-            <ThemedText type="small" style={styles.link}>
-              Privacy Policy
-            </ThemedText>
-          </Pressable>
-        </Link>
+        <Pressable style={styles.linkRow} onPress={() => WebBrowser.openBrowserAsync('https://storyplugs.com/privacy')}>
+          <ThemedText type="small" style={styles.link}>
+            Privacy Policy
+          </ThemedText>
+        </Pressable>
+        <Pressable style={styles.linkRow} onPress={() => WebBrowser.openBrowserAsync('https://storyplugs.com/terms')}>
+          <ThemedText type="small" style={styles.link}>
+            Terms of Service
+          </ThemedText>
+        </Pressable>
       </SafeAreaView>
     </ThemedView>
   );

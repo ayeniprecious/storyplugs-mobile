@@ -10,9 +10,8 @@ export const ENABLE_STREAK_FREEZE = false;
 export const ENABLE_COMMUNITY_STORIES = false;
 export const ENABLE_OFFLINE_DOWNLOADS = false;
 
-// Forces every account to read as Premium while the Play Store closed test
-// is running, so testers can exercise every gated feature without needing a
-// real purchase (RevenueCat isn't even connected yet). Applied once, at the
-// single fetch point in profile-context.tsx -- flip to false to restore real
-// premium status everywhere with no other changes needed.
-export const FORCE_PREMIUM_FOR_TESTING = true;
+// Was forcing every account to read as Premium during closed testing so
+// testers could exercise gated features without a real purchase. Off now
+// that submission is imminent -- real premium status (from RevenueCat/the
+// profiles table) applies everywhere again.
+export const FORCE_PREMIUM_FOR_TESTING = false;

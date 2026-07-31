@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -220,7 +221,13 @@ export default function Profile() {
             <SettingsRow label="Help" href="/help" showChevron />
             <SettingsRow label="Feedback" href="/feedback" showChevron />
             <SettingsRow label="About" href="/about" showChevron />
-            <SettingsRow label="Privacy" href="/privacy" showChevron isLast />
+            <SettingsRow label="Privacy" href="/privacy" showChevron />
+            <SettingsRow
+              label="Terms of Service"
+              onPress={() => WebBrowser.openBrowserAsync('https://storyplugs.com/terms')}
+              showChevron
+              isLast
+            />
           </SettingsGroup>
 
           <SettingsGroup>
