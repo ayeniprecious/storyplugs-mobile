@@ -47,6 +47,20 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       setProfile(
         FORCE_PREMIUM_FOR_TESTING ? ({ ...data, is_premium: true } as Profile) : (data as Profile)
       );
+      if (!options?.silent) setLoading(false);
+      return;
+    }
+    if (error.code === "PGRST116") {
+      // No profile row for this session's user id -- the account was deleted
+      // (from another device, or by an admin) after this JWT was issued. The
+      // token itself stays cryptographically valid until it expires, so
+      // without this the guard in _layout.tsx would see `session` truthy and
+      // `profile` null and route to onboarding instead of signed-out.
+      // Deliberately leave `loading` alone here -- signing out reruns the
+      // effect below with no user id, which resets profile/loading together
+      // once `session` actually clears, avoiding a flash of onboarding.
+      await supabase.auth.signOut();
+      return;
     }
     if (!options?.silent) setLoading(false);
   }, []);

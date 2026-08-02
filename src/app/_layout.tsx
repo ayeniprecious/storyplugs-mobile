@@ -7,9 +7,9 @@ import {
   Montserrat_800ExtraBold,
   useFonts,
 } from "@expo-google-fonts/montserrat";
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
+import { DarkTheme, DefaultTheme, router, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
@@ -98,6 +98,22 @@ function RootNavigator() {
   // Once there's a session, wait for the profile fetch to resolve before deciding whether
   // onboarding is needed — otherwise we'd briefly route to (app) then bounce to onboarding.
   const stillResolving = authLoading || (!!session && profileLoading);
+
+  // Screens like /privacy and /about live outside the Stack.Protected groups
+  // above (viewable pre-login by design), so they never redirect on their
+  // own when a session ends -- Stack.Protected only reacts on navigation
+  // into a group, not by evicting a screen you're already sitting on. Force
+  // it here instead, on every truthy -> falsy session transition (manual
+  // sign-out, self-deletion, or profile-context signing out an orphaned
+  // session for an account deleted elsewhere): send everyone back to root,
+  // which the guards above then correctly resolve to (auth)/welcome.
+  const hadSessionRef = useRef(false);
+  useEffect(() => {
+    if (hadSessionRef.current && !session) {
+      router.replace("/");
+    }
+    hadSessionRef.current = !!session;
+  }, [session]);
 
   useEffect(() => {
     // Hand off from the native splash to the animated brand page right away,
