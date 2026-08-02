@@ -227,7 +227,9 @@ export default function Home() {
   // successful send (guarded server-side by profiles.welcome_notified_at).
   useEffect(() => {
     if (!user) return;
-    supabase.rpc("send_welcome_notification");
+    supabase.rpc("send_welcome_notification").then(({ error }) => {
+      if (error) console.error("[welcome-notification]", error);
+    });
   }, [user]);
 
   return (
