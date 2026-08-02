@@ -110,14 +110,20 @@ export default function Notifications() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.list}
             renderItem={({ item }) => (
-              // Swipe either direction to reveal the delete button -- replaces
-              // the old per-row "x". No onSwipeableOpen: the swipe itself
-              // only reveals DeleteAction, it never deletes by itself. Only
-              // an explicit tap on the red button removes the notification.
+              // Swipe left to reveal the delete button -- replaces the old
+              // per-row "x". No onSwipeableOpen: the swipe itself only
+              // reveals DeleteAction, it never deletes by itself. Only an
+              // explicit tap on the red button removes the notification.
+              // renderLeftActions (swipe right) used to also be wired up
+              // here, but react-native-gesture-handler's web implementation
+              // leaves the row's own layout box intercepting clicks meant
+              // for that panel -- elementFromPoint at the button's pixel
+              // resolves to the row, not the button, so taps silently do
+              // nothing. renderRightActions doesn't have this problem.
+              // Dropped rather than patched: fixing it would mean depending
+              // on the library's internal, versioned web class names.
               <Swipeable
-                renderLeftActions={() => <DeleteAction onPress={() => remove(item.id)} />}
                 renderRightActions={() => <DeleteAction onPress={() => remove(item.id)} />}
-                overshootLeft={false}
                 overshootRight={false}
               >
                 <ThemedView type="cardAshSolid" style={styles.row}>
