@@ -50,11 +50,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       displayName: string,
       extra: { dateOfBirth: string; gender: string }
     ) => {
+      // date_of_birth/gender travel in raw_user_meta_data rather than a
+      // follow-up .update() -- this project requires email confirmation, so
+      // a real signup never gets an immediate session to authenticate that
+      // update under RLS, and the data was silently lost forever (confirmed
+      // live: a real deleted account's admin snapshot had date_of_birth:
+      // null). raw_user_meta_data is populated at signUp() time regardless
+      // of confirmation status, and handle_new_user() now reads date_of_
+      // birth/gender out of it when creating the profile row.
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { full_name: displayName },
+          data: { full_name: displayName, date_of_birth: extra.dateOfBirth, gender: extra.gender },
           emailRedirectTo: Linking.createURL("auth/callback"),
         },
       });
@@ -62,21 +70,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // until the user clicks the confirmation link. With it disabled, a session
       // comes back immediately and onAuthStateChange routes straight into the app.
       const needsEmailConfirmation = !error && !data.session;
-
-      // signUp() resolving doesn't guarantee the client has attached the new
-      // session to outgoing request headers yet — without this, the update below
-      // can silently match zero rows under RLS (PostgREST returns 204 either way).
-      // setSession forces it to take effect before the update fires.
-      if (!error && data.user && !needsEmailConfirmation && data.session) {
-        await supabase.auth.setSession({
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token,
-        });
-        await supabase
-          .from("profiles")
-          .update({ date_of_birth: extra.dateOfBirth, gender: extra.gender })
-          .eq("id", data.user.id);
-      }
 
       return { error: error?.message ?? null, needsEmailConfirmation };
     },
