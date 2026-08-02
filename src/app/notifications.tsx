@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BackButton } from '@/components/back-button';
 import { RankedPosterRow } from '@/components/ranked-poster-row';
 import { Skeleton } from '@/components/skeleton';
+import { SignupDetailCard } from '@/components/signup-detail-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -130,14 +131,21 @@ export default function Notifications() {
                           {item.notification.title}
                         </ThemedText>
                       </ThemedView>
-                      <ThemedText type="small" style={styles.rowText}>
-                        {item.notification.body}
-                      </ThemedText>
+                      {item.notification.metadata?.type !== 'new_signup' && (
+                        <ThemedText type="small" style={styles.rowText}>
+                          {item.notification.body}
+                        </ThemedText>
+                      )}
                       <ThemedText type="small" style={styles.rowTime}>
                         {timeAgo(item.createdAt)}
                       </ThemedText>
                     </ThemedView>
                   </Pressable>
+                  {item.notification.metadata?.type === 'new_signup' && (
+                    <ThemedView style={styles.posterRowWrap}>
+                      <SignupDetailCard metadata={item.notification.metadata} />
+                    </ThemedView>
+                  )}
                   {item.stories.length > 0 && (
                     <ThemedView style={styles.posterRowWrap}>
                       <RankedPosterRow stories={item.stories} />

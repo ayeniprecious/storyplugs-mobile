@@ -9,7 +9,7 @@ export interface NotificationItem {
   read: boolean;
   readAt: string | null;
   createdAt: string;
-  notification: Pick<AppNotification, "id" | "title" | "body" | "story_id">;
+  notification: Pick<AppNotification, "id" | "title" | "body" | "story_id" | "metadata">;
   // Populated from notification_stories -- independent of the single
   // story_id above, and ordered by the admin's chosen rank.
   stories: Story[];
@@ -39,7 +39,7 @@ export function useNotifications() {
     if (!silent) setLoading(true);
     const { data } = await supabase
       .from("notification_recipients")
-      .select("id, read, read_at, created_at, notifications(id, title, body, story_id)")
+      .select("id, read, read_at, created_at, notifications(id, title, body, story_id, metadata)")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 

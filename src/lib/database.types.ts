@@ -96,6 +96,14 @@ export interface Reflection {
   created_at: string;
 }
 
+export interface SignupNotificationMetadata {
+  type: "new_signup";
+  display_name: string | null;
+  email: string | null;
+  date_of_birth: string | null;
+  joined_at: string;
+}
+
 export interface AppNotification {
   id: string;
   title: string;
@@ -104,6 +112,7 @@ export interface AppNotification {
   target_user_id: string | null;
   story_id: string | null;
   created_at: string;
+  metadata: SignupNotificationMetadata | null;
 }
 
 export interface NotificationRecipient {
