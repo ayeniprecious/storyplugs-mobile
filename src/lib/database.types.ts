@@ -96,12 +96,17 @@ export interface Reflection {
   created_at: string;
 }
 
-export interface SignupNotificationMetadata {
-  type: "new_signup";
+// Shared shape for the two "here's who this was about" admin notifications --
+// a user joining or a user deleting their account. Same fields either way;
+// only `type` (which drives which card renders) and which timestamp is
+// present differ.
+export interface UserSnapshotMetadata {
+  type: "new_signup" | "account_deleted";
   display_name: string | null;
   email: string | null;
   date_of_birth: string | null;
-  joined_at: string;
+  joined_at?: string;
+  deleted_at?: string;
 }
 
 export interface AppNotification {
@@ -112,7 +117,7 @@ export interface AppNotification {
   target_user_id: string | null;
   story_id: string | null;
   created_at: string;
-  metadata: SignupNotificationMetadata | null;
+  metadata: UserSnapshotMetadata | null;
 }
 
 export interface NotificationRecipient {
